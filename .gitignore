@@ -1,0 +1,31 @@
+# 数据集(体积过大,不纳入版本控制)
+img_dataset/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+
+# 模型权重与音频素材(通常较大,按需取消注释)
+# *.pt
+# *.onnx
+# sounds/
+
+# 环境与密钥
+.env
+*.key
+
+# 操作系统 / 编辑器
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# 输出产物
+outputs/
+*.log
