@@ -1,0 +1,18 @@
+# ── 公共 ─────────────────────────────────────────────
+jsonschema>=4.0        # Scene Contract 校验(src/common/contract.py)
+
+# ── 视觉层 ───────────────────────────────────────────
+Pillow>=10.0           # 图像预处理
+ultralytics>=8.2       # YOLOv10/v11-Nano(COCO 80 类)
+# VLM 走免费 API 时按所选服务商加 SDK,例如:
+#   dashscope           # 通义千问-VL
+#   zhipuai             # 智谱 GLM-4V
+# 本地量化 VLM(Qwen2.5-VL)则按其部署方式加 transformers / vllm 等
+
+# ── 音频层 ───────────────────────────────────────────
+pyo>=1.0               # 实时 DSP 底噪 + 混流(本地音频服务器)
+numpy>=1.24
+soundfile>=0.12        # 渲染 wav 供网页播放(见 audio/README 工程提醒)
+
+# ── UI ───────────────────────────────────────────────
+gradio>=4.0            # 极简 Web 界面
