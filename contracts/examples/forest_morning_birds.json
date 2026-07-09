@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "image": { "id": "sample_forest", "path": "img_dataset/Train/507.jpg", "width": 1024, "height": 1024 },
+  "global_vibe": {
+    "scene_type": "forest",
+    "mood": "cheerful",
+    "brightness": 0.71,
+    "warmth": "warm",
+    "base_noise": "pink",
+    "time_of_day": "morning"
+  },
+  "entities": [
+    { "name": "bird",   "state": "singing",  "x": 0.18, "depth": "far",  "conf": 0.64, "source": "yolo" },
+    { "name": "bird",   "state": "flying",   "x": 0.83, "depth": "mid",  "conf": 0.58, "source": "yolo" },
+    { "name": "stream", "state": "flowing",  "x": 0.45, "depth": "near", "conf": 0.5,  "source": "vlm" }
+  ]
+}

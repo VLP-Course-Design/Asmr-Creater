@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "image": { "id": "sample_cafe", "path": "img_dataset/Train/108.jpg", "width": 1280, "height": 853 },
+  "global_vibe": {
+    "scene_type": "cafe",
+    "mood": "lively",
+    "brightness": 0.62,
+    "warmth": "warm",
+    "base_noise": "pink",
+    "time_of_day": "afternoon"
+  },
+  "entities": [
+    { "name": "cup",      "state": "steaming",  "x": 0.35, "depth": "near", "conf": 0.88, "source": "yolo" },
+    { "name": "laptop",   "state": "typing",    "x": 0.52, "depth": "near", "conf": 0.83, "source": "yolo" },
+    { "name": "person",   "state": "chatting",  "x": 0.72, "depth": "mid",  "conf": 0.79, "source": "yolo" },
+    { "name": "espresso_machine", "state": "brewing", "x": 0.90, "depth": "far", "conf": 0.5, "source": "vlm" }
+  ]
+}

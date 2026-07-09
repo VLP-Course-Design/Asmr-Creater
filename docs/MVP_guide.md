@@ -64,6 +64,8 @@ PDF 里所有花哨的东西(开放词汇、深度衰减、人声旁白、情感
 
 ### 0. 先敲定 JSON 契约(最优先)
 
+> ✅ **已完成并冻结(v1.0)。** 正式定义见 [`../contracts/scene_contract.schema.json`](../contracts/scene_contract.schema.json),字段说明与开工方式见 [`json_contract.md`](json_contract.md),手写样例见 [`../contracts/examples/`](../contracts/examples/)。下面是当初的设计思路,保留作背景。
+
 整个项目最该先做的一件事,就是把这份中间格式定死。PDF 里那个 schema 太简单,建议扩成下面这种,把音频层需要的所有维度一次给全:
 
 ```json

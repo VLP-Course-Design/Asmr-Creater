@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "image": { "id": "sample_kitchen", "path": "img_dataset/Train/1203.jpg", "width": 1024, "height": 768 },
+  "global_vibe": {
+    "scene_type": "kitchen",
+    "mood": "cozy",
+    "brightness": 0.85,
+    "warmth": "warm",
+    "base_noise": "white",
+    "time_of_day": "noon"
+  },
+  "entities": [
+    { "name": "kettle", "state": "boiling", "x": 0.30, "depth": "near", "conf": 0.5,  "source": "vlm" },
+    { "name": "sink",   "state": "running", "x": 0.60, "depth": "mid",  "conf": 0.5,  "source": "vlm" },
+    { "name": "clock",  "state": "ticking", "x": 0.88, "depth": "far",  "conf": 0.70, "source": "yolo" }
+  ]
+}

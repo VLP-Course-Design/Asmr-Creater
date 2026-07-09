@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://asmr-creater/contracts/scene_contract.schema.json",
+  "title": "ASMR Creater 视觉↔音频中间数据契约 (Scene Contract)",
+  "description": "视觉层的唯一产出 / 音频层的唯一输入。此文件即接口本身,任何字段改动都必须走 CHANGELOG 并升 schema_version。字段语义详见 docs/json_contract.md。",
+  "type": "object",
+  "required": ["schema_version", "global_vibe", "entities"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "契约版本号,SemVer。破坏性改动升主版本,向后兼容的新增字段升次版本。",
+      "pattern": "^[0-9]+\\.[0-9]+$",
+      "examples": ["1.0"]
+    },
+    "image": {
+      "type": "object",
+      "description": "溯源信息。音频层不需要,可整段忽略;供批处理数据集、UI 画框、评估对齐使用。整个对象可选。",
+      "additionalProperties": true,
+      "properties": {
+        "id": {"type": "string", "description": "数据集内唯一标识,建议用文件名去扩展名,如 \"42\"。"},
+        "path": {"type": "string", "description": "相对仓库根的图片路径,如 \"img_dataset/Train/42.jpg\"。"},
+        "width": {"type": "integer", "minimum": 1, "description": "原图像素宽。"},
+        "height": {"type": "integer", "minimum": 1, "description": "原图像素高。"}
+      }
+    },
+    "global_vibe": {
+      "type": "object",
+      "description": "全局氛围,主要由 VLM 填充,驱动底噪基调。这是音频层底噪基调的唯一来源。",
+      "required": ["scene_type", "mood", "brightness", "warmth", "base_noise", "time_of_day"],
+      "additionalProperties": false,
+      "properties": {
+        "scene_type": {
+          "type": "string",
+          "description": "场景标签,自由字符串(VLM 输出)。常见值见文档;音频层不硬依赖此字段,仅用于日志/调试/未来扩展。",
+          "minLength": 1,
+          "examples": ["bedroom", "cafe", "forest", "beach", "office", "kitchen", "street"]
+        },
+        "mood": {
+          "type": "string",
+          "description": "氛围词,受控词表。音频层据此微调音效密度与整体感觉。",
+          "enum": ["calm", "cozy", "lively", "tense", "gloomy", "melancholic", "eerie", "cheerful"]
+        },
+        "brightness": {
+          "type": "number",
+          "description": "画面明暗,0=最暗,1=最亮。线性驱动底噪音量与低通截止频率(越暗→越低沉、越轻)。",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "warmth": {
+          "type": "string",
+          "description": "冷暖调,影响滤波音色(暖→高频衰减更多更柔,冷→保留更多高频)。",
+          "enum": ["warm", "neutral", "cool"]
+        },
+        "base_noise": {
+          "type": "string",
+          "description": "建议底噪类型,直接映射到 pyo 的 WhiteNoise/PinkNoise/BrownNoise。",
+          "enum": ["white", "pink", "brown"]
+        },
+        "time_of_day": {
+          "type": "string",
+          "description": "时段,受控词表,可与 brightness 协同修饰音色。",
+          "enum": ["dawn", "morning", "noon", "afternoon", "dusk", "night"]
+        }
+      }
+    },
+    "entities": {
+      "type": "array",
+      "description": "画面中有发声潜力的实体列表,驱动离散音效触发与 2D 声像平移。可为空数组(纯氛围场景,只出底噪)。",
+      "items": {
+        "type": "object",
+        "required": ["name", "x", "depth", "conf"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "实体标签。YOLO 认得的用 COCO 标签(小写单数,如 cat/cup/book);VLM 额外补充的用自由词(如 wind_chime)。音频层据此查 sounds/trigger_map.json。",
+            "minLength": 1
+          },
+          "state": {
+            "type": "string",
+            "description": "实体状态,VLM 填充,可选。承接\"睡觉的猫→呼噜声\"这类亮点。缺省视为默认状态。",
+            "examples": ["sleeping", "rainy", "boiling", "flying", "flowing"]
+          },
+          "x": {
+            "type": "number",
+            "description": "归一化横坐标(实体中心),0=最左,1=最右。驱动声像平移。",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "depth": {
+            "type": "string",
+            "description": "远近层级。MVP 用边界框面积粗估(框大=near)。影响音量衰减(未来接深度模型再做低通+混响)。",
+            "enum": ["near", "mid", "far"]
+          },
+          "conf": {
+            "type": "number",
+            "description": "置信度,0~1。YOLO 给检测置信度;纯 VLM 提及的实体建议给一个约定值(见文档)。音频层可据此设阈值或调音量。",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "bbox": {
+            "type": "array",
+            "description": "归一化边界框 [x1, y1, x2, y2](左上、右下),可选。供 UI 画框;音频层通常只用 x。",
+            "items": {"type": "number", "minimum": 0, "maximum": 1},
+            "minItems": 4,
+            "maxItems": 4
+          },
+          "source": {
+            "type": "string",
+            "description": "该实体来源,可选。支持 YOLO/VLM 融合与未来开放词汇分支的追溯。",
+            "enum": ["yolo", "vlm", "fused"]
+          }
+        }
+      }
+    }
+  }
+}

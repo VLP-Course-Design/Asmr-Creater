@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "image": { "id": "sample_fog", "path": "img_dataset/Train/889.jpg", "width": 1920, "height": 1080 },
+  "global_vibe": {
+    "scene_type": "misty_mountain",
+    "mood": "melancholic",
+    "brightness": 0.40,
+    "warmth": "cool",
+    "base_noise": "brown",
+    "time_of_day": "dawn"
+  },
+  "entities": []
+}
