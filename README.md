@@ -84,13 +84,31 @@
 
 ```
 .
-├── docs/                # 项目文档
-│   ├── MVP_guide.md     # MVP 实现指南(路线图、分工、模块拆解)
+├── docs/                     # 项目文档
+│   ├── MVP_guide.md          # MVP 实现指南(路线图、分工、模块拆解)
+│   ├── json_contract.md      # 🔒 视觉↔音频 契约说明(接口先行,已冻结)
 │   └── 可能的项目方向.pdf
-├── img_dataset/         # 图像数据集(未纳入版本控制,见下方说明)
+├── contracts/                # 视觉↔音频 中间数据契约(接口本身)
+│   ├── scene_contract.schema.json   # JSON Schema 正式定义(程序据此校验)
+│   └── examples/             # 手写样例数据(音频线现在就能开工)
+├── src/                      # 源码,按层解耦
+│   ├── common/               #   契约加载与校验(两层共用)
+│   ├── vision/               #   图 → JSON(Pillow + VLM + YOLO)
+│   ├── audio/                #   JSON → 声音(pyo DSP + 触发 + 声像 + 混流)
+│   └── ui/                   #   集成 + Gradio Web 界面
+├── sounds/                   # 素材库(见「素材库规范」)
+│   ├── ambient/  triggers/   #   底噪备用 / 离散音效
+│   ├── trigger_map.json      #   标签 → 素材目录 映射表
+│   └── metadata.csv          #   素材元数据(版权/来源)
+├── scripts/
+│   └── validate_examples.py  # 校验所有样例是否符合契约
+├── img_dataset/              # 图像数据集(未纳入版本控制,见下方说明)
 │   └── Train/
+├── requirements.txt
 └── README.md
 ```
+
+> **新成员从这里入手**:先读 [docs/json_contract.md](docs/json_contract.md)(唯一接口),再看自己那层的 `src/<层>/README.md`。契约已冻结,三条线(视觉/音频/素材)可即刻并行开工。校验样例:`python scripts/validate_examples.py`。
 
 > **关于数据集**:`img_dataset/`(约 1.7GB,2369+ 张图)体积过大,已通过 `.gitignore` 排除,不纳入 Git 版本控制。请另行获取并放置到该目录下。
 
