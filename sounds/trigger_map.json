@@ -1,0 +1,28 @@
+{
+  "_comment": "实体标签(entities[].name) → 素材子目录 的映射表。音频层据此从 triggers/<folder>/ 随机抽变体播放。素材线维护:新增一个可发声物体 = 在此登记 + 往对应目录放 3~5 个 wav。key 用小写单数,须与视觉线产出的标签对齐。",
+  "_schema": {
+    "folder": "triggers/ 下的子目录名",
+    "default_gain": "0~1,该类音效默认音量(叠加 depth/conf 衰减前)",
+    "loopable": "该音效是否可循环(如雨/水流为 true,翻书/瓷杯为 false)",
+    "coco": "是否属于 YOLO COCO 80 类(true=YOLO 可直接检出,false=靠 VLM 提及)"
+  },
+  "map": {
+    "cat":      { "folder": "cat",      "default_gain": 0.8, "loopable": false, "coco": true },
+    "bird":     { "folder": "bird",     "default_gain": 0.7, "loopable": false, "coco": true },
+    "dog":      { "folder": "dog",      "default_gain": 0.7, "loopable": false, "coco": true },
+    "cup":      { "folder": "cup",      "default_gain": 0.6, "loopable": false, "coco": true },
+    "book":     { "folder": "book",     "default_gain": 0.6, "loopable": false, "coco": true },
+    "laptop":   { "folder": "keyboard", "default_gain": 0.6, "loopable": true,  "coco": true },
+    "keyboard": { "folder": "keyboard", "default_gain": 0.6, "loopable": true,  "coco": true },
+    "clock":    { "folder": "clock",    "default_gain": 0.5, "loopable": true,  "coco": true },
+    "person":   { "folder": "walla",    "default_gain": 0.4, "loopable": true,  "coco": true },
+    "tv":       { "folder": "tv_static","default_gain": 0.5, "loopable": true,  "coco": true },
+    "window":   { "folder": "window",   "default_gain": 0.7, "loopable": true,  "coco": false },
+    "stream":   { "folder": "water",    "default_gain": 0.7, "loopable": true,  "coco": false },
+    "sink":     { "folder": "water",    "default_gain": 0.6, "loopable": true,  "coco": false },
+    "kettle":   { "folder": "kettle",   "default_gain": 0.7, "loopable": true,  "coco": false },
+    "fireplace":{ "folder": "fire",     "default_gain": 0.7, "loopable": true,  "coco": false },
+    "wind_chime":{ "folder": "chime",   "default_gain": 0.6, "loopable": false, "coco": false },
+    "espresso_machine": { "folder": "espresso", "default_gain": 0.6, "loopable": false, "coco": false }
+  }
+}

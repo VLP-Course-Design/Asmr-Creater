@@ -1,0 +1,4 @@
+file,label,category,duration_sec,loopable,default_volume,license,source_url,notes
+triggers/cat/cat_purr_1.wav,cat,trigger,4.2,false,0.8,CC0,https://freesound.org/s/EXAMPLE,示例行——请替换为真实素材
+triggers/bird/bird_chirp_1.wav,bird,trigger,3.0,false,0.7,CC0,https://pixabay.com/sound-effects/EXAMPLE,示例行
+ambient/rain/rain_loop_1.wav,rain,ambient,60.0,true,0.6,CC0,https://freesound.org/s/EXAMPLE,长循环底噪备用
