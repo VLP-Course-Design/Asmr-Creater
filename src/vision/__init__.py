@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """视觉层:一张图 → 一份符合契约的 Scene Contract JSON。
 
 四个步骤(见 docs/MVP_guide.md 三-1):
@@ -9,3 +10,5 @@
 视觉层绝不碰任何音频代码 —— 这是解耦的纪律。产出前用
 `src.common.validate_scene` 自检。
 """
+
+from .vibe_vlm import get_global_vibe
