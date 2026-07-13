@@ -1,13 +1,13 @@
-# Prompt 模板 —— 视觉层 VLM 调用
-# 角色 A（视觉-氛围）维护此文件
+# Prompt 模板 —— 视觉层 VLM 调用 (v2)
+# 角色 A（视觉-氛围）维护
+# v1 → v2: 新增 suggested_entities，让 VLM 列出有发声潜力的物体
 
 global_vibe:
   system: |
-    你是一个专业的图像氛围分析助手。你的任务是根据图片内容，输出一个 JSON 对象来描述画面的全局氛围。
-    你必须严格遵守词表限制，不得自创任何词汇。
+    你是一个专业的图像氛围分析助手。根据图片内容输出 JSON，严格遵守词表，不自创词汇。
 
   user: |
-    请分析这张图片的全局氛围，严格输出以下 JSON 格式。只输出 JSON，不要任何解释、不要 markdown 标记。
+    分析这张图片，输出以下 JSON。只输出 JSON，不要解释、不要 markdown。
 
     {
       "scene_type": "场景类型（英文小写，如 bedroom/cafe/forest/kitchen/street/beach/office/mountain）",
@@ -15,39 +15,29 @@ global_vibe:
       "brightness": 0.5,
       "warmth": "neutral",
       "base_noise": "pink",
-      "time_of_day": "afternoon"
+      "time_of_day": "afternoon",
+      "suggested_entities": []
     }
 
-    所有字段的取值必须按下表来，不可自创：
+    字段说明：
 
-    mood（只能选一个）:
-      calm = 平静、宁静
-      cozy = 温馨、舒适
-      lively = 热闹、活跃
-      tense = 紧张、压抑
-      gloomy = 阴暗、沉闷
-      melancholic = 忧伤、怀旧
-      eerie = 诡异、不安
-      cheerful = 愉快、欢快
+    mood（8选1）:
+      calm=平静 | cozy=温馨 | lively=热闹 | tense=紧张
+      gloomy=阴暗沉闷 | melancholic=忧伤怀旧 | eerie=诡异不安 | cheerful=愉快
 
-    warmth（只能选一个）:
-      warm = 暖色调（黄、橙、红为主）
-      neutral = 中性色调（无明显冷暖偏向）
-      cool = 冷色调（蓝、灰、青为主）
+    warmth（3选1）:
+      warm=暖色调（黄橙红） | neutral=中性 | cool=冷色调（蓝灰青）
 
-    base_noise（只能选一个）:
-      white = 白噪音（明亮、嘈杂场景：瀑布、电器、夜市）
-      pink = 粉噪音（均衡场景：白天室内、咖啡馆、森林）
-      brown = 棕噪音（低沉场景：夜晚、卧室、雨景、安静空间）
+    base_noise（3选1）:
+      white=明亮嘈杂（瀑布、夜市、电器） | pink=均衡（室内、咖啡馆、森林） | brown=低沉（夜晚、卧室、雨景）
 
-    time_of_day（只能选一个）:
-      dawn = 黎明
-      morning = 早晨
-      noon = 正午
-      afternoon = 下午
-      dusk = 黄昏
-      night = 夜晚
+    time_of_day（6选1）:
+      dawn=黎明 | morning=早晨 | noon=正午 | afternoon=下午 | dusk=黄昏 | night=夜晚
 
-    brightness: 0.0（最暗）到 1.0（最亮）的小数。夜景 0.1~0.3，室内灯光 0.4~0.6，白天室外 0.7~0.9，正午烈日 0.9~1.0。
+    brightness: 0.0最暗～1.0最亮。夜景0.1~0.3，室内灯光0.4~0.6，白天室外0.7~0.9。
+
+    suggested_entities: 列出画面中有发声潜力的物体（YOLO认不出的东西也列出来），每项包含 name 和 state。
+    例如: [{"name":"wind_chime","state":"swaying"},{"name":"kettle","state":"boiling"},{"name":"cat","state":"sleeping"},{"name":"rain","state":"falling"}]
+    如果没有明显的可发声物体，返回空数组 []。
 
     只输出一行 JSON，别无其他。
