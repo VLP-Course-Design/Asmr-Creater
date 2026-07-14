@@ -99,10 +99,12 @@ def run_batch(
 
         try:
             vibe = get_global_vibe(str(img))
+            suggested = vibe.pop("suggested_entities", [])
             record = {
                 "image": img.name,
                 "path": str(img.relative_to(REPO_ROOT.parent)),
                 "global_vibe": vibe,
+                "suggested_entities": suggested,
             }
             append_result(output_path, record)
             ok += 1
