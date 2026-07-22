@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASMR Creater · 声景工作台</title>
+<!--
+  ASMR Creater 网页端 · 沉浸式声景工作台
+  排版参考 myNoise:整图铺满 Hero + 居中传输控件 + 彩色竖推子阵列 + 双栏散文说明。
+  ────────────────────────────────────────────────────────────────
+  功能已跑通(无需后端即可完整体验):
+    · 选图  → 加载 samples/*.jpg,缺图自动回退占位提示
+    · 上传  → 真实读取文件 + Canvas 分析亮度/冷暖 → 产出合法 Scene Contract
+    · 播放  → Web Audio API 真实合成:白/粉/棕噪音 + 低通(brightness 驱动)
+              + 每轨 StereoPanner(x 驱动);竖推子真控音量,声场点可拖拽
+    · 校验  → 前端轻量契约校验,镜像 contracts/scene_contract.schema.json
+  ────────────────────────────────────────────────────────────────
+  接后端只改一行:把 CONFIG.BACKEND 设为 true(见页面底部脚本顶部的 CONFIG)。
+  建议用 http 方式打开以避免 file:// 的 canvas 限制:
+      python -m http.server 8000     然后访问 /src/ui/web/index.html
+-->
+<style>
+  /* ── 令牌:深色沉浸 ─────────────────────────────────────────── */
+  :root{
+    --bg:#0d100f; --bg-2:#121614; --panel:rgba(255,255,255,.045);
+    --line:rgba(255,255,255,.10); --line-2:rgba(255,255,255,.06);
+    --ink:#e9ecea; --ink-dim:#a8b0ad; --ink-mute:#6f7a76;
+    --accent:#e8623d;           /* 暖橙红:主色 / 激活态 */
+    --link:#7fb6d6;             /* 冷蓝:次级链接 */
+    --r:14px;
+    --shadow:0 24px 60px -24px rgba(0,0,0,.9),0 6px 18px -10px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.65;min-height:100vh;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden;
+  }
+  a{color:var(--link);text-decoration:none}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+  /* ── 顶栏 ───────────────────────────────────────────────────── */
+  header.top{position:relative;z-index:20;padding:22px 24px 0;
+    display:flex;align-items:center;justify-content:center}
+  .brand{display:flex;align-items:center;gap:12px;font-size:22px;font-weight:700;letter-spacing:-.01em}
+  .brand .cube{width:30px;height:30px;border-radius:50%;
+    background:conic-gradient(from 0deg,var(--accent),#f0a06a,var(--accent));
+    box-shadow:0 0 22px rgba(232,98,61,.45);animation:spin 9s linear infinite;
+    display:grid;place-items:center;transition:box-shadow .4s}
+  .brand .cube::before{content:"";width:12px;height:12px;border-radius:3px;background:#0d100f;opacity:.85}
+  .brand:hover .cube{animation-duration:2.2s;box-shadow:0 0 34px rgba(232,98,61,.75)}
+  .brand small{font-weight:400;font-size:13px;color:var(--ink-mute);margin-left:2px}
+  .tagline{text-align:center;color:var(--ink-dim);font-size:14.5px;margin:14px auto 0;max-width:640px;
+    padding:0 24px;position:relative;z-index:20}
+
+  /* ── 沉浸式 Hero:整图铺满 ──────────────────────────────────── */
+  .hero{position:relative;margin-top:20px;min-height:clamp(460px,58vh,580px);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    overflow:hidden;isolation:isolate}
+  .hero-bg{position:absolute;inset:0;z-index:-3;background-size:cover;background-position:center;
+    transform:scale(1.04);transition:opacity .8s,background-image .4s;opacity:0}
+  .hero-bg.on{opacity:1}
+  /* 无图时的兜底纹理 + 占位说明 */
+  .hero-fallback{position:absolute;inset:0;z-index:-3;
+    background:
+      repeating-linear-gradient(45deg,rgba(255,255,255,.022) 0 14px,transparent 14px 28px),
+      radial-gradient(70% 90% at 50% 35%,#20302c,#0d100f 75%);}
+  .hero-veil{position:absolute;inset:0;z-index:-2;
+    background:
+      linear-gradient(180deg,rgba(13,16,15,.82) 0%,rgba(13,16,15,.42) 26%,rgba(13,16,15,.62) 62%,var(--bg) 100%),
+      radial-gradient(60% 55% at 50% 52%,rgba(0,0,0,.55),transparent 70%)}
+  .hero-inner{position:relative;z-index:2;width:100%;max-width:1180px;padding:34px 24px 30px;text-align:center}
+  .hero h1{font-size:clamp(30px,4.4vw,46px);font-weight:600;letter-spacing:.01em;
+    text-shadow:0 2px 30px rgba(0,0,0,.75)}
+  .hero .meta{margin-top:9px;font-size:13px;color:var(--ink-dim);letter-spacing:.04em}
+  .hero .meta b{color:var(--accent);font-weight:600}
+  .ph-note{margin-top:12px;font-size:12px;color:var(--ink-mute);font-style:italic}
+
+  /* 检测框(覆盖在 Hero 图上) */
+  .boxes{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .45s}
+  .boxes.on{opacity:1}
+  .det-box{position:absolute;border:1.5px solid rgba(232,98,61,.9);border-radius:4px;
+    background:rgba(232,98,61,.08);box-shadow:0 0 22px rgba(232,98,61,.3)}
+  .det-box span{position:absolute;top:-21px;left:-1px;background:var(--accent);color:#fff;
+    font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:4px;white-space:nowrap;letter-spacing:.03em}
+
+  /* ── 彩色竖推子阵列(myNoise 签名元素)──────────────────────── */
+  .faders{display:flex;justify-content:center;align-items:flex-end;gap:clamp(10px,2.2vw,26px);
+    margin:26px 0 4px;flex-wrap:wrap;min-height:172px}
+  .fader{display:flex;flex-direction:column;align-items:center;gap:9px;width:56px}
+  .fader-rail{position:relative;width:26px;height:132px;cursor:ns-resize;touch-action:none;
+    display:grid;place-items:center}
+  .fader-rail::before{content:"";position:absolute;inset:0 11px;border-radius:3px;
+    background:rgba(255,255,255,.10)}
+  .fader-fill{position:absolute;left:11px;right:11px;bottom:0;border-radius:3px;
+    background:currentColor;opacity:.55;transition:height .12s}
+  .fader-knob{position:absolute;width:22px;height:22px;border-radius:50%;
+    border:2.5px solid currentColor;background:rgba(13,16,15,.85);
+    box-shadow:0 0 16px currentColor,0 3px 10px rgba(0,0,0,.6);
+    transition:bottom .12s,transform .3s}
+  .fader-rail:hover .fader-knob{transform:scale(1.14)}
+  .fader-lab{font-size:11px;color:var(--ink-dim);text-align:center;line-height:1.35;
+    max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .fader-val{font-size:10px;color:var(--ink-mute);font-variant-numeric:tabular-nums}
+
+  /* ── 声场条:本项目特色,所有音轨按 x 分布,可拖拽 ──────────── */
+  .field{max-width:560px;margin:20px auto 0;position:relative}
+  .field-bar{position:relative;height:34px;border-radius:17px;border:1px solid var(--line);
+    background:rgba(0,0,0,.32);backdrop-filter:blur(6px);display:flex;align-items:center}
+  .field-bar::after{content:"";position:absolute;left:50%;top:7px;bottom:7px;width:1px;
+    background:rgba(255,255,255,.14)}
+  .field-lr{position:absolute;font-size:10px;font-weight:700;color:var(--ink-mute);letter-spacing:.1em}
+  .field-lr.l{left:12px}.field-lr.r{right:12px}
+  .field-dot{position:absolute;top:50%;width:16px;height:16px;border-radius:50%;
+    background:currentColor;box-shadow:0 0 14px currentColor;cursor:ew-resize;touch-action:none;
+    transform:translate(-50%,-50%);transition:left .35s cubic-bezier(.2,.7,.2,1),transform .25s}
+  .field-dot:hover,.field-dot.drag{transform:translate(-50%,-50%) scale(1.3)}
+  .field-cap{text-align:center;font-size:11.5px;color:var(--ink-mute);margin-top:9px;letter-spacing:.05em}
+
+  /* ── 居中传输控件 ───────────────────────────────────────────── */
+  .transport{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:26px}
+  .tbtn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);cursor:pointer;
+    background:rgba(0,0,0,.3);color:var(--ink-dim);font-size:16px;display:grid;place-items:center;
+    backdrop-filter:blur(6px);transition:all .35s cubic-bezier(.2,.7,.2,1)}
+  .tbtn:hover{color:var(--ink);border-color:rgba(255,255,255,.3);transform:translateY(-3px)}
+  .tbtn.on{color:var(--accent);border-color:rgba(232,98,61,.6)}
+  .tbtn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+  .play{width:70px;height:70px;border-radius:50%;border:1.5px solid rgba(255,255,255,.55);cursor:pointer;
+    background:rgba(0,0,0,.28);color:#fff;font-size:24px;display:grid;place-items:center;
+    position:relative;overflow:hidden;backdrop-filter:blur(6px);
+    transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s,border-color .35s}
+  .play::after{content:"";position:absolute;inset:0;transform:translateX(-130%);
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent);transition:transform .55s}
+  .play:hover{transform:scale(1.07);border-color:#fff;box-shadow:0 0 42px rgba(255,255,255,.28)}
+  .play:hover::after{transform:translateX(130%)}
+  .play:active{transform:scale(1.02)}
+  .play.playing{border-color:var(--accent);color:var(--accent);box-shadow:0 0 44px rgba(232,98,61,.4)}
+  .status{text-align:center;font-size:13px;color:var(--ink-mute);margin-top:16px;letter-spacing:.04em}
+
+  /* ── 下方双栏卡片 ───────────────────────────────────────────── */
+  .cols{display:grid;grid-template-columns:1fr 1.18fr;gap:22px;padding:12px 0 80px;perspective:1600px}
+  .cardp{background:var(--panel);border:1px solid var(--line-2);border-radius:var(--r);padding:26px 28px;
+    box-shadow:var(--shadow);transform-style:preserve-3d;
+    transition:transform .45s cubic-bezier(.2,.7,.2,1),box-shadow .45s,border-color .45s}
+  .cardp.lifted{border-color:var(--line);box-shadow:0 40px 80px -30px rgba(0,0,0,.95),0 10px 26px -12px rgba(0,0,0,.8)}
+  .cardp h2{font-size:21px;font-weight:500;margin-bottom:20px;letter-spacing:.01em}
+  .grp{margin-bottom:22px}
+  .grp:last-child{margin-bottom:0}
+  .grp-t{font-size:15px;font-weight:500;margin-bottom:9px;color:var(--ink)}
+  /* 文字链接组(myNoise 的 Presets 风格) */
+  .links{font-size:14px;line-height:2}
+  .links a{cursor:pointer;transition:color .3s}
+  .links a:hover{color:var(--ink)}
+  .links a.act{color:var(--accent);font-weight:600}
+  .links .sep{color:var(--ink-mute);margin:0 7px}
+  /* 上传 */
+  /* label 默认 inline,必须显式改成块级,否则边框会被拆碎、文字溢出 */
+  .drop{display:block;margin-top:10px;border:1px dashed rgba(255,255,255,.18);border-radius:12px;
+    padding:18px 16px;text-align:center;cursor:pointer;color:var(--ink-mute);font-size:13px;
+    line-height:1.7;transition:border-color .35s,color .35s,background .35s}
+  .drop:hover,.drop.drag{border-color:var(--accent);color:var(--ink-dim);background:rgba(232,98,61,.06)}
+  /* 主音量 */
+  .master{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--ink-dim)}
+  input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:3px;border-radius:3px;
+    background:rgba(255,255,255,.18);outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;
+    background:var(--accent);box-shadow:0 0 12px rgba(232,98,61,.6);cursor:pointer;transition:transform .2s}
+  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
+  /* 说明散文 */
+  .prose{font-size:14.5px;color:var(--ink-dim);line-height:1.85}
+  .prose em{color:var(--ink);font-style:normal;font-weight:500}
+  .prose .sep{height:1px;background:var(--line-2);margin:18px 0}
+  .prose .muted{font-size:13px;color:var(--ink-mute);font-style:italic;line-height:1.75}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+  .chip{display:inline-block;font-size:11.5px;padding:4px 10px;border-radius:20px;
+    border:1px solid var(--line-2);color:var(--ink-mute);background:rgba(255,255,255,.03)}
+  .chip.hot{border-color:rgba(232,98,61,.4);color:#f0a184}
+  /* 提示条 */
+  .banner{margin-top:16px;padding:10px 13px;border-radius:10px;font-size:12.5px;display:none;border:1px solid}
+  .banner.show{display:block}
+  .banner.info{background:rgba(127,182,214,.10);border-color:rgba(127,182,214,.3);color:#a9cfe4}
+  .banner.warn{background:rgba(232,180,61,.10);border-color:rgba(232,180,61,.3);color:#e6c67e}
+  .banner.err {background:rgba(232,61,61,.10);border-color:rgba(232,61,61,.35);color:#eba0a0}
+  /* JSON */
+  details.jw{margin-top:18px}
+  details.jw>summary{cursor:pointer;font-size:13px;color:var(--link);list-style:none;
+    display:flex;align-items:center;gap:8px}
+  details.jw>summary::-webkit-details-marker{display:none}
+  details.jw>summary::before{content:"▸";transition:transform .3s}
+  details.jw[open]>summary::before{transform:rotate(90deg)}
+  .json{font-family:"Cascadia Code",Consolas,monospace;font-size:11.5px;line-height:1.75;
+    background:rgba(0,0,0,.4);border:1px solid var(--line-2);border-radius:10px;padding:14px;
+    color:#9fb3ad;overflow:auto;max-height:260px;white-space:pre;margin-top:11px}
+  .json .k{color:#7fb6d6}.json .s{color:#e8a06a}.json .n{color:#c08fd6}
+  /* 未来功能 */
+  .future{margin-top:18px;position:relative}
+  .future input{width:100%;padding:11px 14px;border-radius:10px;font-size:13px;
+    background:rgba(0,0,0,.25);border:1px dashed rgba(255,255,255,.14);color:var(--ink-mute)}
+  .future .badge{position:absolute;top:-9px;right:10px;font-size:9.5px;font-weight:700;letter-spacing:.1em;
+    padding:2px 9px;border-radius:7px;background:var(--accent);color:#fff}
+  footer{border-top:1px solid var(--line-2);padding:26px 0;text-align:center;
+    font-size:12.5px;color:var(--ink-mute)}
+
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media(max-width:900px){
+    .cols{grid-template-columns:1fr}
+    .fader{width:44px}.fader-rail{height:110px}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand"><div class="cube"></div>ASMR&nbsp;Creater<small>声景工作台</small></div>
+</header>
+<p class="tagline">上传一张图,听它发声 —— 系统读懂画面的氛围与内容,自动生成一段<b style="color:var(--ink)">空间化 ASMR 声景</b></p>
+
+<!-- ═══ 沉浸式 Hero ═══════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-fallback"></div>
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-veil"></div>
+  <div class="boxes on" id="boxes"></div>
+
+  <div class="hero-inner">
+    <h1 id="heroTitle">夜晚卧室</h1>
+    <div class="meta" id="heroMeta"></div>
+    <div class="ph-note" id="phNote"></div>
+
+    <!-- 彩色竖推子阵列 -->
+    <div class="faders" id="faders"></div>
+
+    <!-- 声场条 -->
+    <div class="field">
+      <div class="field-bar" id="fieldBar">
+        <span class="field-lr l">L</span><span class="field-lr r">R</span>
+      </div>
+      <div class="field-cap">空间声场 · 拖动圆点改变左右位置</div>
+    </div>
+
+    <!-- 传输控件 -->
+    <div class="transport">
+      <button class="tbtn" id="btnRand"  title="随机场景">🎲</button>
+      <button class="tbtn" id="btnJson"  title="下载 Scene Contract">⬇</button>
+      <button class="play" id="playBtn"  title="播放 / 暂停">▶</button>
+      <button class="tbtn on" id="btnBox" title="显示 / 隐藏识别框">▣</button>
+      <button class="tbtn" id="btnReset" title="重置">↺</button>
+    </div>
+    <div class="status" id="status">按播放键开始</div>
+  </div>
+</section>
+
+<!-- ═══ 双栏 ═════════════════════════════════════════════════ -->
+<div class="wrap">
+  <div class="cols">
+    <!-- 左:控制台 -->
+    <div class="cardp" data-tilt="4">
+      <h2>声景控制台</h2>
+
+      <div class="grp">
+        <div class="grp-t">场景</div>
+        <div class="links" id="sceneLinks"></div>
+      </div>
+
+      <div class="grp">
+        <div class="grp-t">自定义图片</div>
+        <label class="drop" id="drop">
+          拖拽图片到这里,或点击选择<br>
+          <span style="font-size:12px;opacity:.75">前端会真实分析画面亮度与冷暖</span>
+          <input type="file" accept="image/*" hidden id="fileInput">
+        </label>
+      </div>
+
+      <div class="grp">
+        <div class="grp-t">主音量</div>
+        <div class="master">
+          <input type="range" min="0" max="100" value="85" id="masterVol">
+          <span id="masterVal" style="min-width:38px;text-align:right">85%</span>
+        </div>
+      </div>
+
+      <div class="grp">
+        <div class="grp-t">音频引擎</div>
+        <div class="prose muted" style="margin:0">
+          底噪由 Web Audio 实时合成(白 / 粉 / 棕噪音),低通截止频率随画面亮度变化;
+          每个可发声物体是一条独立音轨,经 StereoPanner 按其横坐标定位。
+        </div>
+      </div>
+
+      <div class="future">
+        <span class="badge">未来功能</span>
+        <input type="text" disabled placeholder="用文字描述你想要的声景(开放词汇 / DIY)">
+      </div>
+    </div>
+
+    <!-- 右:识别结果 + 说明 -->
+    <div class="cardp" data-tilt="4">
+      <h2 id="proseTitle">这张图听起来是什么样</h2>
+      <div class="prose" id="prose"></div>
+      <div class="chips" id="chips"></div>
+      <div class="banner" id="banner"></div>
+      <details class="jw">
+        <summary>查看结构化数据(Scene Contract JSON)</summary>
+        <div class="json" id="json"></div>
+      </details>
+    </div>
+  </div>
+</div>
+
+<footer>视觉与自然语言处理 · 课程设计 &nbsp;·&nbsp; 视觉层与音频层通过一份冻结的 JSON 契约解耦</footer>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   0. 配置 —— 接后端只改这里
+   ════════════════════════════════════════════════════════════════ */
+const CONFIG = {
+  BACKEND : false,        // true → 上传图片走后端 /infer;false → 前端本地氛围分析
+  ENDPOINT: "/infer"      // 后端推理接口,应返回一份 Scene Contract JSON
+};
+
+/* ════════════════════════════════════════════════════════════════
+   1. 样例场景 —— 与 contracts/examples/ 保持一致
+   ════════════════════════════════════════════════════════════════ */
+const SCENES = {
+  bedroom:{
+    label:"夜晚卧室", img:"samples/bedroom.jpg",
+    ph:"未找到 samples/bedroom.jpg —— 放入一张「暗调卧室,窗边下雨、左侧有猫在睡觉」的图即可显示",
+    boxes:[{x:8,y:52,w:26,h:32,name:"cat 0.91"},{x:66,y:14,w:27,h:46,name:"window 0.75"}],
+    contract:{
+      schema_version:"1.0",
+      image:{id:"sample_bedroom",path:"img_dataset/Train/42.jpg"},
+      global_vibe:{scene_type:"bedroom",mood:"calm",brightness:0.28,warmth:"cool",base_noise:"brown",time_of_day:"night"},
+      entities:[
+        {name:"cat",state:"sleeping",x:0.22,depth:"near",conf:0.91,source:"yolo"},
+        {name:"window",state:"rainy",x:0.80,depth:"far",conf:0.75,source:"fused"}
+      ]
+    }
+  },
+  cafe:{
+    label:"午后咖啡馆", img:"samples/cafe.jpg",
+    ph:"未找到 samples/cafe.jpg —— 放入一张「暖光咖啡馆,杯子、笔记本、聊天的人」的图即可显示",
+    boxes:[{x:26,y:48,w:20,h:30,name:"cup 0.88"},{x:44,y:40,w:24,h:34,name:"laptop 0.83"},{x:66,y:30,w:22,h:44,name:"person 0.79"}],
+    contract:{
+      schema_version:"1.0",
+      image:{id:"sample_cafe",path:"img_dataset/Train/108.jpg"},
+      global_vibe:{scene_type:"cafe",mood:"lively",brightness:0.62,warmth:"warm",base_noise:"pink",time_of_day:"afternoon"},
+      entities:[
+        {name:"cup",state:"steaming",x:0.35,depth:"near",conf:0.88,source:"yolo"},
+        {name:"laptop",state:"typing",x:0.52,depth:"near",conf:0.83,source:"yolo"},
+        {name:"person",state:"chatting",x:0.72,depth:"mid",conf:0.79,source:"yolo"},
+        {name:"espresso_machine",state:"brewing",x:0.90,depth:"far",conf:0.5,source:"vlm"}
+      ]
+    }
+  },
+  forest:{
+    label:"清晨森林", img:"samples/forest.jpg",
+    ph:"未找到 samples/forest.jpg —— 放入一张「明亮暖调森林,有鸟、有溪流」的图即可显示",
+    boxes:[{x:10,y:18,w:14,h:16,name:"bird 0.64"},{x:76,y:36,w:14,h:16,name:"bird 0.58"}],
+    contract:{
+      schema_version:"1.0",
+      image:{id:"sample_forest",path:"img_dataset/Train/507.jpg"},
+      global_vibe:{scene_type:"forest",mood:"cheerful",brightness:0.71,warmth:"warm",base_noise:"pink",time_of_day:"morning"},
+      entities:[
+        {name:"bird",state:"singing",x:0.18,depth:"far",conf:0.64,source:"yolo"},
+        {name:"bird",state:"flying",x:0.83,depth:"mid",conf:0.58,source:"yolo"},
+        {name:"stream",state:"flowing",x:0.45,depth:"near",conf:0.5,source:"vlm"}
+      ]
+    }
+  },
+  misty:{
+    label:"雾山黎明", img:"samples/misty.jpg",
+    ph:"未找到 samples/misty.jpg —— 放入一张「冷调雾山,无明显可发声物体」的图即可显示",
+    boxes:[],
+    contract:{
+      schema_version:"1.0",
+      image:{id:"sample_misty",path:"img_dataset/Train/889.jpg"},
+      global_vibe:{scene_type:"misty_mountain",mood:"melancholic",brightness:0.40,warmth:"cool",base_noise:"brown",time_of_day:"dawn"},
+      entities:[]
+    }
+  }
+};
+
+/* ════════════════════════════════════════════════════════════════
+   2. 契约轻量校验 —— 镜像 contracts/scene_contract.schema.json
+   ════════════════════════════════════════════════════════════════ */
+const ENUMS={
+  mood:["calm","cozy","lively","tense","gloomy","melancholic","eerie","cheerful"],
+  warmth:["warm","neutral","cool"],
+  base_noise:["white","pink","brown"],
+  time_of_day:["dawn","morning","noon","afternoon","dusk","night"],
+  depth:["near","mid","far"]
+};
+function validateScene(s){
+  const e=[];
+  if(!s||typeof s!=="object") return ["返回的不是一个 JSON 对象"];
+  const g=s.global_vibe;
+  if(!g){ e.push("缺少 global_vibe"); }
+  else{
+    ["scene_type","mood","brightness","warmth","base_noise","time_of_day"]
+      .forEach(k=>{ if(g[k]===undefined) e.push(`global_vibe 缺字段 ${k}`); });
+    ["mood","warmth","base_noise","time_of_day"].forEach(k=>{
+      if(g[k]!==undefined && !ENUMS[k].includes(g[k])) e.push(`global_vibe.${k} 非法值「${g[k]}」`);
+    });
+    if(typeof g.brightness!=="number"||g.brightness<0||g.brightness>1) e.push("brightness 需为 0~1 的数字");
+  }
+  if(!Array.isArray(s.entities)) e.push("entities 需为数组");
+  else s.entities.forEach((en,i)=>{
+    if(!en.name) e.push(`entities[${i}] 缺 name`);
+    if(typeof en.x!=="number"||en.x<0||en.x>1) e.push(`entities[${i}].x 需为 0~1`);
+    if(!ENUMS.depth.includes(en.depth)) e.push(`entities[${i}].depth 非法值「${en.depth}」`);
+    if(typeof en.conf!=="number"||en.conf<0||en.conf>1) e.push(`entities[${i}].conf 需为 0~1`);
+  });
+  return e;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   3. 音频引擎(Web Audio API)—— 真实 DSP,对应 src/audio/
+   ════════════════════════════════════════════════════════════════ */
+const DEPTH_GAIN={near:1.0,mid:0.7,far:0.45};
+const VOICE={
+  cat             :{f:200 ,q:1.2,rate:24 ,depth:.7 },
+  bird            :{f:3400,q:9  ,rate:1.6,depth:.9 },
+  window          :{f:1200,q:0.7,rate:0  ,depth:0  },
+  stream          :{f:900 ,q:0.8,rate:0  ,depth:0  },
+  sink            :{f:1100,q:0.8,rate:0  ,depth:0  },
+  kettle          :{f:2000,q:3  ,rate:0  ,depth:0  },
+  cup             :{f:2200,q:6  ,rate:0.5,depth:.6 },
+  laptop          :{f:1800,q:4  ,rate:7  ,depth:.5 },
+  keyboard        :{f:1800,q:4  ,rate:7  ,depth:.5 },
+  person          :{f:600 ,q:1.5,rate:0.8,depth:.4 },
+  clock           :{f:2600,q:12 ,rate:1  ,depth:.95},
+  espresso_machine:{f:1500,q:2  ,rate:3  ,depth:.6 },
+  _default        :{f:1000,q:2  ,rate:0  ,depth:0  }
+};
+
+const Engine={
+  ctx:null, master:null, tracks:[], buffers:{}, playing:false,
+  ensure(){
+    if(!this.ctx){
+      const AC=window.AudioContext||window.webkitAudioContext;
+      this.ctx=new AC();
+      this.master=this.ctx.createGain();
+      this.master.gain.value=0.85;
+      this.master.connect(this.ctx.destination);
+    }
+    return this.ctx;
+  },
+  noise(type){
+    if(this.buffers[type]) return this.buffers[type];
+    const ctx=this.ensure(), len=ctx.sampleRate*4;
+    const buf=ctx.createBuffer(1,len,ctx.sampleRate), d=buf.getChannelData(0);
+    if(type==="white"){
+      for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
+    }else if(type==="pink"){
+      let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+      for(let i=0;i<len;i++){
+        const w=Math.random()*2-1;
+        b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
+        b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
+        b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
+        d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11;
+        b6=w*0.115926;
+      }
+    }else{
+      let last=0;
+      for(let i=0;i<len;i++){ const w=Math.random()*2-1; last=(last+0.02*w)/1.02; d[i]=last*3.5; }
+    }
+    this.buffers[type]=buf;
+    return buf;
+  },
+  makePanner(pan){
+    const ctx=this.ensure();
+    if(ctx.createStereoPanner){ const p=ctx.createStereoPanner(); p.pan.value=pan; return p; }
+    const p=ctx.createPanner(); p.panningModel="equalpower";
+    p.setPosition(pan,0,1-Math.abs(pan)); return p;
+  },
+  build(contract){
+    const ctx=this.ensure();
+    this.disposeTracks();
+    const g=contract.global_vibe;
+
+    const bedSrc=ctx.createBufferSource();
+    bedSrc.buffer=this.noise(g.base_noise); bedSrc.loop=true;
+    const lp=ctx.createBiquadFilter();
+    lp.type="lowpass"; lp.frequency.value=400+6000*g.brightness;
+    const bedVol=ctx.createGain();
+    const bedLevel=0.25+0.35*g.brightness;
+    bedVol.gain.value=bedLevel;
+    bedSrc.connect(lp); lp.connect(bedVol); bedVol.connect(this.master);
+    bedSrc.start();
+    this.tracks.push({name:`${g.base_noise} 底噪`, kind:"BED", vol:bedVol, panner:null,
+      src:bedSrc, nodes:[lp], level:bedLevel, pan:0.5});
+
+    contract.entities.forEach(en=>{
+      const v=VOICE[en.name]||VOICE._default;
+      const src=ctx.createBufferSource();
+      src.buffer=this.noise("white"); src.loop=true;
+      const bp=ctx.createBiquadFilter();
+      bp.type="bandpass"; bp.frequency.value=v.f; bp.Q.value=v.q;
+      const trem=ctx.createGain();
+      const level=DEPTH_GAIN[en.depth]*(0.5+0.5*en.conf)*0.5;
+      const nodes=[bp,trem];
+      if(v.rate>0){
+        trem.gain.value=1-v.depth;
+        const lfo=ctx.createOscillator(); lfo.frequency.value=v.rate;
+        const lfoGain=ctx.createGain();   lfoGain.gain.value=v.depth;
+        lfo.connect(lfoGain); lfoGain.connect(trem.gain); lfo.start();
+        nodes.push(lfo,lfoGain);
+      }else{ trem.gain.value=1; }
+      const vol=ctx.createGain(); vol.gain.value=level;
+      const panner=this.makePanner(en.x*2-1);
+      src.connect(bp); bp.connect(trem); trem.connect(vol); vol.connect(panner);
+      panner.connect(this.master);
+      src.start();
+      this.tracks.push({name:en.name, state:en.state||"", kind:en.depth.toUpperCase(),
+        vol, panner, src, nodes, level, pan:en.x});
+    });
+    return this.tracks;
+  },
+  disposeTracks(){
+    this.tracks.forEach(t=>{
+      try{ t.src.stop(); }catch(_){}
+      try{ t.src.disconnect(); t.vol.disconnect(); t.panner&&t.panner.disconnect();
+           t.nodes.forEach(n=>{ try{ n.stop&&n.stop(); }catch(_){} n.disconnect(); }); }catch(_){}
+    });
+    this.tracks=[];
+  },
+  async play(){ const ctx=this.ensure(); await ctx.resume(); this.playing=true; },
+  async pause(){ if(this.ctx){ await this.ctx.suspend(); } this.playing=false; },
+  setTrackVolume(i,v){ const t=this.tracks[i]; if(t) t.vol.gain.value=v*t.level*2; },
+  setTrackPan(i,x){
+    const t=this.tracks[i]; if(!t||!t.panner) return;
+    const p=x*2-1;
+    if(t.panner.pan) t.panner.pan.value=p;
+    else t.panner.setPosition(p,0,1-Math.abs(p));
+    t.pan=x;
+  },
+  setMaster(v){ if(this.master) this.master.gain.value=v; }
+};
+
+/* ════════════════════════════════════════════════════════════════
+   4. 推理:后端 /infer 或前端本地氛围分析
+   ════════════════════════════════════════════════════════════════ */
+function loadImage(src){
+  return new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=src; });
+}
+async function localAnalyze(file,objUrl){
+  const im=await loadImage(objUrl);
+  const S=64, c=document.createElement("canvas"); c.width=S; c.height=S;
+  const g2=c.getContext("2d",{willReadFrequently:true});
+  g2.drawImage(im,0,0,S,S);
+  let lum=0,r=0,b=0,n=S*S;
+  try{
+    const d=g2.getImageData(0,0,S,S).data;
+    for(let i=0;i<d.length;i+=4){
+      r+=d[i]; b+=d[i+2];
+      lum+=0.2126*d[i]+0.7152*d[i+1]+0.0722*d[i+2];
+    }
+  }catch(err){ throw new Error("CANVAS_BLOCKED"); }
+  const brightness=Math.max(0,Math.min(1,+(lum/n/255).toFixed(2)));
+  const warmDiff=(r-b)/n/255;
+  const warmth = warmDiff>0.04?"warm" : warmDiff<-0.04?"cool" : "neutral";
+  const base_noise = brightness<0.35?"brown" : brightness<0.68?"pink" : "white";
+  const time_of_day= brightness<0.25?"night": brightness<0.42?"dusk"
+                   : brightness<0.72?"afternoon":"noon";
+  const mood = brightness<0.30?(warmth==="warm"?"cozy":"gloomy")
+             : brightness>0.70?"cheerful" : "calm";
+  return {
+    schema_version:"1.0",
+    image:{id:file.name,path:file.name,width:im.naturalWidth,height:im.naturalHeight},
+    global_vibe:{scene_type:"user_upload",mood,brightness,warmth,base_noise,time_of_day},
+    entities:[]
+  };
+}
+async function inferScene(file,objUrl){
+  if(CONFIG.BACKEND){
+    const fd=new FormData(); fd.append("image",file);
+    const r=await fetch(CONFIG.ENDPOINT,{method:"POST",body:fd});
+    if(!r.ok) throw new Error("后端返回 "+r.status);
+    return await r.json();
+  }
+  return await localAnalyze(file,objUrl);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   5. 文案词表 + 散文生成(myNoise 式说明段落)
+   ════════════════════════════════════════════════════════════════ */
+const CN={
+  mood:{calm:"宁静",cozy:"温馨",lively:"热闹",tense:"紧绷",gloomy:"阴郁",
+        melancholic:"怅惘",eerie:"诡谧",cheerful:"明快"},
+  tod:{dawn:"黎明",morning:"清晨",noon:"正午",afternoon:"午后",dusk:"黄昏",night:"夜晚"},
+  warmth:{warm:"暖调",neutral:"中性色调",cool:"冷调"},
+  noise:{white:"白噪音",pink:"粉噪音",brown:"棕噪音"},
+  depth:{near:"近处",mid:"中景",far:"远处"},
+  /* 实体名 / 状态的中文,查不到则回落英文原词 */
+  name:{cat:"猫",dog:"狗",bird:"鸟",window:"窗",stream:"溪流",sink:"水槽",kettle:"水壶",
+        cup:"杯子",book:"书",laptop:"笔记本电脑",keyboard:"键盘",person:"人",clock:"时钟",
+        tv:"电视",fireplace:"壁炉",wind_chime:"风铃",espresso_machine:"咖啡机"},
+  state:{sleeping:"熟睡的",rainy:"落着雨的",steaming:"冒着热气的",typing:"敲击中的",
+         chatting:"交谈中的",brewing:"萃取中的",singing:"鸣唱的",flying:"飞掠的",
+         flowing:"流淌的",boiling:"沸腾的",running:"淌着水的",ticking:"滴答走动的"},
+  scene:{bedroom:"卧室",cafe:"咖啡馆",forest:"森林",misty_mountain:"雾山",beach:"海滩",
+         office:"办公室",kitchen:"厨房",street:"街道",living_room:"客厅",library:"图书馆",
+         user_upload:"自定义画面"}
+};
+/* 方位与耳侧共用同一组阈值,避免出现「画面中央…偏向左耳」的自相矛盾 */
+const posCN=x=>x<0.35?"画面左侧":x<0.65?"画面中央":"画面右侧";
+const earCN=x=>x<0.35?"偏向左耳":x<0.65?"居中":"偏向右耳";
+
+function buildProse(c){
+  const g=c.global_vibe;
+  const mood=CN.mood[g.mood]||g.mood, tod=CN.tod[g.time_of_day]||g.time_of_day;
+  const warm=CN.warmth[g.warmth]||g.warmth, noise=CN.noise[g.base_noise]||g.base_noise;
+  let p1=`这是一处 <em>${CN.scene[g.scene_type]||g.scene_type}</em> 的${tod}景象,整体${mood}而${warm}。`
+        +`画面平均亮度 <em>${g.brightness}</em>,系统据此选择 <em>${noise}</em> 作为底噪的基调 —— `
+        +`越暗的画面,底噪越低沉、音量越轻,低通滤波也收得越紧。`;
+  let p2;
+  if(!c.entities.length){
+    p2=`画面里没有检测到明显的可发声物体,因此这是一段<em>纯氛围</em>声景:只有一层缓慢流动的${noise},适合长时间聆听。`;
+  }else{
+    const parts=c.entities.map(e=>{
+      const st=e.state?(CN.state[e.state]||`正在${e.state}的`):"";
+      const nm=CN.name[e.name]||e.name;
+      return `${posCN(e.x)}${CN.depth[e.depth]}有${st}<em>${nm}</em>,声音${earCN(e.x)}`;
+    });
+    p2=`系统识别到 <em>${c.entities.length}</em> 个可发声物体:`+parts.join(";")+"。"
+      +`每个物体都是一条独立音轨,按它在画面中的横坐标做恒定功率声像平移。`;
+  }
+  return `<p>${p1}</p><div class="sep"></div><p>${p2}</p>`;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   6. 界面渲染
+   ════════════════════════════════════════════════════════════════ */
+const $=s=>document.querySelector(s);
+let current={contract:null, boxes:[], objUrl:null, key:"bedroom"};
+const trackColor=(i,n)=>`hsl(${Math.round(14+(i/Math.max(1,n))*300)} 72% 60%)`;
+
+/* 场景文字链接组(myNoise Presets 风格) */
+const linksEl=$("#sceneLinks");
+linksEl.innerHTML=Object.entries(SCENES).map(([k,s],i)=>
+  `${i?'<span class="sep">·</span>':''}<a data-k="${k}">${s.label}</a>`).join("")
+  +`<span class="sep">·</span><a data-k="__rand" style="color:var(--accent)">🎲 随机</a>`;
+linksEl.querySelectorAll("a").forEach(a=>a.onclick=()=>{
+  const k=a.dataset.k;
+  if(k==="__rand") randomScene(); else selectSample(k);
+});
+
+function banner(type,msg){
+  const b=$("#banner");
+  if(!msg){ b.className="banner"; return; }
+  b.className=`banner show ${type}`; b.textContent=msg;
+}
+
+async function selectSample(key){
+  const s=SCENES[key]; current.key=key;
+  linksEl.querySelectorAll("a").forEach(a=>a.classList.toggle("act",a.dataset.k===key));
+  if(current.objUrl){ URL.revokeObjectURL(current.objUrl); current.objUrl=null; }
+  let src=null;
+  try{ await loadImage(s.img); src=s.img; }catch(_){}
+  $("#phNote").textContent = src ? "" : s.ph;
+  applyScene(s.contract, s.boxes, src, s.label);
+  banner("","");
+}
+function randomScene(){
+  const keys=Object.keys(SCENES).filter(k=>k!==current.key);
+  selectSample(keys[Math.floor(Math.random()*keys.length)]);
+}
+
+/* 统一渲染一份 Scene Contract */
+function applyScene(contract, boxes, imgSrc, title){
+  const errs=validateScene(contract);
+  if(errs.length){ banner("err","契约校验未通过:"+errs.slice(0,3).join(";")); return; }
+  current.contract=contract; current.boxes=boxes||[];
+
+  // Hero 背景
+  const bg=$("#heroBg");
+  if(imgSrc){ bg.style.backgroundImage=`url("${imgSrc}")`; bg.classList.add("on"); }
+  else{ bg.classList.remove("on"); bg.style.backgroundImage=""; }
+
+  const g=contract.global_vibe;
+  $("#heroTitle").textContent = title || g.scene_type;
+  $("#heroMeta").innerHTML =
+    `${CN.tod[g.time_of_day]||g.time_of_day} · ${CN.mood[g.mood]||g.mood} · ${CN.warmth[g.warmth]||g.warmth}`
+    +` &nbsp;|&nbsp; 亮度 <b>${g.brightness}</b> → <b>${CN.noise[g.base_noise]||g.base_noise}</b>`;
+
+  // 检测框(优先后端 bbox)
+  const boxWrap=$("#boxes");
+  boxWrap.innerHTML="";
+  const fromBbox=contract.entities.filter(e=>Array.isArray(e.bbox)&&e.bbox.length===4)
+    .map(e=>({x:e.bbox[0]*100,y:e.bbox[1]*100,
+              w:(e.bbox[2]-e.bbox[0])*100,h:(e.bbox[3]-e.bbox[1])*100,
+              name:`${e.name} ${e.conf.toFixed(2)}`}));
+  if(imgSrc){
+    (fromBbox.length?fromBbox:current.boxes).forEach(b=>{
+      const d=document.createElement("div");
+      d.className="det-box";
+      d.style.cssText=`left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%`;
+      d.innerHTML=`<span>${b.name}</span>`;
+      boxWrap.appendChild(d);
+    });
+  }
+
+  // 散文说明 + 标签
+  $("#prose").innerHTML=buildProse(contract);
+  const chips=[`场景 ${g.scene_type}`,`氛围 ${g.mood}`,`亮度 ${g.brightness}`,
+               `${g.warmth}`,`${g.base_noise} noise`,`${g.time_of_day}`]
+    .map(t=>`<span class="chip">${t}</span>`).join("")
+    + contract.entities.map(e=>`<span class="chip hot">🔊 ${e.name}${e.state?" · "+e.state:""}</span>`).join("");
+  $("#chips").innerHTML=chips;
+
+  renderJSON(contract);
+  buildTracks(contract);
+}
+
+function renderJSON(obj){
+  let str=JSON.stringify(obj,null,2);
+  str=str.replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/"([^"]+)":/g,'"<span class="k">$1</span>":')
+    .replace(/: "([^"]+)"/g,': "<span class="s">$1</span>"')
+    .replace(/: (-?\d+\.?\d*)/g,': <span class="n">$1</span>');
+  $("#json").innerHTML=str;
+}
+
+/* ── 竖推子阵列 + 声场条 ─────────────────────────────────────── */
+function buildTracks(contract){
+  const wasPlaying=Engine.playing;
+  const tracks=Engine.build(contract);
+  if(!wasPlaying && Engine.ctx) Engine.ctx.suspend();
+
+  const fw=$("#faders"); fw.innerHTML="";
+  const fb=$("#fieldBar");
+  fb.querySelectorAll(".field-dot").forEach(d=>d.remove());
+
+  tracks.forEach((t,i)=>{
+    const color=trackColor(i,tracks.length);
+    const pct=Math.round(t.level*100);
+
+    // 竖推子
+    const f=document.createElement("div");
+    f.className="fader"; f.style.color=color;
+    f.innerHTML=`
+      <div class="fader-rail" data-i="${i}">
+        <div class="fader-fill" style="height:${pct}%"></div>
+        <div class="fader-knob" style="bottom:calc(${pct}% - 11px)"></div>
+      </div>
+      <div class="fader-lab" title="${t.name}${t.state?" · "+t.state:""}">${t.name}</div>
+      <div class="fader-val">${pct}%</div>`;
+    attachFader(f.querySelector(".fader-rail"), f, i);
+    fw.appendChild(f);
+
+    // 声场点(底噪居中且不可拖)
+    const dot=document.createElement("span");
+    dot.className="field-dot";
+    dot.style.color=color; dot.style.left=(t.pan*100)+"%";
+    dot.title=`${t.name} · ${t.panner?"可拖动":"底噪居中"}`;
+    if(t.panner) attachFieldDot(dot,i,fb);
+    else dot.style.cursor="default";
+    fb.appendChild(dot);
+  });
+}
+
+/* 推子拖拽 → 真实增益 */
+function attachFader(rail,wrap,i){
+  const fill=rail.querySelector(".fader-fill");
+  const knob=rail.querySelector(".fader-knob");
+  const val =wrap.querySelector(".fader-val");
+  const set=e=>{
+    const r=rail.getBoundingClientRect();
+    const v=Math.max(0,Math.min(1,(r.bottom-e.clientY)/r.height));
+    const p=Math.round(v*100);
+    fill.style.height=p+"%";
+    knob.style.bottom=`calc(${p}% - 11px)`;
+    val.textContent=p+"%";
+    Engine.setTrackVolume(i,v);
+  };
+  rail.addEventListener("pointerdown",e=>{ rail.setPointerCapture(e.pointerId); set(e); });
+  rail.addEventListener("pointermove",e=>{ if(rail.hasPointerCapture(e.pointerId)) set(e); });
+  rail.addEventListener("pointerup",e=>rail.releasePointerCapture(e.pointerId));
+}
+
+/* 声场点拖拽 → 真实 StereoPanner */
+function attachFieldDot(dot,i,bar){
+  const set=e=>{
+    const r=bar.getBoundingClientRect();
+    const x=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
+    dot.style.left=(x*100)+"%";
+    Engine.setTrackPan(i,x);
+  };
+  dot.addEventListener("pointerdown",e=>{
+    e.preventDefault(); dot.setPointerCapture(e.pointerId); dot.classList.add("drag");
+  });
+  dot.addEventListener("pointermove",e=>{ if(dot.hasPointerCapture(e.pointerId)) set(e); });
+  dot.addEventListener("pointerup",e=>{ dot.releasePointerCapture(e.pointerId); dot.classList.remove("drag"); });
+}
+
+/* ════════════════════════════════════════════════════════════════
+   7. 交互绑定
+   ════════════════════════════════════════════════════════════════ */
+$("#playBtn").onclick=async()=>{
+  if(!current.contract) return;
+  const btn=$("#playBtn");
+  if(Engine.playing){
+    await Engine.pause();
+    btn.classList.remove("playing"); btn.textContent="▶";
+    $("#status").textContent="已暂停";
+  }else{
+    if(!Engine.tracks.length) Engine.build(current.contract);
+    await Engine.play();
+    btn.classList.add("playing"); btn.textContent="⏸";
+    $("#status").textContent=`正在播放 · ${Engine.tracks.length} 轨空间混流`;
+  }
+};
+$("#btnRand").onclick=()=>randomScene();
+$("#btnBox").onclick=()=>{
+  const on=$("#boxes").classList.toggle("on");
+  $("#btnBox").classList.toggle("on",on);
+};
+$("#btnJson").onclick=()=>{
+  if(!current.contract) return;
+  const blob=new Blob([JSON.stringify(current.contract,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=(current.contract.image&&current.contract.image.id||"scene")+".json";
+  a.click(); URL.revokeObjectURL(a.href);
+};
+$("#btnReset").onclick=async()=>{
+  await Engine.pause();
+  const btn=$("#playBtn"); btn.classList.remove("playing"); btn.textContent="▶";
+  $("#status").textContent="按播放键开始";
+  selectSample("bedroom");
+};
+$("#masterVol").addEventListener("input",e=>{
+  const v=+e.target.value;
+  $("#masterVal").textContent=v+"%";
+  Engine.setMaster(v/100);
+});
+
+/* 上传 */
+const drop=$("#drop"), fileInput=$("#fileInput");
+["dragover","dragenter"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("drag")}));
+drop.addEventListener("dragleave",e=>{e.preventDefault();drop.classList.remove("drag")});
+drop.addEventListener("drop",e=>{
+  e.preventDefault(); drop.classList.remove("drag");
+  const f=e.dataTransfer.files&&e.dataTransfer.files[0];
+  if(f) handleFile(f);
+});
+fileInput.addEventListener("change",e=>{ const f=e.target.files[0]; if(f) handleFile(f); });
+
+async function handleFile(file){
+  if(!file.type.startsWith("image/")){ banner("err","请选择图片文件"); return; }
+  banner("info","正在分析画面…");
+  linksEl.querySelectorAll("a").forEach(a=>a.classList.remove("act"));
+  if(current.objUrl) URL.revokeObjectURL(current.objUrl);
+  const url=URL.createObjectURL(file);
+  current.objUrl=url; current.key=null;
+  try{
+    const contract=await inferScene(file,url);
+    $("#phNote").textContent="";
+    applyScene(contract, [], url, file.name.replace(/\.[^.]+$/,""));
+    banner(CONFIG.BACKEND?"info":"warn",
+      CONFIG.BACKEND
+        ? "已由后端 /infer 推理完成。"
+        : `前端本地分析完成:亮度 ${contract.global_vibe.brightness}、${contract.global_vibe.warmth}调 → ${contract.global_vibe.base_noise} 底噪。实体检测需接后端 YOLO(把 CONFIG.BACKEND 设为 true)。`);
+  }catch(err){
+    banner("err", err.message==="CANVAS_BLOCKED"
+      ? "浏览器禁止读取本地图片像素。请用 http 方式打开:python -m http.server 8000"
+      : "分析失败:"+err.message);
+  }
+}
+
+/* 卡片轻微 3D 抬起(保留「实体感」,但不喧宾夺主)*/
+function attachTilt(el){
+  const max=parseFloat(el.dataset.tilt)||4;
+  el.addEventListener("pointermove",e=>{
+    if(e.target.closest("input,a,summary,.drop")) return;
+    const r=el.getBoundingClientRect();
+    const px=(e.clientX-r.left)/r.width-0.5, py=(e.clientY-r.top)/r.height-0.5;
+    el.style.transform=`translateY(-6px) rotateX(${(-py*max).toFixed(2)}deg) rotateY(${(px*max).toFixed(2)}deg)`;
+    el.classList.add("lifted");
+  });
+  el.addEventListener("pointerleave",()=>{ el.style.transform=""; el.classList.remove("lifted"); });
+}
+document.querySelectorAll("[data-tilt]").forEach(attachTilt);
+
+/* 初始化 */
+selectSample("bedroom");
+</script>
+</body>
+</html>
