@@ -185,6 +185,30 @@ def merge_structured_payload(
     matched_yolo_indices = set()
 
     for vlm_entity in vlm_data["suggested_entities"]:
+        # ── VLM 输出格式归一化 ──
+        # MiniCPM-V 偶发不规范输出：直接给字符串 "cat" 或嵌套列表 ["cat","dog"]
+        # 而非标准 {"name":"cat","state":"sleeping"}，需在此处容错归一化
+        if isinstance(vlm_entity, str):
+            warnings.warn(
+                f"suggested_entities 中出现字符串元素 '{vlm_entity}'，"
+                f"已自动转为标准格式。请检查 VLM prompt 约束。"
+            )
+            vlm_entity = {"name": vlm_entity, "state": ""}
+        elif isinstance(vlm_entity, list):
+            names = [str(x) for x in vlm_entity if x]
+            warnings.warn(
+                f"suggested_entities 中出现嵌套列表 {vlm_entity}，"
+                f"已合并为单个实体。请检查 VLM prompt 约束。"
+            )
+            vlm_entity = {"name": ", ".join(names), "state": ""} if names \
+                else {"name": "unknown", "state": ""}
+        elif not isinstance(vlm_entity, dict):
+            warnings.warn(
+                f"suggested_entities 中出现非标准类型 {type(vlm_entity).__name__}，"
+                f"已跳过该元素。"
+            )
+            continue
+
         name = vlm_entity.get("name", "")
         state = vlm_entity.get("state", "")
 
