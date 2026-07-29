@@ -5,9 +5,10 @@
 global_vibe:
   system: |
     你是一个专业的图像氛围分析助手。根据图片内容输出 JSON，严格遵守词表，不自创词汇。
+    核心规则：所有 mood/warmth/base_noise/time_of_day 的值只能从下方英文词表选，严禁翻译成中文。选错比不选严重。
 
   user: |
-    分析这张图片，输出以下 JSON。只输出 JSON，不要解释、不要 markdown。
+    分析这张图片，输出以下 JSON。只输出一行 JSON，不要解释、不要 markdown、所有值用英文。
 
     {
       "scene_type": "场景类型（英文小写，如 bedroom/cafe/forest/kitchen/street/beach/office/mountain）",
@@ -21,17 +22,17 @@ global_vibe:
 
     字段说明：
 
-    mood（8选1）:
+    mood: 严格从这 8 个英文词选一个（不要中文）:
       calm=平静 | cozy=温馨 | lively=热闹 | tense=紧张
       gloomy=阴暗沉闷 | melancholic=忧伤怀旧 | eerie=诡异不安 | cheerful=愉快
 
-    warmth（3选1）:
+    warmth: 严格从这 3 个英文词选一个:
       warm=暖色调（黄橙红） | neutral=中性 | cool=冷色调（蓝灰青）
 
-    base_noise（3选1）:
+    base_noise: 严格从这 3 个英文词选一个:
       white=明亮嘈杂（瀑布、夜市、电器） | pink=均衡（室内、咖啡馆、森林） | brown=低沉（夜晚、卧室、雨景）
 
-    time_of_day（6选1）:
+    time_of_day: 严格从这 6 个英文词选一个:
       dawn=黎明 | morning=早晨 | noon=正午 | afternoon=下午 | dusk=黄昏 | night=夜晚
 
     brightness: 0.0最暗～1.0最亮。夜景0.1~0.3，室内灯光0.4~0.6，白天室外0.7~0.9。
@@ -40,4 +41,4 @@ global_vibe:
     例如: [{"name":"wind_chime","state":"swaying"},{"name":"kettle","state":"boiling"},{"name":"cat","state":"sleeping"},{"name":"rain","state":"falling"}]
     如果没有明显的可发声物体，返回空数组 []。
 
-    只输出一行 JSON，别无其他。
+    重要提醒：mood/warmth/base_noise/time_of_day 必须用英文值。只输出一行 JSON，别无其他。
