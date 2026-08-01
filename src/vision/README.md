@@ -189,6 +189,23 @@ class BaseDetector(ABC):
 
 **失败条目处理**: VLM 推理失败的图片（来自 `_failed.jsonl`）仍输出到最终 JSONL，`image.error` 字段标记原因，`global_vibe` 给默认值，`entities` 为空数组。确保下游音频层知晓该图片不可用于音频生成。
 
+**VLM 数据质量修复**（`merge_structured_payload` 内置）:
+
+Qwen2.5VL / MiniCPM-V 在批量推理时偶发输出不规范数据，融合管线在组装 Scene Contract 前自动修复以下四类问题：
+
+| 问题类型 | 出现频率 (2369 张) | 修复策略 |
+|----------|-------------------|----------|
+| `scene_type` 为空字符串 `""` | 68 张 | 填入默认值 `"unknown"`，触发 warning |
+| `global_vibe` 含 schema 未定义的额外字段 (如 `background_color`) | 1 张 | 自动移除额外字段，触发 warning |
+| `suggested_entities` 元素为裸字符串 (`"cat"`) 或嵌套列表 (`["a","b"]`) | 18 个实体 | 字符串→包装为 `{"name":"..."}`，列表→合并为 `{"name":"a, b"}`，触发 warning |
+| `suggested_entities` 元素 name 为空字符串 | 3 个实体 | 跳过该实体，触发 warning |
+
+所有修复均通过 `warnings.warn()` 记录，批量运行后可统计警告数量评估 VLM 输出质量。
+
+**单图推理端点**（供 UI 调用）:
+
+`src/ui/app.py` 中的 `image_to_scene()` 函数封装了预处理→检测→组装的完整链路。Demo 模式下无 VLM JSONL 可供查询，YOLO 检测到的所有实体直接作为 entities 输出（source="yolo"），global_vibe 使用中性默认值。前端 UI 可用 Canvas 像素分析结果覆盖 global_vibe。
+
 **命令行入口**:
 
 ```bash
@@ -282,10 +299,14 @@ python scripts/visualize_stage2.py
 
 # 完整融合管线 (需要 VLM JSONL + 图片目录)
 python -m src.vision.vlm_yolo_fusion \
-    --image_dir ./data/Train \
-    --vlm_success ./outputs/global_vibe_results.jsonl \
-    --vlm_failed ./outputs/global_vibe_failed.jsonl \
+    --image_dir ./data \
+    --vlm_success ./global_vibe_results.jsonl \
+    --vlm_failed ./global_vibe_failed.jsonl \
     --output ./final_structured_results.jsonl
+
+# 启动后端推理服务 (供 UI 调用)
+python src/ui/app.py --port 5000
+# 浏览器打开 http://127.0.0.1:5000 即可使用 UI
 ```
 
 ## 关键纪律

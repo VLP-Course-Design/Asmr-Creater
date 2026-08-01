@@ -74,7 +74,7 @@ python scripts/visualize_stage2.py
 
 ### `test_vision.py` — 完整功能测试套件
 
-**用途**: 对第二人全部代码进行 7 项自动化测试，覆盖所有核心功能和边界情况。
+**用途**: 对第二人全部代码进行 8 项自动化测试，覆盖所有核心功能和边界情况。
 
 **运行**:
 ```bash
@@ -92,6 +92,7 @@ python scripts/test_vision.py
 | 5 | process_batch | 成功条目融合、失败条目保留 error 字段、路径匹配 |
 | 6 | Scene Contract Schema 校验 | 输出通过 `contracts/scene_contract.schema.json` 的 JSON Schema 校验 |
 | 7 | 坐标映射 | `_compute_horizontal` 阈值 (±0.33/0.67)、`_compute_distance` 阈值 (8%/25%) |
+| 8 | VLM 格式归一化 | 裸字符串→dict 包装、嵌套列表→合并、非标准类型→跳过、warnings 信号验证 |
 
 **适用场景**: 修改代码后回归测试、CI/提交前检查、验证功能完整性。
 

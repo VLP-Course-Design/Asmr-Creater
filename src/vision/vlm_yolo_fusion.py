@@ -170,6 +170,37 @@ def merge_structured_payload(
     vlm_image_name = vlm_data.get("image", "")
     global_vibe = vlm_data.get("global_vibe", {})
 
+    # ── global_vibe 空字段兜底 + 额外字段过滤 ──
+    # Qwen2.5VL 偶发输出空字符串 scene_type 或额外字段（如 background_color），
+    # Schema 有 additionalProperties:false 约束，需在此处统一清理。
+    _VIBE_DEFAULTS = {
+        "scene_type": "unknown",
+        "mood": "calm",
+        "brightness": 0.5,
+        "warmth": "neutral",
+        "base_noise": "pink",
+        "time_of_day": "afternoon",
+    }
+    _ALLOWED_VIBE_KEYS = set(_VIBE_DEFAULTS.keys())
+
+    # 过滤掉 schema 不认识的额外字段
+    extra_keys = [k for k in global_vibe if k not in _ALLOWED_VIBE_KEYS]
+    for k in extra_keys:
+        warnings.warn(
+            f"global_vibe 包含未知字段 '{k}'，已移除。图片: {vlm_image_name}"
+        )
+        del global_vibe[k]
+
+    # 空字段填默认值
+    for _field, _default in _VIBE_DEFAULTS.items():
+        val = global_vibe.get(_field)
+        if val is None or (isinstance(val, str) and val.strip() == ""):
+            global_vibe[_field] = _default
+            warnings.warn(
+                f"global_vibe.{_field} 为空，已使用默认值 '{_default}'。"
+                f"图片: {vlm_image_name}"
+            )
+
     # 3. 提取 YOLO 检测列表与图像元信息
     yolo_detections = []
     image_width = 640
@@ -212,6 +243,14 @@ def merge_structured_payload(
         name = vlm_entity.get("name", "")
         state = vlm_entity.get("state", "")
 
+        # 过滤空 name（VLM 偶发输出空字符串实体名）
+        if not name or not name.strip():
+            warnings.warn(
+                f"suggested_entities 中出现空 name 实体，已跳过。"
+                f"图片: {vlm_image_name}"
+            )
+            continue
+
         match_idx, matched_det = _match_entity_to_yolo(name, yolo_detections)
 
         if matched_det is not None and match_idx not in matched_yolo_indices:
@@ -221,14 +260,16 @@ def merge_structured_payload(
             entities.append(entity_dict)
         else:
             # VLM 提及但 YOLO 不匹配 → 开放词汇预留
-            entities.append({
+            entity_dict = {
                 "name": name,
-                "state": state if state else None,
                 "x": 0.5,
                 "depth": "mid",
                 "conf": 0.5,
                 "source": "vlm"
-            })
+            }
+            if state:
+                entity_dict["state"] = state
+            entities.append(entity_dict)
 
     # 5. 构建 image 溯源信息
     image_id = os.path.splitext(vlm_image_name)[0] if vlm_image_name else ""
@@ -264,7 +305,8 @@ def process_batch(
     Returns:
         符合 Scene Contract 的最终输出列表
     """
-    # 构建 YOLO 结果索引（按 basename 和完整路径双键映射）
+    # 构建 YOLO 结果索引（按 basename 和规范化路径双键映射）
+    # 使用 os.path.normpath 统一 Windows/Linux 路径分隔符
     yolo_map = {}
     for yolo_res in yolo_results:
         img_path = yolo_res.get("image_path", "")
@@ -272,16 +314,16 @@ def process_batch(
         if base_name:
             yolo_map[base_name] = yolo_res
         if img_path:
-            yolo_map[img_path] = yolo_res
+            yolo_map[os.path.normpath(img_path)] = yolo_res
 
     final_outputs = []
 
     # 1. 处理 VLM 成功列表
     for vlm_entry in vlm_success_list:
         vlm_image = vlm_entry.get("image", "")
-        vlm_path = vlm_entry.get("path", "")
+        vlm_path = os.path.normpath(vlm_entry.get("path", ""))
 
-        # 多策略匹配：文件名 → 路径 basename → 完整路径
+        # 多策略匹配：文件名 → 路径 basename → 规范化完整路径
         matched_yolo = None
         if vlm_image and vlm_image in yolo_map:
             matched_yolo = yolo_map[vlm_image]
