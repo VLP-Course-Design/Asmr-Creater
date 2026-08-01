@@ -13,19 +13,24 @@
 ## 集成方式
 
 ```python
-from src.vision.pipeline import image_to_scene   # 视觉线产出(待建)
+# 批量模式: 视觉管线全量运行 → final_structured_results.jsonl
+# python -m src.vision.vlm_yolo_fusion --image_dir ./data ...
+
+# 单图模式: 后端推理服务供 UI 调用
+from src.ui.app import image_to_scene
 from src.common import validate_scene
 
-scene = image_to_scene(image_path)
+scene = image_to_scene(image_bytes)
 validate_scene(scene)          # 合流处再校验一次,双保险
-# 交给音频层渲染 → wav → 前端播放
+# 交给前端 Web Audio 渲染
 ```
 
 ## 已有
 
 | 文件            | 说明                                                                                    |
 | --------------- | --------------------------------------------------------------------------------------- |
-| `web/index.html`| 3D Elements 风格(浅色系)的**面向 Demo 用户的工具页**,自包含单文件。**功能已跑通,无需后端即可完整体验**,详见下方。 |
+| `app.py`        | **后端推理服务**。提供 `/infer` 端点(接收图片→返回 Scene Contract JSON)与 `/` 页面服务。零额外依赖(标准库 HTTP 服务)。启动: `python src/ui/app.py --port 5000` |
+| `web/index.html`| 沉浸式声景工作台单文件。**功能已跑通**。`CONFIG.BACKEND=true` 时上传图片走后端 `/infer`,后端返回 YOLO 检测结果(entities + bbox)并渲染。详见下方。 |
 | `web/samples/`  | 4 张样例图放置目录,缺图自动回退占位框。需要什么图见 `web/samples/README.md`。 |
 
 ### 网页端已实现的功能
@@ -50,11 +55,39 @@ const CONFIG = { BACKEND:true, ENDPOINT:"/infer" };   // 页面脚本顶部
 > **注意**:用 `file://` 直接打开时,部分浏览器禁止读取本地图片像素,上传分析会提示改用
 > `python -m http.server 8000` 访问。样例场景与播放功能不受影响。
 
-## 待建
+## 后端服务 (`app.py`) 架构
 
-| 文件     | 说明                                            |
-| -------- | ----------------------------------------------- |
-| `app.py` | Gradio 应用入口。建议先跑通「选样例图→出声」链路 |
+```
+浏览器上传图片 ──POST /infer──▶  app.py (HTTP 服务)
+                                    │
+                                    ├─ load_and_preprocess_image()  # 预处理
+                                    ├─ YoloDetector.detect()        # YOLO 推理
+                                    └─ image_to_scene()             # 组装 JSON
+                                       │
+                                       ▼
+                                   Scene Contract JSON
+                                       │
+                                       ▼
+                              前端 Web Audio 渲染声景
+```
+
+**启动**:
+```bash
+python src/ui/app.py --port 5000
+# 浏览器打开 http://127.0.0.1:5000
+# 上传一张图片,YOLO 自动检测物体,Web Audio 实时合成声景
+```
+
+**API 契约**:
+- `POST /infer`: multipart/form-data, `file` 字段带图片
+- 返回: 符合 `contracts/scene_contract.schema.json` 的 JSON
+- `GET /`: 返回 UI 页面 (`web/index.html`)
+
+**设计要点**:
+- YOLO 模型在启动时加载一次,所有请求复用(避免每次推理重新加载)
+- 单图 demo 模式下 global_vibe 使用中性默认值,前端 Canvas 分析可覆盖
+- 零额外依赖: HTTP 服务基于标准库 `http.server`,图片解析自实现
+- 上传图片写入临时文件,推理完成后自动清理
 
 ## 工程提醒
 
