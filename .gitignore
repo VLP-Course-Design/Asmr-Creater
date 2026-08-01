@@ -1,5 +1,7 @@
 # 数据集(体积过大,不纳入版本控制)
 img_dataset/
+data/
+*.jsonl
 
 # Python
 __pycache__/
@@ -31,6 +33,7 @@ sounds/**/*.aac
 Thumbs.db
 .idea/
 .vscode/
+.claude/
 *.swp
 
 # 输出产物
