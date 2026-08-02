@@ -11,6 +11,7 @@ import ast
 import base64
 import json
 import logging
+import os
 import re
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -21,7 +22,7 @@ from openai import OpenAI
 logger = logging.getLogger(__name__)
 
 OLLAMA_BASE_URL = "http://localhost:11434/v1"
-OLLAMA_MODEL = "minicpm-v:8b"
+OLLAMA_MODEL = os.environ.get("VLM_MODEL", "minicpm-v:8b")
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CONFIG_PATH = REPO_ROOT / "configs" / "prompts.yaml"
@@ -73,7 +74,7 @@ _TOD_FALLBACK = {
     "黎明": "dawn", "早晨": "morning", "上午": "morning",
     "正午": "noon", "中午": "noon", "下午": "afternoon",
     "傍晚": "dusk", "黄昏": "dusk", "夜晚": "night", "夜间": "night", "晚上": "night",
-    "not determinable": "afternoon", "unclear": "afternoon",
+    "not determinable": "afternoon", "unclear": "afternoon", "unspecified": "afternoon",
 }
 
 
@@ -94,7 +95,11 @@ def _fuzzy_match(value, valid_set: set, fallback: dict, field_name: str) -> str:
         resolved = fallback[value]
         logger.warning("%s: '%s' -> '%s'", field_name, value, resolved)
         return resolved
-    raise ValueError(f"{field_name} '{value}' not in {sorted(valid_set)}")
+    # Final safety net: default to safe value instead of failing
+    default_map = {"mood": "calm", "warmth": "neutral", "base_noise": "pink", "time_of_day": "afternoon"}
+    safe = default_map.get(field_name, list(valid_set)[0])
+    logger.warning("%s: '%s' not recognized, defaulting to '%s'", field_name, value, safe)
+    return safe
 
 
 def _load_prompts() -> Dict[str, Any]:
@@ -104,12 +109,20 @@ def _load_prompts() -> Dict[str, Any]:
         return yaml.safe_load(f)
 
 
-def _encode_image(image_path: Path) -> str:
-    img_bytes = image_path.read_bytes()
-    img_b64 = base64.b64encode(img_bytes).decode("utf-8")
-    ext = image_path.suffix.lower().lstrip(".")
-    mime = f"image/{ext}" if ext in ("jpg", "jpeg", "png", "webp") else "image/jpeg"
-    return f"data:{mime};base64,{img_b64}"
+def _encode_image(image_path: Path, max_size: int = 768) -> str:
+    from PIL import Image
+    img = Image.open(image_path).convert("RGB")
+    w, h = img.size
+    if max(w, h) > max_size:
+        scale = max_size / max(w, h)
+        new_w, new_h = int(w * scale), int(h * scale)
+        img = img.resize((new_w, new_h), Image.LANCZOS)
+        logger.debug("Resized %s: %dx%d -> %dx%d", image_path.name, w, h, new_w, new_h)
+    from io import BytesIO
+    buf = BytesIO()
+    img.save(buf, format="JPEG", quality=75)
+    img_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+    return f"data:image/jpeg;base64,{img_b64}"
 
 
 def _call_vlm(image_path: Path, client: OpenAI, user_prompt: str | None = None) -> str:
@@ -169,6 +182,8 @@ def _parse_and_validate(raw_json: str) -> Dict[str, Any]:
     data = _try_parse(raw_json)
 
     required = ["scene_type", "mood", "brightness", "warmth", "base_noise", "time_of_day"]
+    if "suggested_entities" in data and isinstance(data["suggested_entities"], list):
+        data["suggested_entities"] = data["suggested_entities"]
     missing = [f for f in required if f not in data]
     if missing:
         data["_partial"] = True

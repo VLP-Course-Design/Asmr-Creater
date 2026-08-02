@@ -16,3 +16,5 @@ soundfile>=0.12        # 渲染 wav 供网页播放(见 audio/README 工程提�
 
 # ── UI ───────────────────────────────────────────────
 gradio>=4.0            # 极简 Web 界面
+
+flask>=3.0              # /infer 后端接口 (src/ui/app.py)

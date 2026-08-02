@@ -36,3 +36,5 @@ Thumbs.db
 # 输出产物
 outputs/
 *.log
+
+AGENTS.md
