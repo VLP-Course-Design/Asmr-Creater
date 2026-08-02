@@ -184,9 +184,6 @@ if __name__ == "__main__":
     parser.add_argument("--host", type=str, default="0.0.0.0", help="监听地址 (默认 0.0.0.0)")
     args = parser.parse_args()
 
-    # 预热 YOLO 模型（可选，首次请求时懒加载也可）
-    # _get_yolo()  # 取消注释可启动时立即加载
-
     print(f"ASMR Creater backend | VLM: {os.environ.get('VLM_MODEL', '?')}")
     print(f"  http://{args.host}:{args.port}")
     print(f"  /      → UI 页面")

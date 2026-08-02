@@ -12,9 +12,9 @@ venv/
 env/
 .ipynb_checkpoints/
 
-# 模型权重(通常较大,按需取消注释)
-# *.pt
-# *.onnx
+# 模型权重(体积大,不纳入版本控制)
+*.pt
+*.onnx
 
 # 音频素材本体(体积大,不纳入版本控制);
 # sounds/ 的目录结构、trigger_map.json、metadata.csv、README 仍纳入版本控制

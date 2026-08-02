@@ -19,11 +19,10 @@ from pathlib import Path
 
 # 确保仓库根目录在 sys.path 中
 REPO_ROOT = Path(__file__).resolve().parents[1]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
+sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from src.vision.preprocess import get_image_files, batch_load_images
-from src.vision.yolo import YoloDetector
+from vision.preprocess import get_image_files, batch_load_images
+from vision.yolo import YoloDetector
 
 # ════════════════════ 配置区域 ════════════════════
 IMAGE_DIR = "./data/Val"              # 原始图片所在文件夹

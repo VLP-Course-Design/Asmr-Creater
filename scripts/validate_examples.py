@@ -19,9 +19,9 @@ except (AttributeError, ValueError):  # 老版本 Python 或非常规流
 
 # 让脚本能直接 import src 包(无需安装)
 REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT))
+sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from src.common import SchemaValidationError, list_examples, load_scene  # noqa: E402
+from common import SchemaValidationError, list_examples, load_scene  # noqa: E402
 
 
 def main() -> int:

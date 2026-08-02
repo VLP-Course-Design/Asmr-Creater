@@ -31,11 +31,10 @@ except ImportError:
     import sys
     from pathlib import Path as _Path
     _REPO_ROOT = _Path(__file__).resolve().parents[2]
-    if str(_REPO_ROOT) not in sys.path:
-        sys.path.insert(0, str(_REPO_ROOT))
-    from src.vision.base import BaseDetector
-    from src.vision.yolo import YoloDetector
-    from src.vision.preprocess import get_image_files, batch_load_images
+    sys.path.insert(0, str(_REPO_ROOT / "src"))
+    from vision.base import BaseDetector
+    from vision.yolo import YoloDetector
+    from vision.preprocess import get_image_files, batch_load_images
 
 
 

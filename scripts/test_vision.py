@@ -16,7 +16,7 @@ except (AttributeError, ValueError):
     pass
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT))
+sys.path.insert(0, str(REPO_ROOT / "src"))
 
 import numpy as np
 import cv2
@@ -28,7 +28,7 @@ def test_1_preprocessing():
     print("Test 1: Preprocessing pipeline")
     print("=" * 50)
 
-    from src.vision.preprocess import load_and_preprocess_image
+    from vision.preprocess import load_and_preprocess_image
 
     test_img = np.random.randint(0, 255, (300, 400, 3), dtype=np.uint8)
     test_path = str(REPO_ROOT / "_test_tmp.jpg")
@@ -57,7 +57,7 @@ def test_2_load_jsonl():
     print("Test 2: load_jsonl field validation")
     print("=" * 50)
 
-    from src.vision.vlm_yolo_fusion import load_jsonl
+    from vision.vlm_yolo_fusion import load_jsonl
 
     tmp_dir = tempfile.mkdtemp()
     jp = os.path.join(tmp_dir, 'test.jsonl')
@@ -92,8 +92,8 @@ def test_3_entity_matching():
     print("Test 3: Entity matching strategies")
     print("=" * 50)
 
-    from src.vision.vlm_yolo_fusion import _match_entity_to_yolo
-    from src.vision.detector import Detection
+    from vision.vlm_yolo_fusion import _match_entity_to_yolo
+    from vision.detector import Detection
 
     dets = [
         Detection(name='cat', x=0.3, depth='near', conf=0.9, bbox=[0.1, 0.1, 0.3, 0.5]),
@@ -122,8 +122,8 @@ def test_4_merge_payload():
     print("Test 4: merge_structured_payload output")
     print("=" * 50)
 
-    from src.vision.vlm_yolo_fusion import merge_structured_payload
-    from src.vision.detector import Detection
+    from vision.vlm_yolo_fusion import merge_structured_payload
+    from vision.detector import Detection
 
     yolo = {
         'image_path': 'd/test.jpg', 'original_width': 800, 'original_height': 600,
@@ -172,8 +172,8 @@ def test_5_process_batch():
     print("Test 5: process_batch")
     print("=" * 50)
 
-    from src.vision.vlm_yolo_fusion import process_batch
-    from src.vision.detector import Detection
+    from vision.vlm_yolo_fusion import process_batch
+    from vision.detector import Detection
 
     yolo_results = [{
         'image_path': 'd/test.jpg', 'original_width': 800, 'original_height': 600,
@@ -205,9 +205,9 @@ def test_6_schema_validation():
     print("Test 6: Scene Contract schema validation")
     print("=" * 50)
 
-    from src.vision.vlm_yolo_fusion import merge_structured_payload
-    from src.vision.detector import Detection
-    from src.common.contract import validate_scene
+    from vision.vlm_yolo_fusion import merge_structured_payload
+    from vision.detector import Detection
+    from common.contract import validate_scene
 
     yolo = {
         'image_path': 'd/bedroom.jpg', 'original_width': 1024, 'original_height': 768,
@@ -239,7 +239,7 @@ def test_7_coordinate_mapping():
     print("Test 7: Coordinate mapping thresholds")
     print("=" * 50)
 
-    from src.vision.yolo import YoloDetector
+    from vision.yolo import YoloDetector
 
     assert YoloDetector._compute_horizontal(200, 800) == 'left'
     assert YoloDetector._compute_horizontal(400, 800) == 'center'
@@ -262,7 +262,7 @@ def test_8_vlm_format_normalization():
     print("Test 8: VLM format normalization")
     print("=" * 50)
 
-    from src.vision.vlm_yolo_fusion import merge_structured_payload
+    from vision.vlm_yolo_fusion import merge_structured_payload
 
     yolo = {
         'image_path': 'd/test.jpg', 'original_width': 800, 'original_height': 600,
