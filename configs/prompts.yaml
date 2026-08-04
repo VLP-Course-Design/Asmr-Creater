@@ -1,6 +1,6 @@
 # Prompt 模板 —— 视觉层 VLM 调用 (v2)
 # 角色 A（视觉-氛围）维护
-# v1 → v2: 新增 suggested_entities，让 VLM 列出有发声潜力的物体
+# v2 → v3: 去掉模板示例值改为空字符串，AB测试验证空字符串分布更合理
 
 global_vibe:
   system: |
@@ -11,14 +11,16 @@ global_vibe:
     分析这张图片，输出以下 JSON。只输出一行 JSON，不要解释、不要 markdown、所有值用英文。
 
     {
-      "scene_type": "场景类型（英文小写，如 bedroom/cafe/forest/kitchen/street/beach/office/mountain）",
-      "mood": "calm",
-      "brightness": 0.5,
-      "warmth": "neutral",
-      "base_noise": "pink",
-      "time_of_day": "afternoon",
+      "scene_type": "场景类型，英文小写下划线，如 bedroom/cafe/forest/street/beach/office/mountain",
+      "mood": "",
+      "brightness": 0.0,
+      "warmth": "",
+      "base_noise": "",
+      "time_of_day": "",
       "suggested_entities": []
     }
+
+    以上模板中所有空字符串 "" 必须根据图片内容填入真实值。禁止输出空字符串。
 
     字段说明：
 
