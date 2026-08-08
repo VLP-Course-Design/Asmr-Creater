@@ -58,8 +58,10 @@
   .hero{position:relative;margin-top:20px;min-height:clamp(460px,58vh,580px);
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     overflow:hidden;isolation:isolate}
+  /* 背景严格 cover + center;JS 的 layoutBoxes 依赖同样的 cover 数学来对齐检测框,
+     所以这里不能再叠加 transform:scale,否则框会整体偏移。 */
   .hero-bg{position:absolute;inset:0;z-index:-3;background-size:cover;background-position:center;
-    transform:scale(1.04);transition:opacity .8s,background-image .4s;opacity:0}
+    transition:opacity .8s;opacity:0}
   .hero-bg.on{opacity:1}
   /* 无图时的兜底纹理 + 占位说明 */
   .hero-fallback{position:absolute;inset:0;z-index:-3;
@@ -635,7 +637,8 @@ function buildProse(c){
    6. 界面渲染
    ════════════════════════════════════════════════════════════════ */
 const $=s=>document.querySelector(s);
-let current={contract:null, boxes:[], objUrl:null, key:"bedroom"};
+// boxNorm: 归一化(0~1)检测框列表;imgW/imgH: 当前图原始像素尺寸,供 cover 映射用
+let current={contract:null, boxes:[], boxNorm:[], imgW:0, imgH:0, objUrl:null, key:"bedroom"};
 const trackColor=(i,n)=>`hsl(${Math.round(14+(i/Math.max(1,n))*300)} 72% 60%)`;
 
 /* 场景文字链接组(myNoise Presets 风格) */
@@ -658,10 +661,10 @@ async function selectSample(key){
   const s=SCENES[key]; current.key=key;
   linksEl.querySelectorAll("a").forEach(a=>a.classList.toggle("act",a.dataset.k===key));
   if(current.objUrl){ URL.revokeObjectURL(current.objUrl); current.objUrl=null; }
-  let src=null;
-  try{ await loadImage(s.img); src=s.img; }catch(_){}
+  let src=null, dims=null;
+  try{ const im=await loadImage(s.img); src=s.img; dims={w:im.naturalWidth,h:im.naturalHeight}; }catch(_){}
   $("#phNote").textContent = src ? "" : s.ph;
-  applyScene(s.contract, s.boxes, src, s.label);
+  applyScene(s.contract, s.boxes, src, s.label, dims);
   banner("","");
 }
 function randomScene(){
@@ -669,11 +672,38 @@ function randomScene(){
   selectSample(keys[Math.floor(Math.random()*keys.length)]);
 }
 
+/* 按「object-fit: cover」把归一化框映射到裁切后图像的真实像素位置。
+   cover = 等比放大到刚好盖满容器,溢出部分居中裁掉。
+     scale = max(容器宽/图宽, 容器高/图高)
+     显示尺寸 = 图尺寸 × scale;左上偏移 = (容器 - 显示)/2  (≤0)
+   窗口 resize 时需重算,因为容器尺寸和裁切量都会变。 */
+function layoutBoxes(){
+  const wrap=$("#boxes");
+  const data=current.boxNorm||[];
+  const els=wrap.querySelectorAll(".det-box");
+  if(!current.imgW || !current.imgH || !els.length) return;
+  const CW=wrap.clientWidth, CH=wrap.clientHeight;
+  const scale=Math.max(CW/current.imgW, CH/current.imgH);
+  const DW=current.imgW*scale, DH=current.imgH*scale;
+  const offX=(CW-DW)/2, offY=(CH-DH)/2;
+  els.forEach((el,i)=>{
+    const b=data[i]; if(!b) return;
+    el.style.left  =(offX + b.x*DW)+"px";
+    el.style.top   =(offY + b.y*DH)+"px";
+    el.style.width =(b.w*DW)+"px";
+    el.style.height=(b.h*DH)+"px";
+  });
+}
+window.addEventListener("resize", layoutBoxes);
+
 /* 统一渲染一份 Scene Contract */
-function applyScene(contract, boxes, imgSrc, title){
+function applyScene(contract, boxes, imgSrc, title, imgDims){
   const errs=validateScene(contract);
   if(errs.length){ banner("err","契约校验未通过:"+errs.slice(0,3).join(";")); return; }
   current.contract=contract; current.boxes=boxes||[];
+  // 原始图尺寸:优先实测,回落契约里的 image.width/height
+  current.imgW = (imgDims&&imgDims.w) || (contract.image&&contract.image.width) || 0;
+  current.imgH = (imgDims&&imgDims.h) || (contract.image&&contract.image.height) || 0;
 
   // Hero 背景
   const bg=$("#heroBg");
@@ -686,22 +716,23 @@ function applyScene(contract, boxes, imgSrc, title){
     `${CN.tod[g.time_of_day]||g.time_of_day} · ${CN.mood[g.mood]||g.mood} · ${CN.warmth[g.warmth]||g.warmth}`
     +` &nbsp;|&nbsp; 亮度 <b>${g.brightness}</b> → <b>${CN.noise[g.base_noise]||g.base_noise}</b>`;
 
-  // 检测框(优先后端 bbox)
+  // 检测框:统一存成 0~1 归一化,交给 layoutBoxes 按 cover 映射到裁切后的真实位置。
+  // 优先后端返回的 bbox(已归一化);否则用样例手写框(百分比 → 归一化)。
+  const fromBbox=contract.entities.filter(e=>Array.isArray(e.bbox)&&e.bbox.length===4)
+    .map(e=>({x:e.bbox[0], y:e.bbox[1], w:e.bbox[2]-e.bbox[0], h:e.bbox[3]-e.bbox[1],
+              name:`${e.name} ${e.conf.toFixed(2)}`}));
+  const fromSample=(boxes||[]).map(b=>({x:b.x/100,y:b.y/100,w:b.w/100,h:b.h/100,name:b.name}));
+  current.boxNorm = imgSrc ? (fromBbox.length?fromBbox:fromSample) : [];
+
   const boxWrap=$("#boxes");
   boxWrap.innerHTML="";
-  const fromBbox=contract.entities.filter(e=>Array.isArray(e.bbox)&&e.bbox.length===4)
-    .map(e=>({x:e.bbox[0]*100,y:e.bbox[1]*100,
-              w:(e.bbox[2]-e.bbox[0])*100,h:(e.bbox[3]-e.bbox[1])*100,
-              name:`${e.name} ${e.conf.toFixed(2)}`}));
-  if(imgSrc){
-    (fromBbox.length?fromBbox:current.boxes).forEach(b=>{
-      const d=document.createElement("div");
-      d.className="det-box";
-      d.style.cssText=`left:${b.x}%;top:${b.y}%;width:${b.w}%;height:${b.h}%`;
-      d.innerHTML=`<span>${b.name}</span>`;
-      boxWrap.appendChild(d);
-    });
-  }
+  current.boxNorm.forEach(b=>{
+    const d=document.createElement("div");
+    d.className="det-box";
+    d.innerHTML=`<span>${b.name}</span>`;
+    boxWrap.appendChild(d);
+  });
+  layoutBoxes();   // 定位到当前容器尺寸
 
   // 散文说明 + 标签
   $("#prose").innerHTML=buildProse(contract);
@@ -859,7 +890,10 @@ async function handleFile(file){
   try{
     const contract=await inferScene(file,url);
     $("#phNote").textContent="";
-    applyScene(contract, [], url, file.name.replace(/\.[^.]+$/,""));
+    // 取原始尺寸,供检测框 cover 映射(后端返回的 bbox 也据此定位)
+    let dims=null;
+    try{ const im=await loadImage(url); dims={w:im.naturalWidth,h:im.naturalHeight}; }catch(_){}
+    applyScene(contract, [], url, file.name.replace(/\.[^.]+$/,""), dims);
     banner(CONFIG.BACKEND?"info":"warn",
       CONFIG.BACKEND
         ? "已由后端 /infer 推理完成。"
