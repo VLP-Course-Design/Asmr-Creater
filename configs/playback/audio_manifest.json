@@ -1,0 +1,78 @@
+{
+  "library_version": "0.1-placeholder",
+  "description": "演示用占位Manifest。路径对应尚未准备的音频目录；转换器生成计划但不读取音频字节。",
+  "assets": [
+    {
+      "asset_id": "amb_ocean_coast_bed_placeholder_01",
+      "sound_id": "ocean_coast_bed",
+      "role": "ambient",
+      "path": "../audio/ambient/ocean_coast_bed_placeholder_01.wav",
+      "placeholder": true,
+      "loop": {"enabled": true, "seamless_verified": true, "crossfade_ms": 2500}
+    },
+    {
+      "asset_id": "amb_study_office_bed_placeholder_01",
+      "sound_id": "study_office_bed",
+      "role": "ambient",
+      "path": "../audio/ambient/study_office_bed_placeholder_01.wav",
+      "placeholder": true,
+      "loop": {"enabled": true, "seamless_verified": true, "crossfade_ms": 2500}
+    },
+    {
+      "asset_id": "amb_indoor_roomtone_placeholder_01",
+      "sound_id": "indoor_roomtone",
+      "role": "ambient",
+      "path": "../audio/ambient/indoor_roomtone_placeholder_01.wav",
+      "placeholder": true,
+      "loop": {"enabled": true, "seamless_verified": true, "crossfade_ms": 2500}
+    },
+    {
+      "asset_id": "trg_bird_chirp_placeholder_01",
+      "sound_id": "bird_chirp",
+      "role": "trigger",
+      "path": "../audio/triggers/bird_chirp_placeholder_01.wav",
+      "placeholder": true,
+      "loop": {"enabled": false, "seamless_verified": false, "crossfade_ms": 0}
+    },
+    {
+      "asset_id": "trg_bird_chirp_placeholder_02",
+      "sound_id": "bird_chirp",
+      "role": "trigger",
+      "path": "../audio/triggers/bird_chirp_placeholder_02.wav",
+      "placeholder": true,
+      "loop": {"enabled": false, "seamless_verified": false, "crossfade_ms": 0}
+    },
+    {
+      "asset_id": "trg_bird_chirp_placeholder_03",
+      "sound_id": "bird_chirp",
+      "role": "trigger",
+      "path": "../audio/triggers/bird_chirp_placeholder_03.wav",
+      "placeholder": true,
+      "loop": {"enabled": false, "seamless_verified": false, "crossfade_ms": 0}
+    },
+    {
+      "asset_id": "trg_keyboard_typing_placeholder_01",
+      "sound_id": "keyboard_typing",
+      "role": "texture",
+      "path": "../audio/triggers/keyboard_typing_placeholder_01.wav",
+      "placeholder": true,
+      "loop": {"enabled": false, "seamless_verified": false, "crossfade_ms": 0}
+    },
+    {
+      "asset_id": "trg_keyboard_typing_placeholder_02",
+      "sound_id": "keyboard_typing",
+      "role": "texture",
+      "path": "../audio/triggers/keyboard_typing_placeholder_02.wav",
+      "placeholder": true,
+      "loop": {"enabled": false, "seamless_verified": false, "crossfade_ms": 0}
+    },
+    {
+      "asset_id": "trg_keyboard_typing_placeholder_03",
+      "sound_id": "keyboard_typing",
+      "role": "texture",
+      "path": "../audio/triggers/keyboard_typing_placeholder_03.wav",
+      "placeholder": true,
+      "loop": {"enabled": false, "seamless_verified": false, "crossfade_ms": 0}
+    }
+  ]
+}

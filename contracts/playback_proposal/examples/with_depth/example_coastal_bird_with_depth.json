@@ -1,0 +1,42 @@
+{
+  "schema_version": "2.3",
+  "id": "demo_coastal_bird_with_depth",
+  "image": {
+    "path": "images/demo_coastal_bird.jpg",
+    "width": 1280,
+    "height": 800
+  },
+  "global_vibe": {
+    "scene_type": "beach",
+    "secondary_scene_types": ["ocean", "cloudscape"],
+    "scene_group": "water_coastal",
+    "mood": "calm",
+    "warmth": "warm",
+    "time_of_day": "dusk",
+    "brightness": 0.62
+  },
+  "trigger_anchors": [
+    {
+      "anchor_id": "visible_bird",
+      "bbox_norm": {
+        "format": "xyxy",
+        "x_min": 0.82,
+        "y_min": 0.21,
+        "x_max": 0.87,
+        "y_max": 0.25
+      },
+      "confidence": 0.78,
+      "source": "yoloe",
+      "depth_hint": {
+        "type": "relative_monocular",
+        "value": 0.82,
+        "class": "far",
+        "uncertainty": 0.18,
+        "region_spread": 0.09,
+        "source": "depth_model_example_v1",
+        "normalization": "per_image_percentile_p02_p98",
+        "sample_region": "bbox_inner_20_percent"
+      }
+    }
+  ]
+}

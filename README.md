@@ -86,22 +86,29 @@
 .
 ├── docs/                     # 项目文档
 │   ├── MVP_guide.md          # MVP 实现指南(路线图、分工、模块拆解)
-│   ├── json_contract.md      # 🔒 视觉↔音频 契约说明(接口先行,已冻结)
+│   ├── json_contract.md      # 🔒 视觉↔音频 契约说明(v1.0,接口先行,已冻结)
+│   ├── playback/             # 音频决策层 v2.x 提案的格式说明与素材规范(见下方说明)
 │   └── 可能的项目方向.pdf
 ├── contracts/                # 视觉↔音频 中间数据契约(接口本身)
-│   ├── scene_contract.schema.json   # JSON Schema 正式定义(程序据此校验)
-│   └── examples/             # 手写样例数据(音频线现在就能开工)
+│   ├── scene_contract.schema.json   # 🔒 JSON Schema 正式定义(v1.0,程序据此校验)
+│   ├── examples/             # 手写样例数据(音频线现在就能开工)
+│   └── playback_proposal/    # 视觉记录 2.3 + 场景/锚点词表(提案阶段,未并入 v1.0)
 ├── src/                      # 源码,按层解耦
 │   ├── common/               #   契约加载与校验(两层共用)
 │   ├── vision/               #   图 → JSON(Pillow + VLM + YOLO)
 │   ├── audio/                #   JSON → 声音(pyo DSP + 触发 + 声像 + 混流)
+│   │   └── playback_converter.py  # 视觉记录 2.3 → 播放计划 JSON(v2.x 提案转换器)
 │   └── ui/                   #   集成 + Gradio Web 界面
 ├── sounds/                   # 素材库(见「素材库规范」)
 │   ├── ambient/  triggers/   #   底噪备用 / 离散音效
 │   ├── trigger_map.json      #   标签 → 素材目录 映射表
 │   └── metadata.csv          #   素材元数据(版权/来源)
+├── configs/                  # 各层运行配置
+│   └── playback/             #   播放计划决策阈值、场景音配置、素材 Manifest
 ├── scripts/
-│   └── validate_examples.py  # 校验所有样例是否符合契约
+│   ├── validate_examples.py  # 校验所有样例是否符合契约
+│   ├── run_playback_demo.ps1 # 一键跑通播放计划转换器 demo
+│   └── test_playback_converter.py  # 转换器单元测试
 ├── img_dataset/              # 图像数据集(未纳入版本控制,见下方说明)
 │   └── Train/
 ├── requirements.txt
@@ -122,6 +129,21 @@ sounds/
 ```
 
 素材优先选用 CC0 / 免版税来源(Freesound、Pixabay、BBC Sound Effects 等),并用一张元数据表记录标签、时长、许可协议与来源 URL。
+
+## 播放计划子系统(音频决策层 v2.x 提案)
+
+音频组在现有 `entities[]`(v1.0 契约)基础上提出了一版更严格的**播放决策层**设计。相关文件已按项目既有分层拆分到 `docs/playback/`、`contracts/playback_proposal/`、`src/audio/playback_converter.py`、`configs/playback/` 与 `scripts/`,尚未接入 `src/audio` 现有 DSP 管线或真实视觉产出,可先并行评审、独立运行。
+
+核心变化:
+
+- **场景闭合词表**:[`scene_type_vocabulary.json`](contracts/playback_proposal/scene_type_vocabulary.json) 把 `global_vibe.scene_type` 从自由字符串收口为 20 个场景大组下的 424 个受控叶子值,禁止模型自创场景标签。
+- **视觉锚点词典替代开放实体**:[`视觉锚点词典与检测边界.md`](docs/playback/视觉锚点词典与检测边界.md) 定义 87 个具体、可检测的视觉证据(如 `visible_bird`、`hands_on_keyboard_typing`),而非宽泛物体类别;每个锚点通过 [`recommended_structured_record_example.json`](contracts/playback_proposal/recommended_structured_record_example.json) 中的 `anchor_sound_mapping_reference` 映射到 66 个受控 `sound_id`,不允许自由造词。
+- **两级播放计划输出**:转换器读取一条视觉记录(schema 2.3),始终产出确定性的[单声道回退计划](docs/playback/单声道回退播放计划格式说明.md)(`2.0-mono`);只有当所有入选锚点的相对深度质量都通过门控时,才额外产出[双耳 HRTF 空间计划](docs/playback/双耳空间播放计划格式说明.md)(`2.0-binaural`)。
+- **素材采集规范**:[`ASMR声音素材库准备与采集规范.md`](docs/playback/ASMR声音素材库准备与采集规范.md) 给出 20 类场景环境音 + 66 类锚点关联声音的采集/格式/响度/授权标准。注意其 66 个 `sound_id` 命名与现有 `sounds/trigger_map.json` 的 17 个标签尚未统一,接入真实素材前需三线对齐。
+
+[`src/audio/playback_converter.py`](src/audio/playback_converter.py) 是可独立运行的转换器,配套 [`scripts/test_playback_converter.py`](scripts/test_playback_converter.py) 与一键 demo 脚本 [`scripts/run_playback_demo.ps1`](scripts/run_playback_demo.ps1),用手写样例记录跑通"视觉记录 → 播放计划 JSON"全流程;当前只生成计划,不读取/合成真实音频字节。详见 [`docs/playback/playback_converter_usage.md`](docs/playback/playback_converter_usage.md)。
+
+[`visual_record.schema.json`](contracts/playback_proposal/visual_record.schema.json) 是从上述规范反推生成的正式 JSON Schema(draft-07),补上了 v2.3 提案原本缺失的机器可校验定义,供视觉线对齐产出格式;已用 `jsonschema` 库自校验通过(含负例测试),尚未接入 `scripts/validate_examples.py`。
 
 ## 开发路线图
 

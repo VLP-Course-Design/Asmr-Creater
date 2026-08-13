@@ -1,4 +1,20 @@
 file,label,category,duration_sec,loopable,default_volume,license,source_url,notes
-triggers/cat/cat_purr_1.wav,cat,trigger,4.2,false,0.8,CC0,https://freesound.org/s/EXAMPLE,示例行——请替换为真实素材
-triggers/bird/bird_chirp_1.wav,bird,trigger,3.0,false,0.7,CC0,https://pixabay.com/sound-effects/EXAMPLE,示例行
-ambient/rain/rain_loop_1.wav,rain,ambient,60.0,true,0.6,CC0,https://freesound.org/s/EXAMPLE,长循环底噪备用
+triggers/cat/cat_purr_01.wav,cat,trigger,20.671,false,0.8,CC0,https://freesound.org/people/Buskieboy/sounds/126151/,Purr2a.wav by Buskieboy
+triggers/bird/bird_chirp_01.wav,bird,trigger,3.486,false,0.7,CC0,https://freesound.org/people/Sadiquecat/sounds/802702/,250427-13h43 Bird flying by by Sadiquecat
+triggers/dog/dog_bark_01.wav,dog,trigger,2.76792,false,0.7,CC0,https://freesound.org/people/abhisheky948/sounds/625501/,Animal Dog Bark And Growl 01.wav by abhisheky948
+triggers/cup/cup_clink_01.wav,cup,trigger,0.702271,false,0.6,CC0,https://freesound.org/people/bowlingballout/sounds/568758/,Cup and Saucer 2.wav by bowlingballout
+triggers/book/book_page_turn_01.wav,book,trigger,19.2695,false,0.6,CC0,https://freesound.org/people/eZZin/sounds/641757/,Book page turning.wav by eZZin
+triggers/keyboard/keyboard_typing_01.wav,keyboard,trigger,4.77694,true,0.6,CC0,https://freesound.org/people/niamhd00145229/sounds/422712/,typing on keyboard.wav by niamhd00145229
+triggers/clock/clock_tick_01.wav,clock,trigger,9.09644,true,0.5,CC0,https://freesound.org/people/fauxpress/sounds/42139/,Old Scots Clock - Ticking.wav by fauxpress
+triggers/tv_static/tv_static_01.wav,tv,trigger,6.06683,true,0.5,CC0,https://freesound.org/people/AnusProductions/sounds/447405/,Static Tele or Radio by AnusProductions
+triggers/window/window_wind_01.wav,window,trigger,12.1788,true,0.7,CC0,https://freesound.org/people/kyles/sounds/407207/,Open-window room tone with distant wind and traffic by kyles
+triggers/water/water_stream_01.wav,stream,trigger,30.712,true,0.7,CC0,https://freesound.org/people/sound368/sounds/786172/,Water Stream 2 by sound368
+triggers/kettle/kettle_boiling_01.wav,kettle,trigger,10.664,true,0.7,CC0,https://freesound.org/people/FOSSarts/sounds/740167/,Water boiling inside electric kettle 2 by FOSSarts
+triggers/fire/fireplace_crackle_01.wav,fireplace,trigger,73.3556,true,0.7,CC0,https://freesound.org/people/nielstii/sounds/346321/,Crackling fireplace by nielstii
+triggers/chime/wind_chime_01.wav,wind_chime,trigger,4.04029,false,0.6,CC0,https://freesound.org/people/Anthousai/sounds/398496/,wind chimes - single 04.wav by Anthousai
+triggers/espresso/espresso_machine_01.wav,espresso_machine,trigger,37.8218,false,0.6,CC0,https://freesound.org/people/Mariayolanda511/sounds/850564/,Maquina de espresso en teatro by Mariayolanda511
+ambient/rain/rain_ambience_01.wav,rain,ambient,51.5273,true,0.6,CC0,https://freesound.org/people/dersinnsspace/sounds/435221/,Heavy rain clear recording by dersinnsspace
+ambient/forest/forest_ambience_01.wav,forest,ambient,40.0,true,0.6,CC0,https://freesound.org/people/BayTsai/sounds/860231/,Alishan early-morning forest birds and dawn ambience by BayTsai
+ambient/cafe/cafe_ambience_01.wav,cafe,ambient,43.008,true,0.6,CC0,https://freesound.org/people/AlexanderChe/sounds/363713/,Cafe ambience in Moscow by AlexanderChe
+ambient/ocean/ocean_waves_01.wav,ocean,ambient,29.6519,true,0.6,CC0,https://freesound.org/people/tomattka/sounds/400660/,The Black Sea waves rustle by tomattka
+ambient/city/city_ambience_01.wav,city,ambient,31.9644,true,0.6,CC0,https://freesound.org/people/Mariayolanda511/sounds/850571/,Transito de la CDMX by Mariayolanda511
