@@ -5,7 +5,7 @@
 
 ## 已就位（A 完整 + B 骨架）
 
-- `contracts/scene_type_vocabulary.json` —— 424 值 / 20 组（音频层权威拷贝）
+- `contracts/playback_proposal/scene_type_vocabulary.json` —— 424 值 / 20 组（音频层权威拷贝）
 - `contracts/anchor_dictionary.json` —— 87 锚点（从规范 md 提取：type / sound_id / strength / definition）
 - `src/vision/vibe_vlm.py` —— scene_type 归一化（none / other_* 兜底）+ scene_group 查表 + 87 锚点过滤
 - `configs/prompts.yaml` v7 —— scene_type 词表规则 + 锚点式 suggested_entities

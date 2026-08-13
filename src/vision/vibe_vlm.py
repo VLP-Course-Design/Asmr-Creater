@@ -4,7 +4,7 @@
 角色 A（视觉-氛围）维护此文件。
 v2: 新增 targeted retry —— 缺字段时换 prompt 专门追要。
 v6: scene_type 按分层词表取值；suggested_entities 只保留视觉锚点词典内的实体。
-v7: 对齐音频层权威规范——scene_type 走 contracts/scene_type_vocabulary.json(424 值)，none/other_* 兜底，
+v7: 对齐音频层权威规范——scene_type 走 contracts/playback_proposal/scene_type_vocabulary.json(424 值)，none/other_* 兜底，
     scene_group 查表生成；实体收敛到 contracts/anchor_dictionary.json(87 锚点)。
 """
 
@@ -29,7 +29,7 @@ OLLAMA_MODEL = os.environ.get("VLM_MODEL", "minicpm-v:8b")
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CONFIG_PATH = REPO_ROOT / "configs" / "prompts.yaml"
-SCENE_VOCAB_PATH = REPO_ROOT / "contracts" / "scene_type_vocabulary.json"
+SCENE_VOCAB_PATH = REPO_ROOT / "contracts" / "playback_proposal" / "scene_type_vocabulary.json"
 ANCHOR_DICT_PATH = REPO_ROOT / "contracts" / "anchor_dictionary.json"
 
 # mood 词表对齐 2.3：neutral/calm/cozy/cheerful/lively/majestic/mysterious/melancholic/tense/eerie（无 gloomy）
@@ -119,7 +119,7 @@ def _load_prompts() -> Dict[str, Any]:
 
 
 def _load_scene_vocab() -> Dict[str, List[str]]:
-    """读取场景受控词表 contracts/scene_type_vocabulary.json（音频层 v1.0）。
+    """读取场景受控词表 contracts/playback_proposal/scene_type_vocabulary.json（音频层 v1.0）。
 
     Returns:
         大类 -> 叶子场景值列表 的映射。
@@ -249,7 +249,7 @@ _LEGACY_ENTITY_TO_ANCHOR = {
 
 
 def normalize_scene_type(value) -> str:
-    """把 VLM 输出的 scene_type 归一化到受控词表 contracts/scene_type_vocabulary.json 内。
+    """把 VLM 输出的 scene_type 归一化到受控词表 contracts/playback_proposal/scene_type_vocabulary.json 内。
 
     规则: 列表取首项；小写、空格转下划线；词表内直接返回；
     无稳定环境的词(截图/人像/微距等) -> none；

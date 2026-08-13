@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """把旧 global_vibe_results.jsonl 对齐到音频层「视觉记录规范 2.3」。
 
-A(环境层): scene_type 归一化到 contracts/scene_type_vocabulary.json(424 值，none/other_* 兜底)，
+A(环境层): scene_type 归一化到 contracts/playback_proposal/scene_type_vocabulary.json(424 值，none/other_* 兜底)，
            scene_group 由词表查表生成；brightness 由程序从图片计算(规范要求，不用 VLM 估计)。
 B(实体层): suggested_entities 收敛到 contracts/anchor_dictionary.json 的 87 个锚点 id
            (旧自由词经保守映射，source=vlm_legacy，无 bbox——bbox/depth 需新检测管线产出)。
@@ -20,6 +20,7 @@ from collections import Counter
 from pathlib import Path
 
 from PIL import Image
+import jsonschema
 
 # 让 Python 能找到 src/
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -52,6 +53,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="旧 VLM 结果对齐到视觉记录规范 2.3")
     parser.add_argument("--input", default=str(REPO_ROOT / "outputs" / "global_vibe_results.jsonl"))
     parser.add_argument("--output", default=str(REPO_ROOT / "outputs" / "global_vibe_v23_aligned.jsonl"))
+    parser.add_argument("--strict", action="store_true",
+                        help="严格模式：丢弃无 bbox 的锚点，并对全部记录跑官方 2.3 schema 校验(保证 100% 通过)")
     args = parser.parse_args()
 
     in_path = Path(args.input)
@@ -100,6 +103,9 @@ def main() -> None:
 
             anchors = filter_anchor_entities(rec.get("suggested_entities", []))
             trigger_anchors = []
+            if args.strict:
+                # 严格模式：只保留带 bbox_norm 的锚点（回填锚点无 bbox，会被全部丢弃）
+                anchors = [a for a in anchors if a.get("bbox_norm") is not None]
             for a in anchors:
                 aid = a["name"]
                 anchor_counter[aid] += 1
@@ -145,6 +151,20 @@ def main() -> None:
     with out_path.open("w", encoding="utf-8") as f:
         for rec in records:
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+
+    if args.strict:
+        schema_path = REPO_ROOT / "contracts" / "playback_proposal" / "visual_record.schema.json"
+        schema = json.load(open(schema_path, encoding="utf-8"))
+        fail_list = []
+        for rec in records:
+            try:
+                jsonschema.validate(rec, schema)
+            except jsonschema.ValidationError as e:
+                fail_list.append((rec.get("id"), str(e).splitlines()[0][:80]))
+        if fail_list:
+            print(f"严格模式官方 2.3 schema 校验失败 {len(fail_list)} 条，例如: {fail_list[:3]}")
+            sys.exit(1)
+        print("严格模式官方 2.3 schema 校验：全部通过 ✅")
 
     print(f"总记录数: {n_total} | 图片缺失/读取失败: {n_img_missing}")
     print(f"scene_type 种类: {len(scene_counter)} | none 数量: {scene_counter.get('none', 0)} | other_* 合计: {sum(v for k, v in scene_counter.items() if k.startswith('other_'))}")

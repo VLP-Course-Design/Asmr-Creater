@@ -39,7 +39,7 @@ global_vibe:
     time_of_day: 严格从这 6 个英文词选一个:
       dawn=黎明 | morning=早晨 | noon=正午 | afternoon=下午 | dusk=黄昏 | night=夜晚
 
-    scene_type: 从受控词表(contracts/scene_type_vocabulary.json)中选最具体的「叶子场景」，英文小写 snake_case，只输出一个值。
+    scene_type: 从受控词表(contracts/playback_proposal/scene_type_vocabulary.json)中选最具体的「叶子场景」，英文小写 snake_case，只输出一个值。
       判断主体是「主导物理环境」，不是画面里最显眼的物体；不要把 mood/天气/时段塞进来(它们有单独字段)。
       叶子场景示例: street、office、cafe、coffee_shop、beach、forest、living_room、kitchen、temple、classroom、train_station、airport_terminal、museum、zoo、gym、supermarket、lake、park。
       禁止输出大组名（如 residential_indoor、food_hospitality、urban_outdoor、transport_outdoor、water_coastal、education_research 等），大组名只是归组用，不算场景。
