@@ -1,24 +1,34 @@
+"""
+test_playback_converter.py —— 音频决策层播放计划转换器测试
+
+覆盖: 带深度输入 → 单声道+双耳双计划 / 不带深度输入 → 仅单声道回退
+
+用法: python scripts/test_playback_converter.py
+      或 python -m unittest scripts.test_playback_converter -v
+"""
+
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-import sys
+from audio.playback_converter import convert  # noqa: E402
 
-sys.path.insert(0, str(PROJECT_ROOT / "src"))
-
-from playback_converter import convert  # noqa: E402
+EXAMPLES_DIR = REPO_ROOT / "contracts" / "playback_proposal" / "examples"
+CONFIG_DIR = REPO_ROOT / "configs" / "playback"
 
 
 class ConverterTests(unittest.TestCase):
     def test_with_depth_generates_two_plans(self):
         with tempfile.TemporaryDirectory() as directory:
             report = convert(
-                PROJECT_ROOT / "inputs/with_depth/example_coastal_bird_with_depth.json",
+                EXAMPLES_DIR / "with_depth/example_coastal_bird_with_depth.json",
                 Path(directory),
-                PROJECT_ROOT / "config",
+                CONFIG_DIR,
                 18432,
                 1800.0,
             )
@@ -32,9 +42,9 @@ class ConverterTests(unittest.TestCase):
     def test_without_depth_generates_mono_only(self):
         with tempfile.TemporaryDirectory() as directory:
             report = convert(
-                PROJECT_ROOT / "inputs/without_depth/example_study_keyboard_without_depth.json",
+                EXAMPLES_DIR / "without_depth/example_study_keyboard_without_depth.json",
                 Path(directory),
-                PROJECT_ROOT / "config",
+                CONFIG_DIR,
                 18432,
                 1800.0,
             )

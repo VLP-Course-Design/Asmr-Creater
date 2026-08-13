@@ -1,6 +1,6 @@
 {
   "config_version": "1.0",
-  "visual_spec_path": "../recommended_structured_record_example.json",
+  "visual_spec_path": "contracts/playback_proposal/recommended_structured_record_example.json",
   "max_foreground_layers": 2,
   "foreground_candidate_score_threshold": 0.18,
   "strength_values": {

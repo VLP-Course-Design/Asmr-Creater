@@ -28,20 +28,25 @@
 
 ## 2. 目录结构
 
+本 demo 已按项目既有分层拆分到各自目录,不再是独立子项目:
+
 ```text
-playback_plan_demo/
-  src/                         转换器源码
-  config/                      决策、场景映射和占位Manifest
-  inputs/
-    with_depth/                带合格深度的模拟视觉记录
-    without_depth/             不带深度的模拟视觉记录
-  audio/
-    ambient/                   未来放环境音WAV
-    noise/                     未来放底噪或生成器说明
-    triggers/                  未来放触发音/局部纹理WAV
-  outputs/                     本地生成的播放计划和报告
-  tests/                       标准库单元测试
-  run_demo.ps1                 一键运行两个示例
+src/audio/playback_converter.py                转换器源码
+configs/playback/                               决策、场景映射和占位Manifest
+  decision_settings.json
+  scene_audio_profiles.json
+  audio_manifest.json
+contracts/playback_proposal/                    视觉记录规范 2.3(词表 + 锚点映射;提案阶段,未并入已冻结的 v1.0 契约)
+  scene_type_vocabulary.json
+  recommended_structured_record_example.json
+  examples/
+    with_depth/                                 带合格深度的模拟视觉记录
+    without_depth/                              不带深度的模拟视觉记录
+docs/playback/                                  格式说明与采集规范(本文件所在目录)
+scripts/
+  run_playback_demo.ps1                         一键运行两个示例
+  test_playback_converter.py                    单元测试
+outputs/playback/                               本地生成的播放计划和报告(已 gitignore,需自行运行生成)
 ```
 
 ## 3. 环境要求
@@ -62,42 +67,44 @@ python --version
 $env:PLAYBACK_PYTHON = 'C:\path\to\python.exe'
 ```
 
-`run_demo.ps1` 会依次查找 `PLAYBACK_PYTHON`、`python` 和 `py`。
+`run_playback_demo.ps1` 会依次查找 `PLAYBACK_PYTHON`、`python` 和 `py`。
 
 ## 4. 一键运行
 
-在PowerShell中执行：
+在PowerShell中执行(仓库根目录下):
 
 ```powershell
-Set-Location '<仓库根目录>\playback\playback_plan_demo'
-.\run_demo.ps1
+Set-Location '<仓库根目录>'
+.\scripts\run_playback_demo.ps1
 ```
 
 脚本会运行两个输入：
 
-1. `inputs/with_depth/example_coastal_bird_with_depth.json`
+1. `contracts/playback_proposal/examples/with_depth/example_coastal_bird_with_depth.json`
    - 始终生成单声道计划；
    - 深度质量通过，额外生成双耳计划。
-2. `inputs/without_depth/example_study_keyboard_without_depth.json`
+2. `contracts/playback_proposal/examples/without_depth/example_study_keyboard_without_depth.json`
    - 生成单声道计划；
    - 因 `DEPTH_HINT_MISSING` 不生成双耳计划。
 
 ## 5. 运行自己的输入
 
+在仓库根目录下:
+
 ```powershell
-python .\src\playback_converter.py `
+python .\src\audio\playback_converter.py `
   'D:\path\to\one_visual_record.json' `
-  --output-dir '.\outputs\my_case' `
+  --output-dir '.\outputs\playback\my_case' `
   --seed 18432 `
   --duration 1800
 ```
 
-输入既可以是裸 `example_record` 对象，也可以是顶层含有 `example_record` 的说明JSON。
+不传 `--config-dir` 时默认读取 `configs/playback/`。输入既可以是裸 `example_record` 对象，也可以是顶层含有 `example_record` 的说明JSON。
 
 无限时长：
 
 ```powershell
-python .\src\playback_converter.py '.\inputs\with_depth\example_coastal_bird_with_depth.json' --duration null
+python .\src\audio\playback_converter.py '.\contracts\playback_proposal\examples\with_depth\example_coastal_bird_with_depth.json' --duration null
 ```
 
 未提供 `--seed` 时，程序从记录 `id` 生成稳定种子。相同输入、配置和素材Manifest会得到可复现结果。
@@ -131,18 +138,19 @@ python .\src\playback_converter.py '.\inputs\with_depth\example_coastal_bird_wit
 
 加入真实素材时：
 
-1. 把环境音放进 `audio/ambient/`；
-2. 把局部触发和纹理放进 `audio/triggers/`；
-3. 底噪实现或说明放进 `audio/noise/`；
-4. 更新 `config/audio_manifest.json` 的 `asset_id`、路径、时长、声道、响度、真峰值、许可证和SHA-256；
-5. 删除 `placeholder=true`；
-6. 对循环素材实际试听后再设置 `seamless_verified=true`。
+1. 把环境音放进项目实际的素材目录(参考 [`sounds/`](../../sounds/) 现有布局,或按需扩展);
+2. 把局部触发和纹理放进对应的触发音目录;
+3. 更新 `configs/playback/audio_manifest.json` 的 `asset_id`、路径、时长、声道、响度、真峰值、许可证和SHA-256；
+4. 删除 `placeholder=true`；
+5. 对循环素材实际试听后再设置 `seamless_verified=true`。
+
+> 注意：本 demo 的 66 个 `sound_id` 命名与现有 [`sounds/trigger_map.json`](../../sounds/trigger_map.json) 的标签体系(17 个 key)不是同一套词表,尚未统一,接入真实素材前需要三线先对齐命名方案。
 
 ## 8. 配置说明
 
 ### `decision_settings.json`
 
-- 读取上级目录的 `recommended_structured_record_example.json`，复用87锚点和66声音映射；
+- `visual_spec_path` 指向仓库根目录下的 `contracts/playback_proposal/recommended_structured_record_example.json`,复用87锚点和66声音映射；
 - 控制候选分数、最多前景层数、深度门限及允许微动的锚点；
 - 修改阈值应升级 `config_version` 或 `policy_version`。
 
@@ -157,8 +165,8 @@ python .\src\playback_converter.py '.\inputs\with_depth\example_coastal_bird_wit
 ## 9. 运行测试
 
 ```powershell
-Set-Location '<仓库根目录>\playback\playback_plan_demo'
-python -m unittest discover -s tests -v
+Set-Location '<仓库根目录>'
+python .\scripts\test_playback_converter.py
 ```
 
 测试验证：
