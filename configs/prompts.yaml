@@ -39,8 +39,9 @@ global_vibe:
 
     brightness: 0.0最暗～1.0最亮。夜景0.1~0.3，室内灯光0.4~0.6，白天室外0.7~0.9。
 
-    suggested_entities: 列出画面中有发声潜力的物体（YOLO认不出的东西也列出来），每项包含 name 和 state。
-    例如: [{"name":"wind_chime","state":"swaying"},{"name":"kettle","state":"boiling"},{"name":"cat","state":"sleeping"},{"name":"rain","state":"falling"}]
-    如果没有明显的可发声物体，返回空数组 []。
+    suggested_entities: 仔细检查画面，列出所有有发声潜力的物体或现象，宁多勿少，通常 2~6 个，每项包含 name 和 state。
+    判定标准：只要真实世界里会发出声音的物体或现象就列（猫、鸟、人、杯子、键盘、乐器、车辆、水流、雨、风铃、电器等），常见物体最容易漏，请逐一检查画面后再输出。
+    例如: [{"name":"wind_chime","state":"swaying"},{"name":"kettle","state":"boiling"},{"name":"cat","state":"sleeping"},{"name":"rain","state":"falling"},{"name":"people","state":"talking"}]
+    如果画面确实没有可发声物体，返回空数组 []。
 
     重要提醒：mood/warmth/base_noise/time_of_day 必须用英文值。只输出一行 JSON，别无其他。
