@@ -28,6 +28,9 @@ sys.path.insert(0, str(REPO_ROOT))
 from src.vision.vibe_vlm import (
     ANCHOR_IDS,
     SCENE_TYPES,
+    VALID_MOOD,
+    _MOOD_FALLBACK,
+    _fuzzy_match,
     filter_anchor_entities,
     normalize_scene_type,
     normalize_secondary_scene_types,
@@ -114,7 +117,7 @@ def main() -> None:
                 "schema_version": "2.3",
                 "id": str(rec.get("image", "")).rsplit(".", 1)[0],
                 "image": {
-                    "path": str(rec.get("path", "")),
+                    "path": str(rec.get("path", "")).replace("\\", "/"),  # 官方 schema 要求正斜杠
                     "width": width,
                     "height": height,
                 },
@@ -122,7 +125,7 @@ def main() -> None:
                     "scene_type": scene_type,
                     "secondary_scene_types": normalize_secondary_scene_types(gv_old.get("secondary_scene_types", []), scene_type),
                     "scene_group": group,
-                    "mood": gv_old.get("mood"),
+                    "mood": _fuzzy_match(gv_old["mood"], VALID_MOOD, _MOOD_FALLBACK, "mood") if gv_old.get("mood") is not None else None,
                     "warmth": gv_old.get("warmth"),
                     "time_of_day": gv_old.get("time_of_day"),
                     "brightness": round(brightness, 3),

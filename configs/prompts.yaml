@@ -26,9 +26,9 @@ global_vibe:
 
     字段说明：
 
-    mood: 严格从这 8 个英文词选一个（不要中文）:
-      calm=平静 | cozy=温馨 | lively=热闹 | tense=紧张
-      gloomy=阴暗沉闷 | melancholic=忧伤怀旧 | eerie=诡异不安 | cheerful=愉快
+    mood: 严格从这 10 个英文词选一个（不要中文）:
+      neutral=中性 | calm=平静 | cozy=温馨 | cheerful=愉快 | lively=热闹
+      majestic=壮丽 | mysterious=神秘 | melancholic=忧伤怀旧 | tense=紧张 | eerie=诡异不安
 
     warmth: 严格从这 3 个英文词选一个:
       warm=暖色调（黄橙红） | neutral=中性 | cool=冷色调（蓝灰青）

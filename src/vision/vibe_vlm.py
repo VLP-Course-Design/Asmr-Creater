@@ -32,31 +32,35 @@ CONFIG_PATH = REPO_ROOT / "configs" / "prompts.yaml"
 SCENE_VOCAB_PATH = REPO_ROOT / "contracts" / "scene_type_vocabulary.json"
 ANCHOR_DICT_PATH = REPO_ROOT / "contracts" / "anchor_dictionary.json"
 
-VALID_MOOD = {"calm", "cozy", "lively", "tense", "gloomy", "melancholic", "eerie", "cheerful"}
+# mood 词表对齐 2.3：neutral/calm/cozy/cheerful/lively/majestic/mysterious/melancholic/tense/eerie（无 gloomy）
+VALID_MOOD = {"neutral", "calm", "cozy", "cheerful", "lively", "majestic", "mysterious", "melancholic", "tense", "eerie"}
 VALID_WARMTH = {"warm", "neutral", "cool"}
 VALID_NOISE = {"white", "pink", "brown"}
 VALID_TOD = {"dawn", "morning", "noon", "afternoon", "dusk", "night"}
 
 _MOOD_FALLBACK = {
     "serene": "calm", "peaceful": "calm", "quiet": "calm", "tranquil": "calm",
-    "relaxed": "calm", "soothing": "calm", "neutral": "calm", "relaxing": "calm",
+    "relaxed": "calm", "soothing": "calm", "relaxing": "calm",
     "cool": "calm",
     "happy": "cheerful", "joyful": "cheerful", "bright": "cheerful", "upbeat": "cheerful",
     "sad": "melancholic", "sorrow": "melancholic", "nostalgic": "melancholic",
     "lonely": "melancholic", "depressed": "melancholic",
     "busy": "lively", "energetic": "lively", "vibrant": "lively", "crowded": "lively",
-    "dark": "gloomy", "dreary": "gloomy", "somber": "gloomy", "overcast": "gloomy",
-    "boring": "gloomy",
+    "dark": "melancholic", "dreary": "melancholic", "somber": "melancholic", "overcast": "melancholic",
+    "boring": "neutral",
     "intimate": "cozy", "warm_mood": "cozy", "comfortable": "cozy",
     "spooky": "eerie", "uncanny": "eerie", "creepy": "eerie",
     "frightening": "eerie", "scary": "eerie",
-    "anxious": "tense", "stressful": "tense", "nervous": "tense", "unhappy": "melancholic", "miserable": "gloomy",
+    "anxious": "tense", "stressful": "tense", "nervous": "tense", "unhappy": "melancholic", "miserable": "melancholic",
+    "gloomy": "melancholic", "dark_mood": "melancholic",
+    "majestic": "majestic", "grand": "majestic", "壮丽": "majestic",
+    "mysterious": "mysterious", "mystic": "mysterious", "神秘": "mysterious",
     # Chinese mood fallbacks
     "平静": "calm", "宁静": "calm", "安静": "calm",
     "温馨": "cozy", "温暖": "cozy", "舒适": "cozy",
     "热闹": "lively", "活跃": "lively", "繁忙": "lively",
     "紧张": "tense", "压抑": "tense",
-    "阴暗": "gloomy", "沉闷": "gloomy", "阴郁": "gloomy",
+    "阴暗": "melancholic", "沉闷": "melancholic", "阴郁": "melancholic",
     "忧伤": "melancholic", "怀旧": "melancholic", "悲伤": "melancholic",
     "诡异": "eerie", "阴森": "eerie", "不安": "eerie",
     "愉快": "cheerful", "欢乐": "cheerful", "开心": "cheerful",
