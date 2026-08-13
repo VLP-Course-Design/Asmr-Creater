@@ -143,6 +143,8 @@ sounds/
 
 [`src/audio/playback_converter.py`](src/audio/playback_converter.py) 是可独立运行的转换器,配套 [`scripts/test_playback_converter.py`](scripts/test_playback_converter.py) 与一键 demo 脚本 [`scripts/run_playback_demo.ps1`](scripts/run_playback_demo.ps1),用手写样例记录跑通"视觉记录 → 播放计划 JSON"全流程;当前只生成计划,不读取/合成真实音频字节。详见 [`docs/playback/playback_converter_usage.md`](docs/playback/playback_converter_usage.md)。
 
+[`visual_record.schema.json`](contracts/playback_proposal/visual_record.schema.json) 是从上述规范反推生成的正式 JSON Schema(draft-07),补上了 v2.3 提案原本缺失的机器可校验定义,供视觉线对齐产出格式;已用 `jsonschema` 库自校验通过(含负例测试),尚未接入 `scripts/validate_examples.py`。
+
 ## 开发路线图
 
 - **阶段 0 · 地基**:探数据集、选 VLM、迭代 prompt、敲定 JSON schema、搭素材库
