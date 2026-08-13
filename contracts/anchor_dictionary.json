@@ -1,0 +1,616 @@
+{
+  "version": "1.0",
+  "source": "playback/视觉锚点词典与检测边界.md (v1.0)",
+  "count": 87,
+  "anchors": [
+    {
+      "anchor_id": "active_cooking_pan",
+      "type": "action",
+      "sound_id": "cooking_sizzle",
+      "strength": "强",
+      "definition": "平底锅或炒锅正在加热食物，可见油、水汽或烹饪动作"
+    },
+    {
+      "anchor_id": "airplane_cabin_or_window_wing_view",
+      "type": "region_context",
+      "sound_id": "airplane_cabin_hum",
+      "strength": "中",
+      "definition": "飞机客舱、舷窗或从舷窗看到机翼的视角明确"
+    },
+    {
+      "anchor_id": "bamboo_forest_close",
+      "type": "region_context",
+      "sound_id": "bamboo_rustle",
+      "strength": "中",
+      "definition": "可清楚辨认竹林、近景竹竿和竹叶"
+    },
+    {
+      "anchor_id": "beehive_or_bee_on_flower",
+      "type": "point_object",
+      "sound_id": "bee_buzz",
+      "strength": "强",
+      "definition": "可见蜂巢，或蜜蜂明确停留在花朵上"
+    },
+    {
+      "anchor_id": "bird_group_in_flight",
+      "type": "group_object",
+      "sound_id": "bird_chirp",
+      "strength": "强",
+      "definition": "多只鸟在空中飞行，群体轮廓明确"
+    },
+    {
+      "anchor_id": "bird_takeoff_or_landing",
+      "type": "action",
+      "sound_id": "bird_wing_flutter",
+      "strength": "中",
+      "definition": "鸟处于近距离起飞或降落姿态，翅膀动作明确"
+    },
+    {
+      "anchor_id": "boat_hull_at_water",
+      "type": "point_object",
+      "sound_id": "boat_hull_water",
+      "strength": "中",
+      "definition": "小船船体、船舷与水面直接接触，适合联想到拍水"
+    },
+    {
+      "anchor_id": "book_handling_action",
+      "type": "action",
+      "sound_id": "book_handling",
+      "strength": "强",
+      "definition": "手正在取书、放书、整理书堆或从书架抽取书"
+    },
+    {
+      "anchor_id": "book_stack_or_bookshelf",
+      "type": "group_object",
+      "sound_id": "book_handling",
+      "strength": "中",
+      "definition": "书堆或书架上的书构成明确对象区域，但没有动作"
+    },
+    {
+      "anchor_id": "breaking_ocean_waves",
+      "type": "region_context",
+      "sound_id": "ocean_waves",
+      "strength": "强",
+      "definition": "海面上有明确破浪、浪头或海浪冲向沙滩"
+    },
+    {
+      "anchor_id": "bronze_temple_chime_or_bianzhong",
+      "type": "installation",
+      "sound_id": "wind_chime_bronze",
+      "strength": "中",
+      "definition": "中式屋檐铜铃、低沉寺庙铜铃或编钟结构明确可辨"
+    },
+    {
+      "anchor_id": "burning_campfire",
+      "type": "point_object",
+      "sound_id": "campfire_crackle",
+      "strength": "强",
+      "definition": "户外篝火、营火或燃烧木柴明确可见"
+    },
+    {
+      "anchor_id": "burning_fireplace",
+      "type": "installation",
+      "sound_id": "fireplace_crackle",
+      "strength": "强",
+      "definition": "室内壁炉中可见正在燃烧的火焰、炭火或木柴"
+    },
+    {
+      "anchor_id": "calm_shoreline",
+      "type": "region_context",
+      "sound_id": "shore_lapping",
+      "strength": "中",
+      "definition": "平静水面与岸线、湖岸、河岸或码头边缘明确相接"
+    },
+    {
+      "anchor_id": "dense_summer_tree_canopy",
+      "type": "region_context",
+      "sound_id": "cicada_chorus",
+      "strength": "弱",
+      "definition": "茂密、具有夏季感的树冠环境；仅作为弱蝉鸣证据"
+    },
+    {
+      "anchor_id": "frog_at_pond_edge",
+      "type": "point_object",
+      "sound_id": "frog_croak",
+      "strength": "强",
+      "definition": "青蛙与池塘、湿地边缘同时明确可见"
+    },
+    {
+      "anchor_id": "gathered_crowd",
+      "type": "group_object",
+      "sound_id": "crowd_murmur",
+      "strength": "中",
+      "definition": "多人聚集、观众、排队或公共空间人群形成明显群体"
+    },
+    {
+      "anchor_id": "hand_holding_cup",
+      "type": "action",
+      "sound_id": "cup_clink",
+      "strength": "中",
+      "definition": "手正在拿杯子、放杯子或接近杯碟交互位置"
+    },
+    {
+      "anchor_id": "hand_on_door",
+      "type": "action",
+      "sound_id": "door_soft_close",
+      "strength": "中",
+      "definition": "手接触门把、门边或正在推拉室内门"
+    },
+    {
+      "anchor_id": "hand_on_mouse",
+      "type": "action",
+      "sound_id": "mouse_click",
+      "strength": "强",
+      "definition": "手握鼠标或手指位于点击姿态"
+    },
+    {
+      "anchor_id": "hand_writing_with_pen",
+      "type": "action",
+      "sound_id": "pen_writing",
+      "strength": "强",
+      "definition": "手持钢笔、圆珠笔等在纸面书写"
+    },
+    {
+      "anchor_id": "hand_writing_with_pencil",
+      "type": "action",
+      "sound_id": "pencil_writing",
+      "strength": "强",
+      "definition": "手持铅笔，笔尖接触纸面并呈书写或素描动作"
+    },
+    {
+      "anchor_id": "handled_clothing",
+      "type": "action",
+      "sound_id": "fabric_rustle",
+      "strength": "中",
+      "definition": "手正在折叠、穿脱或整理衣物"
+    },
+    {
+      "anchor_id": "handled_fabric_or_bedding",
+      "type": "action",
+      "sound_id": "fabric_rustle",
+      "strength": "中",
+      "definition": "手正在整理床单、毛毯、窗帘或其他柔软布料"
+    },
+    {
+      "anchor_id": "hands_on_keyboard_typing",
+      "type": "action",
+      "sound_id": "keyboard_typing",
+      "strength": "强",
+      "definition": "双手或手指处于明确敲击键盘姿态"
+    },
+    {
+      "anchor_id": "kettle_on_fireplace_or_stove",
+      "type": "installation",
+      "sound_id": "fireplace_tea_boil",
+      "strength": "强",
+      "definition": "茶壶直接置于燃烧壁炉、火炉或炭火上，并可见加热语境"
+    },
+    {
+      "anchor_id": "large_temple_or_church_bell",
+      "type": "installation",
+      "sound_id": "distant_bell",
+      "strength": "中",
+      "definition": "教堂钟、寺庙大钟或大型固定钟体明确可见"
+    },
+    {
+      "anchor_id": "livestock_in_pasture",
+      "type": "group_object",
+      "sound_id": "distant_livestock",
+      "strength": "中",
+      "definition": "牛、羊、马等家畜位于牧场或远处草地"
+    },
+    {
+      "anchor_id": "meditation_or_yoga_setup",
+      "type": "region_context",
+      "sound_id": "singing_bowl",
+      "strength": "弱",
+      "definition": "冥想垫、瑜伽垫、香炉等构成明确疗愈场景，但未必有颂钵"
+    },
+    {
+      "anchor_id": "multiple_cups_or_cup_saucer",
+      "type": "group_object",
+      "sound_id": "cup_clink",
+      "strength": "中",
+      "definition": "多个杯子，或杯子与杯碟组合明确可见"
+    },
+    {
+      "anchor_id": "night_grass_or_courtyard",
+      "type": "region_context",
+      "sound_id": "cricket_chirp",
+      "strength": "中",
+      "definition": "夜间草地、庭院或低矮植被构成明确环境"
+    },
+    {
+      "anchor_id": "night_low_vegetation",
+      "type": "region_context",
+      "sound_id": "insect_ambience",
+      "strength": "中",
+      "definition": "夜间湿润草丛、湿地或茂密低植被，支持虫鸣并弱支持蛙鸣"
+    },
+    {
+      "anchor_id": "occupied_dining_tables",
+      "type": "region_context",
+      "sound_id": "tableware_ambience",
+      "strength": "中",
+      "definition": "多张有人使用的餐桌与餐具同时可见，形成餐饮活动环境"
+    },
+    {
+      "anchor_id": "open_book_magazine_or_notebook",
+      "type": "point_object",
+      "sound_id": "page_turn",
+      "strength": "弱",
+      "definition": "书、杂志或笔记本处于打开状态"
+    },
+    {
+      "anchor_id": "open_window_moving_curtain",
+      "type": "action",
+      "sound_id": "window_wind",
+      "strength": "强",
+      "definition": "窗户开启且窗帘、纱帘呈明显被风带动状态"
+    },
+    {
+      "anchor_id": "operating_coffee_machine",
+      "type": "installation",
+      "sound_id": "coffee_machine",
+      "strength": "强",
+      "definition": "咖啡机正在出液、冒蒸汽或有明确制作过程"
+    },
+    {
+      "anchor_id": "page_turning_action",
+      "type": "action",
+      "sound_id": "page_turn",
+      "strength": "强",
+      "definition": "手正在掀起、翻过或放下一页纸"
+    },
+    {
+      "anchor_id": "partly_open_interior_door",
+      "type": "installation",
+      "sound_id": "door_soft_close",
+      "strength": "弱",
+      "definition": "室内门处于半开状态，能形成可能开关的弱联想"
+    },
+    {
+      "anchor_id": "rain_dropped_window",
+      "type": "region_context",
+      "sound_id": "rain_on_window",
+      "strength": "强",
+      "definition": "窗户或玻璃表面有明确雨滴、水痕，并能判断来自降雨"
+    },
+    {
+      "anchor_id": "relaxed_or_sleeping_cat",
+      "type": "point_object",
+      "sound_id": "cat_purr",
+      "strength": "强",
+      "definition": "猫呈睡眠、蜷缩、放松趴卧等安静状态"
+    },
+    {
+      "anchor_id": "road_vehicle_flow",
+      "type": "region_context",
+      "sound_id": "distant_traffic",
+      "strength": "中",
+      "definition": "多辆车辆沿道路形成明显连续车流"
+    },
+    {
+      "anchor_id": "roof_or_canopy_in_rain",
+      "type": "region_context",
+      "sound_id": "rain_on_roof",
+      "strength": "中",
+      "definition": "屋顶、屋檐或雨棚与明显降雨同时出现"
+    },
+    {
+      "anchor_id": "running_fan",
+      "type": "installation",
+      "sound_id": "fan_hum",
+      "strength": "强",
+      "definition": "吊扇、台扇或落地扇有明确旋转模糊或运行线索"
+    },
+    {
+      "anchor_id": "running_shower",
+      "type": "installation",
+      "sound_id": "shower_flow",
+      "strength": "强",
+      "definition": "花洒正在喷出明显连续水流"
+    },
+    {
+      "anchor_id": "running_washing_machine",
+      "type": "installation",
+      "sound_id": "washing_machine_hum",
+      "strength": "强",
+      "definition": "洗衣机正在工作，滚筒模糊、衣物运动或面板状态可见"
+    },
+    {
+      "anchor_id": "server_rack_or_lab_electronics",
+      "type": "region_context",
+      "sound_id": "electronic_hum",
+      "strength": "中",
+      "definition": "服务器机柜、电子设备阵列或实验仪器形成明确技术环境"
+    },
+    {
+      "anchor_id": "single_visible_cup",
+      "type": "point_object",
+      "sound_id": "cup_clink",
+      "strength": "弱",
+      "definition": "只有一个杯子清晰可见，没有手或其他杯碟交互"
+    },
+    {
+      "anchor_id": "snow_covered_ground",
+      "type": "region_context",
+      "sound_id": "snow_crunch",
+      "strength": "弱",
+      "definition": "厚实、可踩踏的积雪路面或雪地明确可见"
+    },
+    {
+      "anchor_id": "steaming_kettle",
+      "type": "installation",
+      "sound_id": "kettle_simmer",
+      "strength": "强",
+      "definition": "水壶伴随明确蒸汽或正在加热的视觉证据"
+    },
+    {
+      "anchor_id": "storm_clouds_or_lightning",
+      "type": "region_context",
+      "sound_id": "distant_thunder",
+      "strength": "中",
+      "definition": "明显雷暴云、闪电或强雷雨天气视觉证据"
+    },
+    {
+      "anchor_id": "sweeping_action",
+      "type": "action",
+      "sound_id": "broom_sweeping",
+      "strength": "强",
+      "definition": "扫帚与地面接触并呈明确清扫动作"
+    },
+    {
+      "anchor_id": "table_setting_action",
+      "type": "action",
+      "sound_id": "dish_handling",
+      "strength": "中",
+      "definition": "手正在摆放碗盘、餐具或整理餐桌"
+    },
+    {
+      "anchor_id": "tall_grass_reeds_or_crops",
+      "type": "region_context",
+      "sound_id": "grass_rustle",
+      "strength": "中",
+      "definition": "高草、芦苇、麦田或稻田占据明确区域，可联想到柔和摩擦"
+    },
+    {
+      "anchor_id": "television_no_signal",
+      "type": "installation",
+      "sound_id": "tv_static",
+      "strength": "强",
+      "definition": "电视屏幕明确显示雪花、模拟静电或无信号画面"
+    },
+    {
+      "anchor_id": "umbrella_in_visible_rain",
+      "type": "action",
+      "sound_id": "light_rain",
+      "strength": "强",
+      "definition": "雨伞与可见降雨同时出现，伞本身不能单独成立"
+    },
+    {
+      "anchor_id": "vehicle_roof_in_visible_rain",
+      "type": "region_context",
+      "sound_id": "rain_on_roof",
+      "strength": "中",
+      "definition": "车辆顶部或车内顶面语境与可见降雨同时出现"
+    },
+    {
+      "anchor_id": "visible_air_conditioner",
+      "type": "installation",
+      "sound_id": "air_conditioner_hum",
+      "strength": "中",
+      "definition": "空调挂机、柜机或中央空调出风口清晰可辨"
+    },
+    {
+      "anchor_id": "visible_bee",
+      "type": "point_object",
+      "sound_id": "bee_buzz",
+      "strength": "强",
+      "definition": "蜜蜂本体清晰可辨"
+    },
+    {
+      "anchor_id": "visible_bird",
+      "type": "point_object",
+      "sound_id": "bird_chirp",
+      "strength": "强",
+      "definition": "单只或少量鸟清晰可辨并可定位"
+    },
+    {
+      "anchor_id": "visible_blizzard",
+      "type": "region_context",
+      "sound_id": "blizzard_wind",
+      "strength": "强",
+      "definition": "大量飞雪、强风雪或树枝明显受风影响，暴风雪特征明确"
+    },
+    {
+      "anchor_id": "visible_cicada",
+      "type": "point_object",
+      "sound_id": "cicada_chorus",
+      "strength": "强",
+      "definition": "蝉本体清晰可辨，通常位于树干或枝叶上"
+    },
+    {
+      "anchor_id": "visible_clock",
+      "type": "point_object",
+      "sound_id": "clock_tick",
+      "strength": "中",
+      "definition": "挂钟、台钟、闹钟等实体时钟清晰可见"
+    },
+    {
+      "anchor_id": "visible_computer_mouse",
+      "type": "point_object",
+      "sound_id": "mouse_click",
+      "strength": "中",
+      "definition": "电脑鼠标清晰可见，没有明确点击动作"
+    },
+    {
+      "anchor_id": "visible_cricket",
+      "type": "point_object",
+      "sound_id": "cricket_chirp",
+      "strength": "强",
+      "definition": "蟋蟀本体清晰可辨"
+    },
+    {
+      "anchor_id": "visible_dripping_water",
+      "type": "point_object",
+      "sound_id": "water_drip",
+      "strength": "中",
+      "definition": "能看到独立水滴从龙头、管道、洞顶等处滴落"
+    },
+    {
+      "anchor_id": "visible_fountain",
+      "type": "installation",
+      "sound_id": "fountain_flow",
+      "strength": "强",
+      "definition": "可辨识人工喷泉、喷水池或循环水景"
+    },
+    {
+      "anchor_id": "visible_frog",
+      "type": "point_object",
+      "sound_id": "frog_croak",
+      "strength": "强",
+      "definition": "青蛙本体清晰可辨"
+    },
+    {
+      "anchor_id": "visible_kettle",
+      "type": "point_object",
+      "sound_id": "kettle_simmer",
+      "strength": "弱",
+      "definition": "电水壶或炉上水壶清晰可见，但无运行证据"
+    },
+    {
+      "anchor_id": "visible_keyboard",
+      "type": "point_object",
+      "sound_id": "keyboard_typing",
+      "strength": "中",
+      "definition": "电脑键盘清晰可见，但没有可靠打字动作"
+    },
+    {
+      "anchor_id": "visible_paper_or_documents",
+      "type": "group_object",
+      "sound_id": "paper_rustle",
+      "strength": "中",
+      "definition": "纸张、文件、试卷或叠放文档明确可见"
+    },
+    {
+      "anchor_id": "visible_radio_or_tuning_knob",
+      "type": "installation",
+      "sound_id": "radio_static",
+      "strength": "中",
+      "definition": "老式收音机、无线电或明确调频旋钮结构可见"
+    },
+    {
+      "anchor_id": "visible_rain_streaks",
+      "type": "region_context",
+      "sound_id": "light_rain",
+      "strength": "强",
+      "definition": "画面中能直接看到雨丝、降雨轨迹或密集落雨；仅湿地面不足"
+    },
+    {
+      "anchor_id": "visible_record_player",
+      "type": "installation",
+      "sound_id": "vinyl_crackle",
+      "strength": "中",
+      "definition": "黑胶唱片机及唱片、唱臂等结构明确可辨"
+    },
+    {
+      "anchor_id": "visible_refrigerator_or_freezer",
+      "type": "installation",
+      "sound_id": "refrigerator_hum",
+      "strength": "中",
+      "definition": "冰箱、冷柜或商用冷藏柜清晰可辨"
+    },
+    {
+      "anchor_id": "visible_singing_bowl",
+      "type": "point_object",
+      "sound_id": "singing_bowl",
+      "strength": "中",
+      "definition": "颂钵及其典型碗形、槌或冥想使用语境清晰"
+    },
+    {
+      "anchor_id": "visible_stream_flow",
+      "type": "region_context",
+      "sound_id": "stream_flow",
+      "strength": "强",
+      "definition": "溪流、浅河或小水道有可见流向和连续水流"
+    },
+    {
+      "anchor_id": "visible_subway_train_or_platform",
+      "type": "installation",
+      "sound_id": "subway_rumble",
+      "strength": "中",
+      "definition": "地铁列车、地下站台或地铁轨道语境明确"
+    },
+    {
+      "anchor_id": "visible_tableware",
+      "type": "group_object",
+      "sound_id": "dish_handling",
+      "strength": "弱",
+      "definition": "碗、盘、叉勺等餐具成组可见"
+    },
+    {
+      "anchor_id": "visible_train_or_railway",
+      "type": "installation",
+      "sound_id": "train_rumble",
+      "strength": "中",
+      "definition": "火车、铁路轨道或铁路站台中的列车语境明确"
+    },
+    {
+      "anchor_id": "visible_waterfall",
+      "type": "region_context",
+      "sound_id": "waterfall_distant",
+      "strength": "强",
+      "definition": "可辨识瀑布、跌水或从高差处落下的连续水体"
+    },
+    {
+      "anchor_id": "visible_wind_chime",
+      "type": "point_object",
+      "sound_id": "wind_chime",
+      "strength": "强",
+      "definition": "悬挂式风铃或相互碰撞的轻质铃片清晰可辨"
+    },
+    {
+      "anchor_id": "walking_person",
+      "type": "action",
+      "sound_id": "soft_footsteps",
+      "strength": "强",
+      "definition": "人物腿脚处于明确跨步、落脚或连续行走姿态"
+    },
+    {
+      "anchor_id": "walking_person_on_snow",
+      "type": "action",
+      "sound_id": "snow_crunch",
+      "strength": "强",
+      "definition": "人正在积雪表面行走，跨步与雪地接触明确"
+    },
+    {
+      "anchor_id": "wind_bent_grass_or_foliage",
+      "type": "region_context",
+      "sound_id": "gentle_wind",
+      "strength": "中",
+      "definition": "草木成片向一致方向倾斜，能支持风的存在"
+    },
+    {
+      "anchor_id": "wind_moved_flag",
+      "type": "action",
+      "sound_id": "gentle_wind",
+      "strength": "中",
+      "definition": "旗帜在非人为持动情况下呈明显迎风展开或飘动"
+    },
+    {
+      "anchor_id": "wind_moved_light_fabric",
+      "type": "action",
+      "sound_id": "gentle_wind",
+      "strength": "中",
+      "definition": "轻纱、薄布等呈明确被风吹起或飘动的形态"
+    },
+    {
+      "anchor_id": "wind_moved_tree_leaves",
+      "type": "region_context",
+      "sound_id": "leaf_rustle",
+      "strength": "中",
+      "definition": "近景树叶或枝条有明确受风摆动的视觉线索"
+    }
+  ]
+}
