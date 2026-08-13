@@ -1,0 +1,771 @@
+{
+  "document_type": "recommended_visual_analysis_record_example",
+  "document_version": "2.3",
+  "title": "ASMR 图片视觉分析结构化记录规范与完整数据集说明",
+  "description": "本文件定义单张图片的视觉分析记录、可选单目相对深度提示，以及完整 JSONL 数据集的组织和校验规则。视觉层只保存可观察或可估计的视觉证据；声音类型、素材、HRTF、虚拟距离、音量、滤波、混响、循环和调度仍由音频决策层生成。",
+  "compatibility": {
+    "previous_record_version": "2.2",
+    "change_type": "incompatible_controlled_vocabulary_revision",
+    "changes": [
+      "依据66项助眠声音表重建 initial_visual_anchor_id，使每个值描述具体、可检测的视觉证据，而不是通用物体类别或声音名称。",
+      "新增完整 anchor_sound_mapping_reference，明确视觉锚点、66个 sound_id、推断强度、建议模式和助眠风险之间的关系。",
+      "保留 trigger_anchors[].depth_hint 作为可选单目相对深度提示。",
+      "锚点数组仍不设置格式层面的数量上限；生成数量由版本化模型配置控制。"
+    ],
+    "reader_requirement": "2.3 读取器必须使用2.3视觉锚点词表；2.2记录需要经过显式锚点迁移，不得只修改 schema_version。"
+  },
+  "example_record": {
+    "schema_version": "2.3",
+    "id": "example_coastal_sunset_0001",
+    "image": {
+      "path": "images/example_coastal_sunset.jpg",
+      "width": 640,
+      "height": 800
+    },
+    "global_vibe": {
+      "scene_type": "beach",
+      "secondary_scene_types": [
+        "ocean",
+        "cloudscape"
+      ],
+      "scene_group": "water_coastal",
+      "mood": "calm",
+      "warmth": "warm",
+      "time_of_day": "dusk",
+      "brightness": 0.62
+    },
+    "trigger_anchors": [
+      {
+        "anchor_id": "visible_bird",
+        "bbox_norm": {
+          "format": "xyxy",
+          "x_min": 0.82,
+          "y_min": 0.21,
+          "x_max": 0.87,
+          "y_max": 0.25
+        },
+        "confidence": 0.78,
+        "source": "yoloe",
+        "depth_hint": {
+          "type": "relative_monocular",
+          "value": 0.82,
+          "class": "far",
+          "uncertainty": 0.18,
+          "region_spread": 0.09,
+          "source": "depth_model_example_v1",
+          "normalization": "per_image_percentile_p02_p98",
+          "sample_region": "bbox_inner_20_percent"
+        }
+      }
+    ]
+  },
+  "record_contract": {
+    "storage_unit": "正式数据集中，每一行只保存一个与 example_record 同结构的 JSON 对象。不得把本说明文件的 document_type、规则、枚举或字段说明复制到每条记录中。",
+    "required_top_level_fields": [
+      "schema_version",
+      "id",
+      "image",
+      "global_vibe",
+      "trigger_anchors"
+    ],
+    "additional_properties_policy": "生产数据默认禁止未登记的顶层字段；需要扩展时先升级规范和 Schema。",
+    "null_policy": "必填字段不得使用 null。可选 depth_hint 缺失时应直接省略，不使用 null、空对象或虚构默认值。",
+    "number_policy": "所有数值必须是有限数，不允许 NaN、Infinity 或字符串形式的数字。"
+  },
+  "global_rules": [
+    "生产数据使用 UTF-8 编码 JSONL；每行恰好一条图片记录，行尾允许 LF 或 CRLF。",
+    "scene_type、secondary_scene_types、mood、warmth、time_of_day 和 anchor_id 必须来自版本化受控词表，禁止模型自由造词。",
+    "每张图片必须且只能有一个 scene_type；secondary_scene_types 最多两个，元素不能重复，也不能与主场景相同。",
+    "表情包、截图、文档、图表、UI、纯人像、微距和孤立物体特写等没有稳定空间场景的图片使用 scene_type=none。",
+    "scene_group 由 scene_type 查表生成，不要求视觉语言模型重复判断。",
+    "brightness 必须由程序计算，不由视觉语言模型估计；图片解码失败时进入错误数据集。",
+    "trigger_anchors 只记录可能对应附加声音的可见实体或动作，不重复记录已由 scene_type 表达的海洋、森林、整体雨景等主环境。",
+    "anchor_id 必须描述表格中可观察的实体、动作或视觉条件，例如 visible_bird、hands_on_keyboard_typing、walking_person_on_snow；不得使用 bird_chirp 等声音名称。",
+    "普通 person 不构成锚点；只有 walking_person、gathered_crowd、hands_on_keyboard_typing 等具有明确声音联想价值的视觉证据参与后续决策。",
+    "检测到锚点不表示物体正在发声。声音语义、映射强度、概率、音量和间隔由音频决策层决定。",
+    "所有边界框相对于修正 EXIF 方向后的原图归一化到 0 到 1；不得保存 letterbox 或模型输入画布坐标。",
+    "depth_hint 为可选增强信息。深度模型未运行、失败或结果不可靠时省略该字段，不影响主记录合法性。",
+    "depth_hint 仅用于同一张图片内的相对远近排序，禁止解释为真实米数、绝对尺度或物理测距结果。",
+    "视觉层不得输出 HRTF 方位、虚拟距离、混响、声像、左右声道增益或距离衰减参数。"
+  ],
+  "coordinate_and_depth_conventions": {
+    "image_coordinates": {
+      "origin": "top_left",
+      "x_axis": "positive_to_right",
+      "y_axis": "positive_down",
+      "bbox_format": "normalized_xyxy",
+      "range": "所有坐标均在闭区间 [0,1]，且 x_min < x_max、y_min < y_max。"
+    },
+    "relative_depth": {
+      "direction": "0 表示相对靠近相机，1 表示相对远离相机。",
+      "scope": "只在当前图片内部有效，不应跨图片直接比较 value。",
+      "recommended_normalization": "对有效深度图使用每图第 2 和第 98 百分位进行稳健归一化，再裁剪到 [0,1]。",
+      "recommended_sampling": "优先在实例分割掩码内取中位数；只有边界框时，将框四周各内缩 20%，对中心区域取中位数。",
+      "spread_definition": "region_spread 建议使用采样区域内归一化深度的 P90-P10，并裁剪到 [0,1]。",
+      "class_thresholds": {
+        "near": "0.00 <= value < 0.33",
+        "mid": "0.33 <= value < 0.67",
+        "far": "0.67 <= value <= 1.00",
+        "unknown": "深度不可用或未达到质量阈值时使用；若整个 depth_hint 不可靠，优先省略 depth_hint。"
+      },
+      "important_limitations": [
+        "单目深度存在尺度歧义，无法从普通单张图片可靠恢复真实米制距离。",
+        "透明、反光、镜面、天空、极暗、极小、严重遮挡或离焦区域可能产生较大误差。",
+        "框内背景占比过高会污染深度，应优先使用分割掩码或框内缩采样。",
+        "图片只提供相机前方画面，不能据此证明声源位于听者身后。",
+        "纵向图片坐标不等于可靠的声源仰角；音频层只能把它作为弱提示。"
+      ]
+    }
+  },
+  "enum_definitions": {
+    "mood": [
+      "neutral",
+      "calm",
+      "cozy",
+      "cheerful",
+      "lively",
+      "majestic",
+      "mysterious",
+      "melancholic",
+      "tense",
+      "eerie"
+    ],
+    "warmth": [
+      "cool",
+      "neutral",
+      "warm"
+    ],
+    "time_of_day": [
+      "morning",
+      "afternoon",
+      "dusk",
+      "night",
+      "dawn",
+      "noon",
+      "unknown"
+    ],
+    "anchor_source": [
+      "yoloe",
+      "yolo_world",
+      "grounding_dino",
+      "vlm",
+      "manual"
+    ],
+    "depth_type": [
+      "relative_monocular"
+    ],
+    "depth_class": [
+      "near",
+      "mid",
+      "far",
+      "unknown"
+    ],
+    "depth_normalization": [
+      "per_image_percentile_p02_p98"
+    ],
+    "depth_sample_region": [
+      "instance_mask",
+      "bbox_inner_20_percent"
+    ],
+    "initial_visual_anchor_id": [
+      "visible_rain_streaks",
+      "umbrella_in_visible_rain",
+      "rain_dropped_window",
+      "roof_or_canopy_in_rain",
+      "vehicle_roof_in_visible_rain",
+      "breaking_ocean_waves",
+      "calm_shoreline",
+      "visible_stream_flow",
+      "visible_waterfall",
+      "visible_fountain",
+      "visible_dripping_water",
+      "running_shower",
+      "wind_moved_light_fabric",
+      "wind_moved_flag",
+      "wind_bent_grass_or_foliage",
+      "wind_moved_tree_leaves",
+      "tall_grass_reeds_or_crops",
+      "bamboo_forest_close",
+      "open_window_moving_curtain",
+      "storm_clouds_or_lightning",
+      "burning_fireplace",
+      "burning_campfire",
+      "visible_cicada",
+      "dense_summer_tree_canopy",
+      "visible_cricket",
+      "night_grass_or_courtyard",
+      "night_low_vegetation",
+      "visible_bee",
+      "beehive_or_bee_on_flower",
+      "visible_bird",
+      "bird_group_in_flight",
+      "bird_takeoff_or_landing",
+      "visible_frog",
+      "frog_at_pond_edge",
+      "relaxed_or_sleeping_cat",
+      "livestock_in_pasture",
+      "hands_on_keyboard_typing",
+      "visible_keyboard",
+      "hand_on_mouse",
+      "visible_computer_mouse",
+      "page_turning_action",
+      "open_book_magazine_or_notebook",
+      "visible_paper_or_documents",
+      "hand_writing_with_pencil",
+      "hand_writing_with_pen",
+      "book_handling_action",
+      "book_stack_or_bookshelf",
+      "visible_clock",
+      "running_fan",
+      "visible_air_conditioner",
+      "visible_refrigerator_or_freezer",
+      "running_washing_machine",
+      "steaming_kettle",
+      "visible_kettle",
+      "operating_coffee_machine",
+      "hand_holding_cup",
+      "multiple_cups_or_cup_saucer",
+      "single_visible_cup",
+      "table_setting_action",
+      "visible_tableware",
+      "hand_on_door",
+      "partly_open_interior_door",
+      "handled_fabric_or_bedding",
+      "handled_clothing",
+      "sweeping_action",
+      "active_cooking_pan",
+      "walking_person",
+      "gathered_crowd",
+      "occupied_dining_tables",
+      "road_vehicle_flow",
+      "visible_train_or_railway",
+      "visible_subway_train_or_platform",
+      "airplane_cabin_or_window_wing_view",
+      "boat_hull_at_water",
+      "visible_wind_chime",
+      "large_temple_or_church_bell",
+      "visible_record_player",
+      "television_no_signal",
+      "visible_radio_or_tuning_knob",
+      "server_rack_or_lab_electronics",
+      "walking_person_on_snow",
+      "snow_covered_ground",
+      "visible_blizzard",
+      "kettle_on_fireplace_or_stove",
+      "visible_singing_bowl",
+      "meditation_or_yoga_setup",
+      "bronze_temple_chime_or_bianzhong"
+    ],
+    "reference_sound_id": [
+      "light_rain", "rain_on_window", "rain_on_roof", "ocean_waves", "shore_lapping", "stream_flow", "waterfall_distant", "fountain_flow", "water_drip", "shower_flow",
+      "gentle_wind", "leaf_rustle", "grass_rustle", "bamboo_rustle", "window_wind", "distant_thunder", "fireplace_crackle", "campfire_crackle",
+      "cicada_chorus", "cricket_chirp", "insect_ambience", "bee_buzz", "bird_chirp", "bird_wing_flutter", "frog_croak", "cat_purr", "distant_livestock",
+      "keyboard_typing", "mouse_click", "page_turn", "paper_rustle", "pencil_writing", "pen_writing", "book_handling", "clock_tick",
+      "fan_hum", "air_conditioner_hum", "refrigerator_hum", "washing_machine_hum", "kettle_simmer", "coffee_machine",
+      "cup_clink", "dish_handling", "door_soft_close", "fabric_rustle", "broom_sweeping", "cooking_sizzle", "soft_footsteps",
+      "crowd_murmur", "tableware_ambience", "distant_traffic", "train_rumble", "subway_rumble", "airplane_cabin_hum", "boat_hull_water",
+      "wind_chime", "distant_bell", "vinyl_crackle", "tv_static", "radio_static", "electronic_hum",
+      "snow_crunch", "blizzard_wind", "fireplace_tea_boil", "singing_bowl", "wind_chime_bronze"
+    ]
+  },
+  "anchor_sound_mapping_reference": {
+    "status": "normative_mapping_reference_for_audio_decision_layer",
+    "rule": "视觉记录只保存 anchor_id。sound_id、推断强度、播放方式和助眠限制由音频决策层查询本映射或其独立版本化配置后获得。一个视觉锚点可支持多个声音候选，但最终仍须经过场景兼容、安全、去重和层数预算。",
+    "strength_values": {
+      "strong": 1.0,
+      "medium": 0.6,
+      "weak": 0.25,
+      "cautious": 0.1
+    },
+    "mappings": [
+      {"sound_id":"light_rain","anchors":{"visible_rain_streaks":"strong","umbrella_in_visible_rain":"strong"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"rain_on_window","anchors":{"rain_dropped_window":"strong"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"rain_on_roof","anchors":{"roof_or_canopy_in_rain":"medium","vehicle_roof_in_visible_rain":"medium"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"ocean_waves","anchors":{"breaking_ocean_waves":"strong"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"shore_lapping","anchors":{"calm_shoreline":"medium"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"stream_flow","anchors":{"visible_stream_flow":"strong"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"waterfall_distant","anchors":{"visible_waterfall":"strong"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"fountain_flow","anchors":{"visible_fountain":"strong"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"water_drip","anchors":{"visible_dripping_water":"medium"},"mode":"random_trigger","sleep_safety":"medium"},
+      {"sound_id":"shower_flow","anchors":{"running_shower":"strong"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"gentle_wind","anchors":{"wind_moved_light_fabric":"medium","wind_moved_flag":"medium","wind_bent_grass_or_foliage":"medium"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"leaf_rustle","anchors":{"wind_moved_tree_leaves":"medium"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"grass_rustle","anchors":{"tall_grass_reeds_or_crops":"medium"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"bamboo_rustle","anchors":{"bamboo_forest_close":"medium"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"window_wind","anchors":{"open_window_moving_curtain":"strong"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"distant_thunder","anchors":{"storm_clouds_or_lightning":"medium"},"mode":"random_trigger_long_interval","sleep_safety":"cautious"},
+      {"sound_id":"fireplace_crackle","anchors":{"burning_fireplace":"strong"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"campfire_crackle","anchors":{"burning_campfire":"strong"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"cicada_chorus","anchors":{"visible_cicada":"strong","dense_summer_tree_canopy":"weak"},"mode":"loop_low_gain","sleep_safety":"medium"},
+      {"sound_id":"cricket_chirp","anchors":{"visible_cricket":"strong","night_grass_or_courtyard":"medium"},"mode":"loop_or_random_trigger","sleep_safety":"high"},
+      {"sound_id":"insect_ambience","anchors":{"night_low_vegetation":"medium"},"mode":"loop_low_gain","sleep_safety":"high"},
+      {"sound_id":"bee_buzz","anchors":{"visible_bee":"strong","beehive_or_bee_on_flower":"strong"},"mode":"random_trigger_low_probability","sleep_safety":"cautious"},
+      {"sound_id":"bird_chirp","anchors":{"visible_bird":"strong","bird_group_in_flight":"strong"},"mode":"random_trigger","sleep_safety":"high"},
+      {"sound_id":"bird_wing_flutter","anchors":{"bird_takeoff_or_landing":"medium"},"mode":"random_trigger_low_probability","sleep_safety":"high"},
+      {"sound_id":"frog_croak","anchors":{"visible_frog":"strong","frog_at_pond_edge":"strong","night_low_vegetation":"weak"},"mode":"random_trigger","sleep_safety":"high"},
+      {"sound_id":"cat_purr","anchors":{"relaxed_or_sleeping_cat":"strong"},"mode":"intermittent_texture","sleep_safety":"high"},
+      {"sound_id":"distant_livestock","anchors":{"livestock_in_pasture":"medium"},"mode":"random_trigger_low_probability","sleep_safety":"medium"},
+      {"sound_id":"keyboard_typing","anchors":{"hands_on_keyboard_typing":"strong","visible_keyboard":"medium"},"mode":"intermittent_texture","sleep_safety":"high"},
+      {"sound_id":"mouse_click","anchors":{"hand_on_mouse":"strong","visible_computer_mouse":"medium"},"mode":"random_trigger_low_probability","sleep_safety":"cautious"},
+      {"sound_id":"page_turn","anchors":{"page_turning_action":"strong","open_book_magazine_or_notebook":"weak"},"mode":"random_trigger_long_interval","sleep_safety":"high"},
+      {"sound_id":"paper_rustle","anchors":{"visible_paper_or_documents":"medium"},"mode":"random_trigger","sleep_safety":"high"},
+      {"sound_id":"pencil_writing","anchors":{"hand_writing_with_pencil":"strong"},"mode":"intermittent_texture","sleep_safety":"high"},
+      {"sound_id":"pen_writing","anchors":{"hand_writing_with_pen":"strong"},"mode":"intermittent_texture","sleep_safety":"high"},
+      {"sound_id":"book_handling","anchors":{"book_handling_action":"strong","book_stack_or_bookshelf":"medium"},"mode":"random_trigger_low_probability","sleep_safety":"high"},
+      {"sound_id":"clock_tick","anchors":{"visible_clock":"medium"},"mode":"loop_very_low_gain","sleep_safety":"cautious"},
+      {"sound_id":"fan_hum","anchors":{"running_fan":"strong"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"air_conditioner_hum","anchors":{"visible_air_conditioner":"medium"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"refrigerator_hum","anchors":{"visible_refrigerator_or_freezer":"medium"},"mode":"loop_very_low_gain","sleep_safety":"high"},
+      {"sound_id":"washing_machine_hum","anchors":{"running_washing_machine":"strong"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"kettle_simmer","anchors":{"steaming_kettle":"strong","visible_kettle":"weak"},"mode":"intermittent_texture","sleep_safety":"high"},
+      {"sound_id":"coffee_machine","anchors":{"operating_coffee_machine":"strong"},"mode":"random_trigger","sleep_safety":"medium"},
+      {"sound_id":"cup_clink","anchors":{"hand_holding_cup":"medium","multiple_cups_or_cup_saucer":"medium","single_visible_cup":"weak"},"mode":"random_trigger_very_low_probability","sleep_safety":"cautious"},
+      {"sound_id":"dish_handling","anchors":{"table_setting_action":"medium","visible_tableware":"weak"},"mode":"random_trigger_low_probability","sleep_safety":"medium"},
+      {"sound_id":"door_soft_close","anchors":{"hand_on_door":"medium","partly_open_interior_door":"weak"},"mode":"random_trigger_very_low_probability","sleep_safety":"cautious"},
+      {"sound_id":"fabric_rustle","anchors":{"handled_fabric_or_bedding":"medium","handled_clothing":"medium"},"mode":"random_trigger","sleep_safety":"high"},
+      {"sound_id":"broom_sweeping","anchors":{"sweeping_action":"strong"},"mode":"intermittent_texture","sleep_safety":"high"},
+      {"sound_id":"cooking_sizzle","anchors":{"active_cooking_pan":"strong"},"mode":"intermittent_texture_low_gain","sleep_safety":"medium"},
+      {"sound_id":"soft_footsteps","anchors":{"walking_person":"strong"},"mode":"random_trigger","sleep_safety":"medium"},
+      {"sound_id":"crowd_murmur","anchors":{"gathered_crowd":"medium"},"mode":"loop_low_gain","sleep_safety":"medium"},
+      {"sound_id":"tableware_ambience","anchors":{"occupied_dining_tables":"medium","visible_tableware":"medium"},"mode":"random_trigger_sparse","sleep_safety":"medium"},
+      {"sound_id":"distant_traffic","anchors":{"road_vehicle_flow":"medium"},"mode":"loop_low_gain","sleep_safety":"medium"},
+      {"sound_id":"train_rumble","anchors":{"visible_train_or_railway":"medium"},"mode":"loop","sleep_safety":"medium"},
+      {"sound_id":"subway_rumble","anchors":{"visible_subway_train_or_platform":"medium"},"mode":"loop_low_gain","sleep_safety":"medium"},
+      {"sound_id":"airplane_cabin_hum","anchors":{"airplane_cabin_or_window_wing_view":"medium"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"boat_hull_water","anchors":{"boat_hull_at_water":"medium"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"wind_chime","anchors":{"visible_wind_chime":"strong"},"mode":"random_trigger_long_interval","sleep_safety":"cautious"},
+      {"sound_id":"distant_bell","anchors":{"large_temple_or_church_bell":"medium"},"mode":"random_trigger_very_long_interval","sleep_safety":"cautious"},
+      {"sound_id":"vinyl_crackle","anchors":{"visible_record_player":"medium"},"mode":"loop_very_low_gain","sleep_safety":"medium"},
+      {"sound_id":"tv_static","anchors":{"television_no_signal":"strong"},"mode":"loop_very_low_gain","sleep_safety":"cautious"},
+      {"sound_id":"radio_static","anchors":{"visible_radio_or_tuning_knob":"medium"},"mode":"intermittent_texture_low_gain","sleep_safety":"cautious"},
+      {"sound_id":"electronic_hum","anchors":{"server_rack_or_lab_electronics":"medium"},"mode":"loop_very_low_gain","sleep_safety":"medium"},
+      {"sound_id":"snow_crunch","anchors":{"walking_person_on_snow":"strong","snow_covered_ground":"weak"},"mode":"random_trigger","sleep_safety":"medium"},
+      {"sound_id":"blizzard_wind","anchors":{"visible_blizzard":"strong"},"mode":"loop_low_gain","sleep_safety":"medium"},
+      {"sound_id":"fireplace_tea_boil","anchors":{"kettle_on_fireplace_or_stove":"strong"},"mode":"loop","sleep_safety":"high"},
+      {"sound_id":"singing_bowl","anchors":{"visible_singing_bowl":"medium","meditation_or_yoga_setup":"weak"},"mode":"random_trigger_very_long_interval","sleep_safety":"cautious"},
+      {"sound_id":"wind_chime_bronze","anchors":{"bronze_temple_chime_or_bianzhong":"medium"},"mode":"random_trigger_long_interval","sleep_safety":"cautious"}
+    ]
+  },
+  "field_requirements": [
+    {
+      "path": "schema_version",
+      "type": "string",
+      "required": true,
+      "allowed_or_range": "当前固定为 2.3",
+      "producer": "pipeline",
+      "meaning": "单条视觉记录所遵循的数据结构版本。",
+      "constraints": "发生不兼容字段或语义变化时升级主版本；增加兼容性可选字段时升级次版本。"
+    },
+    {
+      "path": "id",
+      "type": "string",
+      "required": true,
+      "allowed_or_range": "非空，建议匹配 ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$，整个数据集内唯一",
+      "producer": "pipeline",
+      "meaning": "图片记录的稳定标识。",
+      "constraints": "不得使用易变化的绝对路径作为 ID；同一原始图片重新处理时应保持稳定，除非数据治理规则另有规定。"
+    },
+    {
+      "path": "image.path",
+      "type": "string",
+      "required": true,
+      "allowed_or_range": "非空的数据集根目录相对路径，统一使用正斜杠 /",
+      "producer": "pipeline",
+      "meaning": "数据集内原始图片或标准化图片的位置。",
+      "constraints": "禁止绝对路径、盘符、.. 路径穿越和仅在单台电脑有效的地址。"
+    },
+    {
+      "path": "image.width",
+      "type": "integer",
+      "required": true,
+      "allowed_or_range": "1 到 100000",
+      "producer": "image_decoder",
+      "meaning": "修正 EXIF 方向后图片的像素宽度。",
+      "constraints": "必须从实际解码结果读取，不得由模型估计。"
+    },
+    {
+      "path": "image.height",
+      "type": "integer",
+      "required": true,
+      "allowed_or_range": "1 到 100000",
+      "producer": "image_decoder",
+      "meaning": "修正 EXIF 方向后图片的像素高度。",
+      "constraints": "必须从实际解码结果读取，不得由模型估计。"
+    },
+    {
+      "path": "global_vibe.scene_type",
+      "type": "string",
+      "required": true,
+      "allowed_or_range": "scene_type_vocabulary.json 中恰好一个叶子类别，包含 none",
+      "producer": "vision_language_model + validator",
+      "meaning": "画面的主要空间场景，用于后续选择主环境声配置。",
+      "constraints": "禁止描述句、组合标签、对象名称和临时新词。"
+    },
+    {
+      "path": "global_vibe.secondary_scene_types",
+      "type": "array<string>",
+      "required": true,
+      "allowed_or_range": "长度 0 到 2；元素来自场景词表且去重",
+      "producer": "vision_language_model + validator",
+      "meaning": "画面中次要但仍构成空间环境的场景类型。",
+      "constraints": "元素不得与 scene_type 相同；不得填写物体、声音、情绪或自然语言描述。"
+    },
+    {
+      "path": "global_vibe.scene_group",
+      "type": "string",
+      "required": true,
+      "allowed_or_range": "scene_type_vocabulary.json 中 scene_type 对应的场景大组",
+      "producer": "taxonomy_lookup",
+      "meaning": "精确场景没有音频映射时的配置族回退键。",
+      "constraints": "必须由查表生成，并与 scene_type 保持一致。"
+    },
+    {
+      "path": "global_vibe.mood",
+      "type": "string",
+      "required": true,
+      "allowed_or_range": "enum_definitions.mood 中恰好一个值",
+      "producer": "vision_language_model + validator",
+      "meaning": "画面的整体情绪倾向，用于后续调整密度、间隔和频谱。",
+      "constraints": "不额外输出自由文本情绪、arousal、valence 或 intensity。"
+    },
+    {
+      "path": "global_vibe.warmth",
+      "type": "string",
+      "required": true,
+      "allowed_or_range": "cool | neutral | warm",
+      "producer": "vision_language_model + validator",
+      "meaning": "画面的整体视觉色温倾向。",
+      "constraints": "不等同于 mood，不直接决定声音或音量。"
+    },
+    {
+      "path": "global_vibe.time_of_day",
+      "type": "string",
+      "required": true,
+      "allowed_or_range": "morning | afternoon | dusk | night | dawn | noon | unknown",
+      "producer": "vision_language_model + validator",
+      "meaning": "可观察到的时间段，用于后续选择昼夜音频变体。",
+      "constraints": "无法可靠判断时使用 unknown，不得仅凭色调强行推断。"
+    },
+    {
+      "path": "global_vibe.brightness",
+      "type": "number",
+      "required": true,
+      "allowed_or_range": "闭区间 [0,1]，建议保留两位小数",
+      "producer": "program_cie_lstar_trimmed_mean_v1",
+      "meaning": "图片整体感知亮度。",
+      "constraints": "建议缩放后计算线性 RGB 亮度并转换为 CIE L*，截去最暗和最亮各 5% 像素后求均值；不得由视觉语言模型估计。"
+    },
+    {
+      "path": "trigger_anchors",
+      "type": "array<object>",
+      "required": true,
+      "allowed_or_range": "长度大于等于 0；记录 Schema 不设置 maxItems",
+      "producer": "open_vocabulary_object_detector + deduplicator",
+      "meaning": "可能对应非主场景局部声音的可见实体或动作证据。",
+      "constraints": "没有符合条件的锚点时输出空数组；不得使用纯字符串、空对象或自由文本。每张图片最终保留多少锚点由版本化的数据生成配置或模型推理配置控制，不由记录格式硬编码。"
+    },
+    {
+      "path": "trigger_anchors[].anchor_id",
+      "type": "string",
+      "required": true,
+      "allowed_or_range": "enum_definitions.initial_visual_anchor_id 中一个值",
+      "producer": "object_detector + normalizer",
+      "meaning": "视觉实体或动作的规范标识。",
+      "constraints": "必须表达受控表格中的具体可见证据，而不是宽泛对象或声音结果；例如使用 visible_bird，不使用 bird 或 bird_chirp。后续音频层查询 anchor_sound_mapping_reference 得到 sound_id、推断强度和播放方式。"
+    },
+    {
+      "path": "trigger_anchors[].bbox_norm",
+      "type": "object",
+      "required": true,
+      "allowed_or_range": "format 固定为 xyxy；x_min、y_min、x_max、y_max 均在 [0,1]",
+      "producer": "object_detector",
+      "meaning": "锚点在修正 EXIF 后原图上的归一化边界框。",
+      "constraints": "必须满足 x_min < x_max、y_min < y_max；音频层可由水平中心推导左右方向，但框面积不得直接全局映射成真实距离。"
+    },
+    {
+      "path": "trigger_anchors[].bbox_norm.format",
+      "type": "string",
+      "required": true,
+      "allowed_or_range": "xyxy",
+      "producer": "pipeline",
+      "meaning": "边界框字段的坐标格式声明。",
+      "constraints": "当前版本不接受 xywh、像素坐标或其他格式。"
+    },
+    {
+      "path": "trigger_anchors[].confidence",
+      "type": "number",
+      "required": true,
+      "allowed_or_range": "闭区间 [0,1]",
+      "producer": "object_detector",
+      "meaning": "检测器认为目标存在且类别匹配的置信度。",
+      "constraints": "不得直接作为发声概率、音量、距离置信度或 HRTF 强度。"
+    },
+    {
+      "path": "trigger_anchors[].source",
+      "type": "string",
+      "required": true,
+      "allowed_or_range": "enum_definitions.anchor_source 中一个值",
+      "producer": "pipeline",
+      "meaning": "锚点检测结果的来源。",
+      "constraints": "用于质量评估和排查，不参与声音选择。"
+    },
+    {
+      "path": "trigger_anchors[].depth_hint",
+      "type": "object",
+      "required": false,
+      "allowed_or_range": "字段完整时才可出现；不可用时整个对象省略",
+      "producer": "monocular_depth_pipeline",
+      "meaning": "锚点在单张图片内部的相对深度提示。",
+      "constraints": "不是米制距离；不得跨图片直接比较；不得由边界框面积单独生成；低质量结果应省略。"
+    },
+    {
+      "path": "trigger_anchors[].depth_hint.type",
+      "type": "string",
+      "required": "depth_hint 出现时必填",
+      "allowed_or_range": "relative_monocular",
+      "producer": "pipeline",
+      "meaning": "声明该结果来自单目相对深度估计。",
+      "constraints": "当前版本不允许 absolute、metric 或 distance_m。"
+    },
+    {
+      "path": "trigger_anchors[].depth_hint.value",
+      "type": "number",
+      "required": "depth_hint 出现时必填",
+      "allowed_or_range": "闭区间 [0,1]；0 最近，1 最远",
+      "producer": "monocular_depth_pipeline",
+      "meaning": "锚点相对于当前图片有效深度范围的位置。",
+      "constraints": "必须使用声明的每图归一化方法；不可解释为现实距离比例。"
+    },
+    {
+      "path": "trigger_anchors[].depth_hint.class",
+      "type": "string",
+      "required": "depth_hint 出现时必填",
+      "allowed_or_range": "near | mid | far | unknown",
+      "producer": "depth_classifier",
+      "meaning": "由 value 和质量门控得到的离散相对距离等级。",
+      "constraints": "必须遵循本规范阈值；当不确定性过高时使用 unknown 或省略整个 depth_hint。"
+    },
+    {
+      "path": "trigger_anchors[].depth_hint.uncertainty",
+      "type": "number",
+      "required": "depth_hint 出现时必填",
+      "allowed_or_range": "闭区间 [0,1]；0 最可靠，1 最不可靠",
+      "producer": "depth_quality_estimator",
+      "meaning": "综合模型不确定性、图像质量、目标大小和区域一致性的深度质量指标。",
+      "constraints": "不同深度模型必须先校准到统一方向；建议 uncertainty > 0.6 时不使用连续 value，> 0.8 时省略 depth_hint。"
+    },
+    {
+      "path": "trigger_anchors[].depth_hint.region_spread",
+      "type": "number",
+      "required": "depth_hint 出现时必填",
+      "allowed_or_range": "闭区间 [0,1]",
+      "producer": "monocular_depth_pipeline",
+      "meaning": "采样区域内部深度分布的离散程度。",
+      "constraints": "建议定义为 P90-P10；值较高通常表示框含大量背景、跨越多个深度面或预测不稳定。"
+    },
+    {
+      "path": "trigger_anchors[].depth_hint.source",
+      "type": "string",
+      "required": "depth_hint 出现时必填",
+      "allowed_or_range": "非空模型或流水线版本标识，建议最长 128 字符",
+      "producer": "pipeline",
+      "meaning": "生成相对深度的模型和版本。",
+      "constraints": "同一批数据应固定版本；模型变化必须记录在批次元数据中。"
+    },
+    {
+      "path": "trigger_anchors[].depth_hint.normalization",
+      "type": "string",
+      "required": "depth_hint 出现时必填",
+      "allowed_or_range": "per_image_percentile_p02_p98",
+      "producer": "pipeline",
+      "meaning": "原始深度输出转换到 [0,1] 的方法。",
+      "constraints": "禁止不声明归一化方法；当前版本只允许规定的每图稳健归一化。"
+    },
+    {
+      "path": "trigger_anchors[].depth_hint.sample_region",
+      "type": "string",
+      "required": "depth_hint 出现时必填",
+      "allowed_or_range": "instance_mask | bbox_inner_20_percent",
+      "producer": "pipeline",
+      "meaning": "从深度图中提取该锚点深度所使用的空间区域。",
+      "constraints": "有可靠实例掩码时优先 instance_mask；否则使用内缩框，禁止无说明地使用整个边界框平均值。"
+    }
+  ],
+  "quality_gates": {
+    "anchor_deduplication": [
+      "同一 anchor_id 的框在 IoU 达到配置阈值时执行去重，保留质量更高的结果。",
+      "记录 Schema 不限制锚点总数；生成阶段应先按音频映射资格过滤、去重并排序，再由版本化模型配置决定保留数量。",
+      "生成阶段使用的最大锚点数、置信度阈值、NMS/去重阈值和排序策略必须写入批次元数据，以便复现数据集。"
+    ],
+    "depth_acceptance": [
+      "深度图必须与修正 EXIF 后原图对齐。",
+      "锚点框过小、有效采样像素不足、透明反射区域或深度模型失败时省略 depth_hint。",
+      "建议 uncertainty > 0.8 或 region_spread > 0.7 时省略 depth_hint。",
+      "建议 0.6 < uncertainty <= 0.8 时只允许音频层使用 class，不使用连续 value。",
+      "所有质量阈值必须保存在版本化配置中，并在批次元数据里记录配置版本。"
+    ],
+    "record_validation": [
+      "记录必须通过 JSON Schema。",
+      "scene_type 与 scene_group 必须通过词表查表一致性校验。",
+      "secondary_scene_types 必须去重并排除主场景。",
+      "边界框必须合法且位于 [0,1]。",
+      "depth_hint 出现时所有子字段必须齐全且范围合法。",
+      "记录 ID 与 image.path 在数据集索引中不得冲突。"
+    ]
+  },
+  "excluded_fields": {
+    "audio_plan": "属于音频决策层输出，不进入视觉分析数据集。",
+    "base_noise": "白、粉红、棕噪声由音频决策层决定。",
+    "sound_id": "声音语义由 anchor_id 查询静态音频映射后得到，视觉记录不提前决定。",
+    "asset_id_or_path": "素材标识和路径由播放计划与音频 Manifest 管理。",
+    "distance_m": "普通单张图片无法可靠恢复真实米制距离；视觉层只输出相对深度提示。",
+    "azimuth_or_elevation": "HRTF 方位由音频决策层根据框位置、体验约束和渲染策略计算。",
+    "pan_or_channel_gain": "左右声像和双声道增益属于播放参数。",
+    "reverb_or_lowpass": "混响、滤波和距离音色属于音频决策层。",
+    "state": "静态图片中的自由文本状态通常不可控；明确动作改用受控 anchor_id。",
+    "suggested_entities": "由结构固定的 trigger_anchors 替代。",
+    "depth_map_path_per_record": "主记录默认不引用完整深度图；如评估或复现需要，使用批次级可选 sidecar 索引管理。",
+    "provenance_per_record": "模型、词表和配置版本优先保存在批次级元数据中；锚点和深度仍保留必要 source。",
+    "validation_per_record": "正式有效数据不重复保存 valid=true；错误和警告写入独立错误数据集。"
+  },
+  "audio_decision_usage_guidance": {
+    "horizontal_position": "可由 bbox 水平中心计算前方左右方位；建议限制最大角度，避免助眠耳机中声源贴耳。",
+    "relative_depth": "可将可靠的 near、mid、far 映射为音频舞台中的虚拟距离等级；虚拟距离不是视觉测量结果。",
+    "vertical_position": "只作为弱仰角提示，默认应压缩范围或忽略。",
+    "uncertainty_fallback": "低不确定性可使用连续 value；中等不确定性只使用 class；高不确定性忽略 depth_hint。",
+    "surround_limit": "单张图片只证明相机前方的可见声源。实体锚点默认置于前方；侧后方包围感应由环境声床和混响策略产生，而不是伪造视觉实体位于身后。",
+    "prohibited_direct_mappings": [
+      "不得把 detection confidence 直接映射为音量。",
+      "不得把 bbox 面积直接映射为通用真实距离。",
+      "不得把 depth value 直接解释为米数。",
+      "不得由视觉层直接生成 HRTF、混响、低通或左右声道增益。"
+    ]
+  },
+  "dataset_specification": {
+    "dataset_purpose": "保存可复现、可验证的图片视觉分析结果，为音频决策器提供场景、氛围、局部视觉锚点及可选相对深度证据。",
+    "recommended_layout": {
+      "records_file": "records/visual_analysis.jsonl",
+      "images_root": "images/",
+      "metadata_file": "metadata/dataset_metadata.json",
+      "errors_file": "errors/visual_analysis_errors.jsonl",
+      "optional_depth_sidecar_index": "sidecars/depth_map_index.jsonl",
+      "schemas_directory": "schemas/",
+      "vocabularies_directory": "vocabularies/"
+    },
+    "records_jsonl": {
+      "encoding": "UTF-8 without BOM recommended",
+      "one_record_per_line": true,
+      "blank_lines_allowed": false,
+      "line_order_semantics": "行序不表达业务含义；消费者应以 id 关联。",
+      "duplicate_policy": "禁止重复 id；同一 image.path 默认只对应一条有效记录。",
+      "partial_write_policy": "生成时先写临时分片，完整校验后原子发布；不得把截断行混入正式文件。"
+    },
+    "dataset_metadata_required_fields": [
+      "dataset_name",
+      "dataset_version",
+      "record_schema_version",
+      "created_at",
+      "record_count",
+      "valid_record_count",
+      "error_record_count",
+      "scene_vocabulary_version",
+      "anchor_vocabulary_version",
+      "anchor_selection_config_version",
+      "vision_model_version",
+      "detector_version",
+      "brightness_pipeline_version",
+      "depth_pipeline_version_or_null",
+      "depth_quality_config_version_or_null",
+      "source_data_license_summary",
+      "records_sha256"
+    ],
+    "dataset_metadata_notes": {
+      "dataset_version": "数据内容、筛选或标注发生变化时升级；与 record_schema_version 分开管理。",
+      "depth_pipeline_version_or_null": "整个批次未运行深度估计时为 null；运行过但个别记录缺失时仍写实际版本。",
+      "anchor_selection_config_version": "指向生成阶段锚点数量上限、置信度阈值、去重阈值和排序规则；记录 Schema 本身不设置锚点数量上限。",
+      "record_count": "等于 JSONL 的非空行数；valid_record_count 与正式发布记录数一致。",
+      "records_sha256": "对发布后的 records_file 原始字节计算，用于完整性检查。"
+    },
+    "error_dataset": {
+      "purpose": "保存未进入正式 records_file 的失败样本及原因。",
+      "minimum_fields": [
+        "source_image_path",
+        "stage",
+        "error_code",
+        "message",
+        "pipeline_version"
+      ],
+      "rules": [
+        "图片无法解码、尺寸非法或必填视觉字段无法生成时进入错误数据集。",
+        "只有深度估计失败时不应淘汰主记录；省略 depth_hint，并可记录非致命 warning。",
+        "错误记录不得混入正式 visual_analysis.jsonl。"
+      ]
+    },
+    "optional_depth_sidecars": {
+      "default": "不保存完整深度图；正式音频决策只需要锚点级 depth_hint。",
+      "when_to_use": "模型评估、质量审计、算法复现或未来重新提取锚点深度时可保存。",
+      "index_fields": [
+        "record_id",
+        "relative_depth_path",
+        "width",
+        "height",
+        "encoding",
+        "normalization",
+        "source",
+        "sha256"
+      ],
+      "constraints": "sidecar 路径必须相对数据集根目录；不得成为读取主记录的硬依赖。"
+    },
+    "splits_and_leakage": {
+      "recommended_splits": [
+        "train",
+        "validation",
+        "test"
+      ],
+      "rule": "同一原图、近重复图、同一视频抽帧或同一编辑衍生图必须进入同一分割，避免视觉泄漏。",
+      "split_storage": "建议使用 metadata/splits.json 或独立 ID 列表，不在每条主记录中重复保存。"
+    },
+    "release_validation": [
+      "逐行解析 JSONL 且每条记录通过 2.3 JSON Schema。",
+      "校验 ID 唯一、图片相对路径安全且文件存在。",
+      "校验所有词表值和 scene_type 到 scene_group 的一致性。",
+      "统计空锚点、带深度锚点、深度 unknown 和深度缺失比例。",
+      "对深度 value、uncertainty、region_spread 分布做异常检测。",
+      "抽样可视化边界框和深度采样区域，确认 EXIF 与坐标对齐。",
+      "验证 metadata 中计数、版本和 records_sha256。"
+    ],
+    "recommended_statistics": [
+      "总记录数与错误数",
+      "scene_type、scene_group、mood、warmth、time_of_day 分布",
+      "每张图片锚点数量分布",
+      "anchor_id、检测来源和置信度分布",
+      "具有 depth_hint 的锚点比例",
+      "depth class、value、uncertainty、region_spread 分布",
+      "按 anchor_id 和场景分组的深度覆盖率",
+      "图片尺寸、长宽比和重复图片统计"
+    ],
+    "versioning_policy": {
+      "record_schema": "字段删除、改名、类型变化、坐标或深度方向变化属于不兼容更新；新增可选字段属于兼容更新。",
+      "vocabularies": "场景和锚点词表独立版本化；新增、弃用或重命名均需迁移说明。",
+      "models": "视觉语言模型、检测器、亮度算法和深度模型版本写入批次元数据。",
+      "mixed_versions": "同一 records_file 不应混用不同 schema_version；需要混用时分文件发布并提供清晰索引。"
+    },
+    "privacy_and_security": [
+      "主记录不保存人名、可识别个人信息、绝对本地路径或自由文本图像描述。",
+      "图片数据的授权、隐私和敏感内容治理应在数据集发布流程中单独审查。",
+      "路径必须防止目录穿越；所有外部输入在写入 JSONL 前进行长度和字符校验。"
+    ]
+  },
+  "minimum_acceptance_tests": [
+    "没有 depth_hint 的 2.3 记录合法。",
+    "depth_hint 出现时缺少任一必填子字段必须校验失败。",
+    "value、uncertainty 或 region_spread 超出 [0,1] 必须校验失败。",
+    "depth type 不是 relative_monocular 必须校验失败。",
+    "image.path 为绝对路径或包含 .. 时必须校验失败。",
+    "bbox 坐标越界或最小值不小于最大值时必须校验失败。",
+    "anchor_id 使用 bird、bird_chirp 等宽泛对象或声音 ID 而非2.3具体视觉词表值时必须校验失败。",
+    "普通 person 不在初始视觉锚点词表中；walking_person、walking_person_on_snow 等具体声音联想锚点可以合法出现。",
+    "深度估计失败只导致 depth_hint 缺失，不导致有效主记录进入错误数据集。",
+    "正式 JSONL 中每行只含记录对象，不含本文档级说明。"
+  ]
+}

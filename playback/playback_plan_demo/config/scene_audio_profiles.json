@@ -1,0 +1,38 @@
+{
+  "config_version": "1.0-demo",
+  "description": "仅覆盖本演示输入。素材库完成后应扩充为完整scene_type和scene_group映射。",
+  "scene_types": {
+    "beach": {
+      "primary_sound_id": "ocean_coast_bed",
+      "gain_db": -18.0
+    },
+    "study_room": {
+      "primary_sound_id": "study_office_bed",
+      "gain_db": -20.0
+    },
+    "none": {
+      "primary_sound_id": null,
+      "gain_db": -20.0
+    }
+  },
+  "scene_groups": {
+    "water_coastal": {
+      "primary_sound_id": "ocean_coast_bed",
+      "gain_db": -18.0
+    },
+    "residential_indoor": {
+      "primary_sound_id": "indoor_roomtone",
+      "gain_db": -20.0
+    },
+    "education_research": {
+      "primary_sound_id": "study_office_bed",
+      "gain_db": -20.0
+    }
+  },
+  "fallbacks": {
+    "silence": {
+      "primary_sound_id": null,
+      "gain_db": -20.0
+    }
+  }
+}

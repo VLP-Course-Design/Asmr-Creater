@@ -1,0 +1,33 @@
+{
+  "config_version": "1.0",
+  "visual_spec_path": "../recommended_structured_record_example.json",
+  "max_foreground_layers": 2,
+  "foreground_candidate_score_threshold": 0.18,
+  "strength_values": {
+    "strong": 1.0,
+    "medium": 0.6,
+    "weak": 0.25,
+    "cautious": 0.1
+  },
+  "sleep_safety_values": {
+    "high": 1.0,
+    "medium": 0.7,
+    "cautious": 0.4
+  },
+  "spatial_gate": {
+    "policy_version": "spatial_gate_v1",
+    "uncertainty_threshold": 0.35,
+    "max_region_spread": 0.5,
+    "minimum_spatial_candidate_count": 1,
+    "require_depth_for_all_candidates": true,
+    "comparison": "strict_less_than"
+  },
+  "motion_anchor_ids": [
+    "visible_bird",
+    "bird_group_in_flight",
+    "bird_takeoff_or_landing",
+    "visible_bee",
+    "walking_person",
+    "walking_person_on_snow"
+  ]
+}
