@@ -93,6 +93,9 @@ python scripts/test_vision.py
 | 6 | Scene Contract Schema 校验 | 输出通过 `contracts/scene_contract.schema.json` 的 JSON Schema 校验 |
 | 7 | 坐标映射 | `_compute_horizontal` 阈值 (±0.33/0.67)、`_compute_distance` 阈值 (8%/25%) |
 | 8 | VLM 格式归一化 | 裸字符串→dict 包装、嵌套列表→合并、非标准类型→跳过、warnings 信号验证 |
+| 9 | EXIF + 路径脱敏 | Orientation=6 转正后宽高对调；绝对路径收成文件名 |
+| 10 | 视觉记录 v2.3 | COCO→锚点映射、程序亮度、scene_group 查表；通过 playback_converter.validate_record |
+| 11 | handover v2.3 输入 | 读取无框交接 JSONL，融合 YOLO 框后产出带 bbox_norm 的正式记录 |
 
 **适用场景**: 修改代码后回归测试、CI/提交前检查、验证功能完整性。
 

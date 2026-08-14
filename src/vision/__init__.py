@@ -19,9 +19,16 @@ from .preprocess import batch_load_images, get_image_files, load_and_preprocess_
 # ── 共享数据结构 ──
 from .detector import Detection
 
-# ── 检测器接口与 YOLO 实现 ──
+# ── 检测器接口与 YOLO 实现（ultralytics 为可选运行时依赖）──
 from .base import BaseDetector
-from .yolo import YoloDetector
+try:
+    from .yolo import YoloDetector
+except ImportError as e:
+    YoloDetector = None  # type: ignore
+    warnings.warn(
+        f"YoloDetector 不可用（缺少依赖: {e}）。"
+        f"如需检测请安装: pip install ultralytics"
+    )
 
 # ── VLM + YOLO 融合管线 ──
 from .vlm_yolo_fusion import (
@@ -29,6 +36,14 @@ from .vlm_yolo_fusion import (
     merge_structured_payload,
     process_batch,
 )
+
+# ── 视觉记录 v2.3（适配音频播放计划，不替代 v1.0）──
+from .visual_record import (
+    build_visual_record_v23,
+    normalize_upstream_record,
+    process_batch_v23,
+)
+from .anchor_map import detections_to_anchors, map_name_to_anchor
 
 # ── VLM 氛围分析（可选，依赖 ollama + yaml + openai） ──
 try:
@@ -55,6 +70,12 @@ __all__ = [
     'load_jsonl',
     'merge_structured_payload',
     'process_batch',
+    # visual record v2.3
+    'build_visual_record_v23',
+    'normalize_upstream_record',
+    'process_batch_v23',
+    'detections_to_anchors',
+    'map_name_to_anchor',
     # vibe (optional)
     'get_global_vibe',
 ]
