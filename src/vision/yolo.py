@@ -15,8 +15,6 @@ yolo.py —— YOLO 检测器适配器实现
 import numpy as np
 from typing import List, Dict, Any, Optional, Tuple
 
-from ultralytics import YOLO
-
 from .base import BaseDetector
 from .detector import Detection
 
@@ -79,6 +77,7 @@ class YoloDetector(BaseDetector):
         self.img_size = img_size
 
         try:
+            from ultralytics import YOLO
             self.model = YOLO(model_name)
             print(f"[YoloDetector] 模型加载成功: {model_name}, device={device}")
         except Exception as e:
@@ -180,6 +179,7 @@ class YoloDetector(BaseDetector):
                     "image_path": path,
                     "original_width": original_w,
                     "original_height": original_h,
+                    "brightness": item.get("brightness"),
                     "error": None,
                     "detections": detections
                 })
@@ -189,6 +189,7 @@ class YoloDetector(BaseDetector):
                     "image_path": path,
                     "original_width": original_w,
                     "original_height": original_h,
+                    "brightness": item.get("brightness"),
                     "error": f"推理异常: {str(e)}",
                     "detections": []
                 })

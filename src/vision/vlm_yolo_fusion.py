@@ -27,6 +27,14 @@ try:
     from .base import BaseDetector
     from .yolo import YoloDetector
     from .preprocess import get_image_files, batch_load_images
+    from .visual_record import (
+        match_yolo_result,
+        normalize_upstream_record,
+        process_batch_v23,
+        sanitize_record_id,
+        sanitize_relative_path,
+        index_yolo_results,
+    )
 except ImportError:
     import sys
     from pathlib import Path as _Path
@@ -35,6 +43,14 @@ except ImportError:
     from vision.base import BaseDetector
     from vision.yolo import YoloDetector
     from vision.preprocess import get_image_files, batch_load_images
+    from vision.visual_record import (
+        match_yolo_result,
+        normalize_upstream_record,
+        process_batch_v23,
+        sanitize_record_id,
+        sanitize_relative_path,
+        index_yolo_results,
+    )
 
 
 
@@ -61,8 +77,8 @@ def load_jsonl(jsonl_path: str) -> List[Dict[str, Any]]:
             if not line:
                 continue
             try:
-                record = json.loads(line)
-                # 校验必需字段
+                record = normalize_upstream_record(json.loads(line))
+                # 旧格式四字段；handover v2.3 归一化后也会有 image/path/global_vibe
                 missing = [f for f in required_fields if f not in record]
                 if missing:
                     warnings.warn(
@@ -150,6 +166,8 @@ def merge_structured_payload(
     Raises:
         ValueError: 当 vlm_data 缺少必需字段时抛出
     """
+    vlm_data = normalize_upstream_record(vlm_data)
+
     # 1. 校验 VLM 数据完整性
     required_fields = ["image", "path", "global_vibe", "suggested_entities"]
     for field in required_fields:
@@ -165,9 +183,9 @@ def merge_structured_payload(
             f"实际为 {type(vlm_data['suggested_entities'])}"
         )
 
-    # 2. 提取 VLM 侧信息
+    # 2. 提取 VLM 侧信息（拷贝 vibe，避免删掉 2.3 字段后影响后续 v2.3 组装）
     vlm_image_name = vlm_data.get("image", "")
-    global_vibe = vlm_data.get("global_vibe", {})
+    global_vibe = dict(vlm_data.get("global_vibe") or {})
 
     # ── global_vibe 空字段兜底 + 额外字段过滤 ──
     # Qwen2.5VL 偶发输出空字符串 scene_type 或额外字段（如 background_color），
@@ -270,9 +288,10 @@ def merge_structured_payload(
                 entity_dict["state"] = state
             entities.append(entity_dict)
 
-    # 5. 构建 image 溯源信息
-    image_id = os.path.splitext(vlm_image_name)[0] if vlm_image_name else ""
-    vlm_path = vlm_data.get("path", "")
+    # 5. 构建 image 溯源信息（去掉本机绝对路径，避免泄露用户名）
+    fallback_name = os.path.basename(str(vlm_image_name) or vlm_data.get("path") or "unknown.jpg")
+    image_id = sanitize_record_id(vlm_image_name or fallback_name)
+    vlm_path = sanitize_relative_path(str(vlm_data.get("path", "")), fallback_name=fallback_name)
 
     # 6. 组装最终输出（严格遵循 Scene Contract）
     return {
@@ -304,45 +323,28 @@ def process_batch(
     Returns:
         符合 Scene Contract 的最终输出列表
     """
-    # 构建 YOLO 结果索引（按 basename 和规范化路径双键映射）
-    # 使用 os.path.normpath 统一 Windows/Linux 路径分隔符
-    yolo_map = {}
-    for yolo_res in yolo_results:
-        img_path = yolo_res.get("image_path", "")
-        base_name = os.path.basename(img_path)
-        if base_name:
-            yolo_map[base_name] = yolo_res
-        if img_path:
-            yolo_map[os.path.normpath(img_path)] = yolo_res
+    yolo_map = index_yolo_results(yolo_results)
 
     final_outputs = []
 
     # 1. 处理 VLM 成功列表
     for vlm_entry in vlm_success_list:
-        vlm_image = vlm_entry.get("image", "")
-        vlm_path = os.path.normpath(vlm_entry.get("path", ""))
-
-        # 多策略匹配：文件名 → 路径 basename → 规范化完整路径
-        matched_yolo = None
-        if vlm_image and vlm_image in yolo_map:
-            matched_yolo = yolo_map[vlm_image]
-        elif vlm_path:
-            vlm_basename = os.path.basename(vlm_path)
-            if vlm_basename and vlm_basename in yolo_map:
-                matched_yolo = yolo_map[vlm_basename]
-            elif vlm_path in yolo_map:
-                matched_yolo = yolo_map[vlm_path]
+        normalized = normalize_upstream_record(vlm_entry)
+        vlm_image = normalized.get("image", "")
+        vlm_path = os.path.normpath(normalized.get("path", ""))
+        matched_yolo = match_yolo_result(yolo_map, normalized)
 
         try:
-            merged = merge_structured_payload(matched_yolo, vlm_entry)
+            merged = merge_structured_payload(matched_yolo, normalized)
             final_outputs.append(merged)
         except ValueError as e:
             # 单条数据损坏不中断整批
+            fallback = os.path.basename(vlm_image or vlm_path or "unknown.jpg")
             final_outputs.append({
                 "schema_version": "1.0",
                 "image": {
-                    "id": os.path.splitext(vlm_image)[0] if vlm_image else "",
-                    "path": vlm_path,
+                    "id": sanitize_record_id(vlm_image or fallback),
+                    "path": sanitize_relative_path(vlm_path, fallback_name=fallback),
                     "width": 0,
                     "height": 0,
                     "error": f"融合异常: {str(e)}"
@@ -355,11 +357,12 @@ def process_batch(
     for vlm_entry in vlm_failed_list:
         vlm_image = vlm_entry.get("image", "")
         vlm_path = vlm_entry.get("path", "")
+        fallback = os.path.basename(vlm_image or vlm_path or "unknown.jpg")
         final_outputs.append({
             "schema_version": "1.0",
             "image": {
-                "id": os.path.splitext(vlm_image)[0] if vlm_image else "",
-                "path": vlm_path,
+                "id": sanitize_record_id(vlm_image or fallback),
+                "path": sanitize_relative_path(vlm_path, fallback_name=fallback),
                 "width": 0,
                 "height": 0,
                 "error": vlm_entry.get("error", "上游 VLM 模块推理失败")
@@ -376,6 +379,38 @@ def process_batch(
         })
 
     return final_outputs
+
+
+def detect_images_chunked(
+    image_paths: List[str],
+    detector: YoloDetector,
+    chunk_size: int = 32,
+) -> List[Dict[str, Any]]:
+    """分批预处理 + YOLO，避免一次把全部 letterbox 图载入内存。"""
+    if not image_paths:
+        print("⚠️ 未找到任何图片，仅进行 VLM 数据转换（所有实体无 YOLO 匹配）。")
+        return []
+
+    yolo_results: List[Dict[str, Any]] = []
+    total = len(image_paths)
+    n_chunks = (total + chunk_size - 1) // chunk_size
+    for i in range(0, total, chunk_size):
+        chunk = image_paths[i:i + chunk_size]
+        idx = i // chunk_size + 1
+        print(f"  [{idx}/{n_chunks}] 预处理并检测 {len(chunk)} 张 "
+              f"({i + 1}-{min(i + chunk_size, total)}/{total})")
+        preprocessed = batch_load_images(
+            image_paths=chunk,
+            target_size_yolo=(640, 640),
+            target_size_vlm=(224, 224),
+            verbose=False,
+            save_dir=None,
+        )
+        if preprocessed:
+            yolo_results.extend(detector.detect(preprocessed))
+        del preprocessed
+    print(f"  YOLO 推理完成: {len(yolo_results)} 张")
+    return yolo_results
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -400,7 +435,19 @@ def main():
     )
     parser.add_argument(
         "--output", type=str, default="final_structured_results.jsonl",
-        help="最终融合输出的 JSONL 文件路径"
+        help="最终融合输出的 JSONL 文件路径（Scene Contract v1.0，供现有 UI）"
+    )
+    parser.add_argument(
+        "--v23_output", type=str, default="visual_analysis.jsonl",
+        help="视觉记录 v2.3 JSONL（供 src/audio/playback_converter.py）"
+    )
+    parser.add_argument(
+        "--no_v23", action="store_true",
+        help="不额外写出 v2.3 视觉记录"
+    )
+    parser.add_argument(
+        "--chunk_size", type=int, default=32,
+        help="YOLO 分批张数，避免一次把全部图载入内存"
     )
 
     args = parser.parse_args()
@@ -421,22 +468,7 @@ def main():
     image_paths = get_image_files(args.image_dir, recursive=True)
     print(f"  发现 {len(image_paths)} 张待检测图片")
 
-    if not image_paths:
-        print("⚠️ 未找到任何图片，仅进行 VLM 数据转换（所有实体无 YOLO 匹配）。")
-        preprocessed = []
-    else:
-        # 3. 批量预处理 + YOLO 检测
-        print("\n[3/4] 正在预处理图片并执行 YOLO 目标检测...")
-        preprocessed = batch_load_images(
-            image_paths=image_paths,
-            target_size_yolo=(640, 640),
-            target_size_vlm=(224, 224),
-            verbose=True,
-            save_dir=None
-        )
-        print(f"  预处理完成: {len(preprocessed)}/{len(image_paths)} 张")
-
-    # 初始化 YOLO 检测器并推理
+    print("\n[3/4] 正在预处理图片并执行 YOLO 目标检测...")
     print("  正在初始化 YOLO 检测器 (yolo11n.pt, CPU)...")
     detector = YoloDetector(
         model_name='yolo11n.pt',
@@ -444,21 +476,30 @@ def main():
         conf_threshold=0.25,
         iou_threshold=0.45
     )
-
-    if preprocessed:
-        yolo_results = detector.detect(preprocessed)
-        print(f"  YOLO 推理完成: {len(yolo_results)} 张")
-    else:
-        yolo_results = []
+    yolo_results = detect_images_chunked(
+        image_paths,
+        detector,
+        chunk_size=max(1, args.chunk_size),
+    )
 
     # 4. 数据融合与输出
     print("\n[4/4] 正在融合 VLM 语义与 YOLO 物理空间结果...")
     final_results = process_batch(yolo_results, vlm_success, vlm_failed)
 
-    # 保存结果
+    # 保存 v1.0 结果（UI / 既有评估）
     with open(args.output, 'w', encoding='utf-8') as f:
         for entry in final_results:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+    v23_count = 0
+    v23_anchors = 0
+    if not args.no_v23:
+        v23_records = process_batch_v23(yolo_results, vlm_success)
+        with open(args.v23_output, 'w', encoding='utf-8') as f:
+            for entry in v23_records:
+                f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        v23_count = len(v23_records)
+        v23_anchors = sum(len(e.get("trigger_anchors", [])) for e in v23_records)
 
     # 统计摘要
     total_entities = sum(len(e.get("entities", [])) for e in final_results)
@@ -482,6 +523,8 @@ def main():
     print(f"    - YOLO 匹配成功: {yolo_matched}")
     print(f"    - VLM 提及(开放词汇预留): {vlm_only}")
     print(f"  失败/异常图片: {failed_images}")
+    if not args.no_v23:
+        print(f"  v2.3 视觉记录: {args.v23_output} ({v23_count} 条, {v23_anchors} 个锚点)")
     print(f"{'=' * 60}")
 
 

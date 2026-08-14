@@ -40,4 +40,8 @@ Thumbs.db
 outputs/
 *.log
 
+# 第二人本地交接 / 备忘，不进功能分支
+handover_v23/
+personal_work_readme.md
+
 AGENTS.md
