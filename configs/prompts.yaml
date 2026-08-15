@@ -1,6 +1,8 @@
-# Prompt 模板 —— 视觉层 VLM 调用 (v2)
+# Prompt 模板 —— 视觉层 VLM 调用 (v6)
 # 角色 A（视觉-氛围）维护
-# v2 → v3: 去掉模板示例值改为空字符串，AB测试验证空字符串分布更合理
+# v6 (2026-08-13): 对齐音频层「视觉记录规范 2.3」——scene_type 走 424 词表(none/other_* 兜底)、secondary_scene_types 最多 2 个、
+#   实体用 87 锚点 id(无 state)、brightness 由程序计算。尚未跑批量验证，验证通过前不升版本号。
+# v1→v5 历史见 configs/PROMPT_CHANGELOG.md
 
 global_vibe:
   system: |
@@ -11,9 +13,9 @@ global_vibe:
     分析这张图片，输出以下 JSON。只输出一行 JSON，不要解释、不要 markdown、所有值用英文。
 
     {
-      "scene_type": "场景类型，英文小写下划线，如 bedroom/cafe/forest/street/beach/office/mountain",
+      "scene_type": "",
+      "secondary_scene_types": [],
       "mood": "",
-      "brightness": 0.0,
       "warmth": "",
       "base_noise": "",
       "time_of_day": "",
@@ -24,9 +26,9 @@ global_vibe:
 
     字段说明：
 
-    mood: 严格从这 8 个英文词选一个（不要中文）:
-      calm=平静 | cozy=温馨 | lively=热闹 | tense=紧张
-      gloomy=阴暗沉闷 | melancholic=忧伤怀旧 | eerie=诡异不安 | cheerful=愉快
+    mood: 严格从这 10 个英文词选一个（不要中文）:
+      neutral=中性 | calm=平静 | cozy=温馨 | cheerful=愉快 | lively=热闹
+      majestic=壮丽 | mysterious=神秘 | melancholic=忧伤怀旧 | tense=紧张 | eerie=诡异不安
 
     warmth: 严格从这 3 个英文词选一个:
       warm=暖色调（黄橙红） | neutral=中性 | cool=冷色调（蓝灰青）
@@ -37,11 +39,18 @@ global_vibe:
     time_of_day: 严格从这 6 个英文词选一个:
       dawn=黎明 | morning=早晨 | noon=正午 | afternoon=下午 | dusk=黄昏 | night=夜晚
 
-    brightness: 0.0最暗～1.0最亮。夜景0.1~0.3，室内灯光0.4~0.6，白天室外0.7~0.9。
+    scene_type: 从受控词表(contracts/playback_proposal/scene_type_vocabulary.json)中选最具体的「叶子场景」，英文小写 snake_case，只输出一个值。
+      判断主体是「主导物理环境」，不是画面里最显眼的物体；不要把 mood/天气/时段塞进来(它们有单独字段)。
+      叶子场景示例: street、office、cafe、coffee_shop、beach、forest、living_room、kitchen、temple、classroom、train_station、airport_terminal、museum、zoo、gym、supermarket、lake、park。
+      禁止输出大组名（如 residential_indoor、food_hospitality、urban_outdoor、transport_outdoor、water_coastal、education_research 等），大组名只是归组用，不算场景。
+      截图/表情包/文档/PPT/代码/UI/纯人像/微距/孤立物体特写等没有稳定物理环境的图片，输出 none。
+      有明确环境但词表没有精确值时，用 other_indoor / other_outdoor / other_natural / other_transport。
+      secondary_scene_types: 最多 2 个次场景，从同一受控词表选叶子场景，不能与 scene_type 重复、彼此也不能重复；画面没有别的明显环境就返回空数组 []。
 
-    suggested_entities: 仔细检查画面，列出所有有发声潜力的物体或现象，宁多勿少，通常 2~6 个，每项包含 name 和 state。
-    判定标准：只要真实世界里会发出声音的物体或现象就列（猫、鸟、人、杯子、键盘、乐器、车辆、水流、雨、风铃、电器等），常见物体最容易漏，请逐一检查画面后再输出。
-    例如: [{"name":"wind_chime","state":"swaying"},{"name":"kettle","state":"boiling"},{"name":"cat","state":"sleeping"},{"name":"rain","state":"falling"},{"name":"people","state":"talking"}]
+
+    suggested_entities: 列出画面中有发声潜力的物体或现象（视觉层会把它映射到锚点词典），每项包含 name 和 state。name 用英文小写单数（cat/bird/dog/cup/book/keyboard/clock/tv/window/kettle/wind_chime/waterfall/fountain/stream/people 等），state 用状态词（sleeping/flying/boiling/falling/talking 等）。
+    判定标准：只有真实世界里会发声或可能发声的物体/现象才列；同一物体只列一次，通常 1~5 个；宁可列出也不要漏掉。
+    例如: [{"name":"cat","state":"sleeping"},{"name":"bird","state":"flying"},{"name":"kettle","state":"boiling"}]
     如果画面确实没有可发声物体，返回空数组 []。
 
-    重要提醒：mood/warmth/base_noise/time_of_day 必须用英文值。只输出一行 JSON，别无其他。
+    重要提醒：mood/warmth/base_noise/time_of_day 必须用英文值。不要输出 brightness（由程序计算）。只输出一行 JSON，别无其他。

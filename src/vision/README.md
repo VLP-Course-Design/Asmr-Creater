@@ -312,6 +312,8 @@ python src/ui/app.py --port 5000
 ## 关键纪律
 
 - 受控字段(`mood`/`warmth`/`base_noise`/`time_of_day`/`depth`)只能取词表内的值 —— 在 VLM prompt 里用 few-shot 钉死。
+- scene_type 按 contracts/playback_proposal/scene_type_vocabulary.json(音频层 v1.0,424 值)取值,scene_group 查表生成,none/other_* 兜底(v6 起,2.3 对齐版);suggested_entities 只输出 contracts/anchor_dictionary.json 的 87 个锚点 id。
+- brightness 由程序计算，不在 VLM prompt 中输出(v6 起,2.3 对齐版)。
 - `entities[].name` 要和 [`sounds/trigger_map.json`](../../sounds/trigger_map.json) 的 key 对齐(小写单数),否则音频层查不到素材。
 - 检测器输出统一使用 `Detection` dataclass(归一化坐标)，接口见 `detector.py`。
 - 换模型只改对应一个文件，不动契约。prompt 的迭代过程请留版本记录(报告要用)。
