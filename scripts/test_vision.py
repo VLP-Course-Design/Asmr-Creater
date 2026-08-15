@@ -32,7 +32,9 @@ def test_1_preprocessing():
 
     test_img = np.random.randint(0, 255, (300, 400, 3), dtype=np.uint8)
     test_path = str(REPO_ROOT / "_test_tmp.jpg")
-    cv2.imwrite(test_path, cv2.cvtColor(test_img, cv2.COLOR_RGB2BGR))
+    # 用 Pillow 写图,与产品代码一致:cv2.imwrite 在含中文/非 ASCII 的路径下会静默失败
+    from PIL import Image
+    Image.fromarray(test_img).save(test_path)  # test_img 已是 RGB,无需 cvtColor
 
     result = load_and_preprocess_image(test_path,
                                        target_size_yolo=(640, 640),
