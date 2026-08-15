@@ -3,8 +3,8 @@
 **职责**: 一张图 → 一份符合 [Scene Contract](../../docs/json_contract.md) 的 JSON。**只产出 JSON,绝不碰音频代码。**
 
 > 视觉层由两名成员协作完成：
-> - **第一人**（氛围分析）：`vibe_vlm.py`、`batch_vibe.py` — 调用 VLM 输出 `global_vibe`
-> - **第二人**（预处理/检测/融合）：`preprocess.py`、`base.py`、`yolo.py`、`vlm_yolo_fusion.py` — 本文档重点说明
+> - **第一人**（氛围分析）：`vibe_vlm.py`、`batch_vibe.py` — 调用 VLM 输出 `global_vibe`。对应 PR #1/#3/#4/#7，作者 MagicianFrieren
+> - **第二人**（预处理/检测/融合）：`preprocess.py`、`base.py`、`yolo.py`、`vlm_yolo_fusion.py` — 本文档重点说明。正式交付是 [PR #2](https://github.com/VLP-Course-Design/Asmr-Creater/pull/2)（wink316）。`anchor_map.py` / `visual_record.py` 是 PR #2 之后为对齐音频 v2.3 补的适配，尚未单独开 PR
 
 ---
 
@@ -16,10 +16,10 @@
         ▼
 ┌──────────────────────────────────────────────────────────┐
 │  preprocess.py  (步骤 1)                                  │
-│  get_image_files() → batch_load_images()                 │
+│  EXIF 转正 + CIE L* brightness + Letterbox               │
 │  输出: [{'image_yolo': (640,640,3),                      │
 │          'image_vlm': (224,224,3),                       │
-│          'scale', 'pad_left', 'pad_top', ...}]            │
+│          'brightness', 'scale', 'pad_left', ...}]         │
 └────────────┬─────────────────────────────────────────────┘
              │ 内存数组 (杜绝重复读盘)
              ▼
@@ -40,11 +40,23 @@
 ┌──────────────────────────────────────────────────────────┐
 │  vlm_yolo_fusion.py  (步骤 4 + 步骤 5)                   │
 │  load_jsonl() → process_batch() → merge_structured_payload()
-│  输出: final_structured_results.jsonl                     │
-│  格式: {schema_version, image, global_vibe, entities[]}   │
-│  校验: src.common.validate_scene()                        │
+│  输出 A: final_structured_results.jsonl  (Scene Contract v1.0, UI)
+│  输出 B: visual_analysis.jsonl           (视觉记录 v2.3, 播放计划)
+│  v1.0 校验: src.common.validate_scene()                   │
 └──────────────────────────────────────────────────────────┘
 ```
+
+双格式原因：UI 仍消费冻结的 v1.0；音频播放计划转换器（`src/audio/playback_converter.py`）只接受 schema 2.3 的 `trigger_anchors`。第二人侧用 `anchor_map.py` 把 COCO 检测保守映射到 87 项锚点，**不改**已冻结的 v1.0 契约。
+
+### 与 [PR #7](https://github.com/VLP-Course-Design/Asmr-Creater/pull/7) 的分工
+
+PR #7（`feat/vision-scene-vocab`，尚未合入 main）做的是 **A 环境层**：424 场景词表、`scene_group` 查表、Prompt v6、旧 JSONL 归一化脚本。它写明：**正式锚点（带框）归第二人**。
+
+第二人对应其缺口清单（`docs/VISION_V23_GAP.md`）中的 B 实体层：
+
+- EXIF 转正、CIE L* `brightness`、COCO→87 锚点 + `bbox_norm`：本目录已做
+- 开放词汇检全 87 类、`depth_hint`、锚点配置版本号：未做，见 `BaseDetector` 预留
+- 不要把 `scripts/normalize_global_vibe.py` 产出的无框 `vlm_legacy` 记录当作本层交付
 
 ---
 
@@ -65,6 +77,8 @@
 
 **关键设计决策**:
 
+- **EXIF 转正**: 用 Pillow `ImageOps.exif_transpose` 后再喂 YOLO，避免手机竖拍图检测框与浏览器显示错位。
+- **程序亮度**: `compute_brightness_cie_lstar()` 按 v2.3 要求用 CIE L* 去头去尾均值，不采用 VLM 估计的 brightness。
 - **内存流复用**: 返回 `image_yolo` (np.ndarray) 给下游 YOLO 直接消费，**杜绝重复读取磁盘**。2000+ 张图片场景下节省大量 I/O 时间。
 - **Letterbox 而非拉伸**: 使用等比例缩放 + 灰边填充，防止图像变形导致 YOLO 检测精度下降。
 - **双尺寸输出**: 同时产出 640×640 (YOLO) 和 224×224 (VLM 预留)，一次预处理满足两种模型需求。
@@ -206,6 +220,21 @@ Qwen2.5VL / MiniCPM-V 在批量推理时偶发输出不规范数据，融合管�
 
 `src/ui/app.py` 中的 `image_to_scene()` 函数封装了预处理→检测→组装的完整链路。Demo 模式下无 VLM JSONL 可供查询，YOLO 检测到的所有实体直接作为 entities 输出（source="yolo"），global_vibe 使用中性默认值。前端 UI 可用 Canvas 像素分析结果覆盖 global_vibe。
 
+### 5. `anchor_map.py` + `visual_record.py` — 适配播放计划 v2.3
+
+**对应任务**: 同步 main 上音频决策层的视觉记录提案，不改冻结的 Scene Contract v1.0。
+
+| 规则 | 做法 |
+|------|------|
+| 87 项 `anchor_id` | COCO/VLM 名保守映射；普通 person、未睡觉的猫、无雨的伞不输出 |
+| `bbox_norm` | 沿用 YOLO 映射回原图后的归一化 xyxy；无框的 VLM-only 实体丢弃 |
+| `brightness` | 使用预处理算出的 CIE L*，覆盖 VLM 估计值 |
+| `scene_group` | 查 `scene_type_vocabulary.json`，不让模型填 |
+| `depth_hint` | 无单目深度模型时整段省略，不用框面积冒充 |
+| `image.path` | 去掉盘符与绝对路径 |
+
+v2.3 `source` 枚举尚未收录闭合词表 YOLO。当前检测器仍是 `yolo11n`，记录里如实写 `"yolo"`。播放转换器不校验该字段；若用正式 JSON Schema 审记录，需契约侧补枚举。
+
 **命令行入口**:
 
 ```bash
@@ -298,11 +327,13 @@ python scripts/run_vision_pipeline.py
 python scripts/visualize_stage2.py
 
 # 完整融合管线 (需要 VLM JSONL + 图片目录)
+# 默认同时写出 v1.0（UI）与 v2.3（播放计划）
 python -m src.vision.vlm_yolo_fusion \
     --image_dir ./data \
     --vlm_success ./global_vibe_results.jsonl \
     --vlm_failed ./global_vibe_failed.jsonl \
-    --output ./final_structured_results.jsonl
+    --output ./final_structured_results.jsonl \
+    --v23_output ./visual_analysis.jsonl
 
 # 启动后端推理服务 (供 UI 调用)
 python src/ui/app.py --port 5000

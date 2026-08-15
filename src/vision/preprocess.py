@@ -19,6 +19,50 @@ from typing import List, Dict, Optional, Tuple, Union
 SUPPORTED_EXTENSIONS = ('.jpg', '.jpeg', '.png')
 
 
+def apply_exif_orientation(image_path: str) -> Optional[np.ndarray]:
+    """按 EXIF Orientation 转正后再返回 RGB 数组。
+
+    cv2.imread 会忽略 EXIF，浏览器却会应用旋转，导致手机竖拍图检测框上下错位
+    （见 docs/TEST_REPORT_20260807.md 问题 12）。优先用 Pillow 转正；失败再回退 OpenCV。
+    """
+    try:
+        from PIL import Image, ImageOps
+        with Image.open(image_path) as pil_img:
+            oriented = ImageOps.exif_transpose(pil_img)
+            return np.asarray(oriented.convert("RGB"))
+    except Exception:
+        img_bgr = cv2.imread(image_path)
+        if img_bgr is None:
+            return None
+        return cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+
+
+def compute_brightness_cie_lstar(img_rgb: np.ndarray) -> float:
+    """程序计算整体感知亮度（CIE L* 去头去尾 5% 均值），范围 [0, 1]。
+
+    视觉记录 v2.3 要求 brightness 不得由 VLM 估计。
+    """
+    if img_rgb is None or img_rgb.size == 0:
+        return 0.5
+    rgb = img_rgb.astype(np.float64) / 255.0
+    mask = rgb <= 0.04045
+    linear = np.empty_like(rgb)
+    linear[mask] = rgb[mask] / 12.92
+    linear[~mask] = ((rgb[~mask] + 0.055) / 1.055) ** 2.4
+    y = 0.2126 * linear[..., 0] + 0.7152 * linear[..., 1] + 0.0722 * linear[..., 2]
+    delta = 6.0 / 29.0
+    f = np.where(y > delta ** 3, np.cbrt(y), y / (3.0 * delta ** 2) + 4.0 / 29.0)
+    lightness = (116.0 * f - 16.0).reshape(-1)
+    lightness = lightness[np.isfinite(lightness)]
+    if lightness.size == 0:
+        return 0.5
+    lo, hi = np.percentile(lightness, [5.0, 95.0])
+    trimmed = lightness[(lightness >= lo) & (lightness <= hi)]
+    if trimmed.size == 0:
+        trimmed = lightness
+    return float(np.clip(round(float(trimmed.mean()) / 100.0, 2), 0.0, 1.0))
+
+
 def get_image_files(root_dir: str, recursive: bool = True) -> List[str]:
     """
     获取指定目录下的所有图像文件路径。
@@ -117,16 +161,13 @@ def load_and_preprocess_image(
         失败时返回 None
     """
     try:
-        # 读取图像（OpenCV 默认为 BGR）
-        img_bgr = cv2.imread(image_path)
-        if img_bgr is None:
+        img_rgb = apply_exif_orientation(image_path)
+        if img_rgb is None:
             raise ValueError(f"无法读取图像: {image_path}")
 
-        # 转换为 RGB
-        img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
-
-        # 保存原始尺寸
+        # 保存原始尺寸（已按 EXIF 转正）
         orig_h, orig_w = img_rgb.shape[:2]
+        brightness = compute_brightness_cie_lstar(img_rgb)
 
         # 1. 生成 YOLO 的 Letterbox 图像
         processed_yolo, scale, (new_w, new_h), (pad_left, pad_top) = letterbox(img_rgb, target_size_yolo)
@@ -146,6 +187,7 @@ def load_and_preprocess_image(
             'new_width': new_w,
             'new_height': new_h,
             'path': image_path,
+            'brightness': brightness,       # v2.3 要求程序计算，不采用 VLM 估计
         }
     except Exception as e:
         print(f"Warning: 跳过文件 {image_path} - {e}")
