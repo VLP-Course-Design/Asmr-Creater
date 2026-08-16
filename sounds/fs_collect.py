@@ -179,12 +179,24 @@ def score(s, spec):
     return sc
 
 
-def cmd_search():
+def cmd_search(only=None):
+    """only: 只跑指定的 sound_id(逗号分隔),用于个别类别改 query 后单独补跑。
+
+    此时结果会并入已有 candidates.json,而不是整份覆盖。
+    """
     if not TOKEN:
         sys.exit("请先设置 FREESOUND_TOKEN")
     specs = json.loads(SPECS.read_text(encoding="utf-8"))
     all_specs = [dict(s, category="bed") for s in specs["beds"]] + \
                 [dict(s, category="trigger") for s in specs["triggers"]]
+
+    if only:
+        wanted = {s.strip() for s in only.split(",") if s.strip()}
+        all_specs = [s for s in all_specs if s["id"] in wanted]
+        unknown = wanted - {s["id"] for s in all_specs}
+        if unknown:
+            sys.exit(f"sound_specs.json 里没有这些 id: {', '.join(sorted(unknown))}")
+        print(f"只补跑 {len(all_specs)} 个: {', '.join(s['id'] for s in all_specs)}\n")
 
     out, missing = {}, []
     for i, spec in enumerate(all_specs, 1):
@@ -205,9 +217,15 @@ def cmd_search():
         print(f"    ✓ {len(pool)} 候选 → 选 {len(picked)}: " +
               ", ".join(f"{s['id']}({s['duration']:.1f}s,{s['_score']})" for s in picked))
 
-    pathlib.Path("candidates.json").write_text(
-        json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"\n写出 candidates.json —— {len(out)}/{len(all_specs)} 个 sound_id 有结果")
+    cand_path = pathlib.Path("candidates.json")
+    if only and cand_path.exists():
+        # 补跑模式:并入已有结果,别把整份覆盖掉
+        merged = json.loads(cand_path.read_text(encoding="utf-8"))
+        merged.update(out)
+        out = merged
+    cand_path.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"\n写出 candidates.json —— 本次 {len(all_specs)} 个中命中 "
+          f"{len(all_specs) - len(missing)} 个，文件内共 {len(out)} 个 sound_id")
     if missing:
         print("以下需要手工兜底（放宽 dur 或改 query）:")
         for m in missing:
@@ -322,10 +340,14 @@ def fetch(sound, dest_stem: pathlib.Path, at):
     return to_wav(mp3, final), "preview-mp3"
 
 
-def cmd_download():
+def cmd_download(only=None):
     if not pathlib.Path("candidates.json").exists():
         sys.exit("先跑 `python fs_collect.py search`")
     cand = json.loads(pathlib.Path("candidates.json").read_text(encoding="utf-8"))
+    if only:
+        wanted = {s.strip() for s in only.split(",") if s.strip()}
+        cand = {k: v for k, v in cand.items() if k in wanted}
+        print(f"只下载 {len(cand)} 个: {', '.join(cand)}\n")
     at = access_token()
     if not at:
         print("! 未授权 OAuth2 —— 将下载 preview-hq-mp3 (~128kbps) 转 wav。")
@@ -390,7 +412,13 @@ def cmd_download():
 
 
 if __name__ == "__main__":
-    cmds = {"search": cmd_search, "auth": cmd_auth, "download": cmd_download}
-    if len(sys.argv) < 2 or sys.argv[1] not in cmds:
-        sys.exit(f"用法: python {sys.argv[0]} {{search|auth|download}}")
-    cmds[sys.argv[1]]()
+    if len(sys.argv) < 2 or sys.argv[1] not in {"search", "auth", "download"}:
+        sys.exit(f"用法: python {sys.argv[0]} {{search|auth|download}} [sound_id,sound_id,...]\n"
+                 f"  不带 id = 全量;带 id = 只补跑这几类(改完 query 后常用)")
+    cmd, arg = sys.argv[1], (sys.argv[2] if len(sys.argv) > 2 else None)
+    if cmd == "auth":
+        cmd_auth()
+    elif cmd == "search":
+        cmd_search(arg)
+    else:
+        cmd_download(arg)

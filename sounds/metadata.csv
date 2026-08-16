@@ -163,15 +163,12 @@ triggers/soft_footsteps/soft_footsteps_02.wav,soft_footsteps,trigger,3.749,false
 triggers/soft_footsteps/soft_footsteps_03.wav,soft_footsteps,trigger,7.509,false,0.4,CC0,https://freesound.org/people/iggy1345/sounds/76931/,footsteps on soft floor_bip.wav by iggy1345; fs_loopable=False
 triggers/crowd_murmur/crowd_murmur_01.wav,crowd_murmur,loop,30.0,true,0.35,CC0,https://freesound.org/people/iamazerrad/sounds/274354/,Crowd Noise Calming down.wav by iamazerrad; fs_loopable=True
 triggers/crowd_murmur/crowd_murmur_02.wav,crowd_murmur,loop,28.0,true,0.35,CC0,https://freesound.org/people/IENBA/sounds/653920/,Small Crowd Walla by IENBA; fs_loopable=True
-triggers/tableware_ambience/tableware_ambience_01.wav,tableware_ambience,texture,5.5,false,0.35,CC0,https://freesound.org/people/brunoboselli/sounds/482933/,Hit on table by brunoboselli; fs_loopable=False
-triggers/tableware_ambience/tableware_ambience_02.wav,tableware_ambience,texture,14.79,false,0.35,CC0,https://freesound.org/people/Vrymaa/sounds/797581/,Tableware - Handle plates by Vrymaa; fs_loopable=False
 triggers/distant_traffic/distant_traffic_01.wav,distant_traffic,loop,139.5,true,0.35,CC0,https://freesound.org/people/njlyczko/sounds/580646/,urban_ambience_outside_apartment__sunny_day.wav by njlyczko
 triggers/distant_traffic/distant_traffic_02.wav,distant_traffic,loop,103.169,true,0.35,CC0,https://freesound.org/people/johanwestling/sounds/460178/,forest_ambience_steady_breeze_summer_sweden_leaves_light_wind_distant_highway_loop_m10.wav by johanwestling
 triggers/train_rumble/train_rumble_01.wav,train_rumble,loop,20.0,true,0.4,CC0,https://freesound.org/people/Profispiesser/sounds/517391/,FXSaSc Berlin Tram Passing Underpass Interior Rumble by Profispiesser; fs_loopable=True
 triggers/train_rumble/train_rumble_02.wav,train_rumble,loop,196.284,true,0.4,CC0,https://freesound.org/people/nicotep/sounds/727491/,Trafic _Pont_Ferroviaire_Bercy3 by nicotep
 triggers/subway_rumble/subway_rumble_01.wav,subway_rumble,loop,20.0,true,0.4,CC0,https://freesound.org/people/Profispiesser/sounds/517391/,FXSaSc Berlin Tram Passing Underpass Interior Rumble by Profispiesser; fs_loopable=True
 triggers/subway_rumble/subway_rumble_02.wav,subway_rumble,loop,119.453,true,0.4,CC0,https://freesound.org/people/crashoverride6/sounds/219232/,DC Metro - Interior 2 by crashoverride6
-triggers/airplane_cabin_hum/airplane_cabin_hum_01.wav,airplane_cabin_hum,loop,28.768,true,0.4,CC0,https://freesound.org/people/marc.om/sounds/806562/,"Inside Airplane, Bangkok, Thailand (Feb 20, 2019) by marc.om [from hq-mp3 preview]"
 triggers/boat_hull_water/boat_hull_water_01.wav,boat_hull_water,loop,115.207,true,0.4,CC0,https://freesound.org/people/Berwitz/sounds/339440/,Rusty old boat.wav by Berwitz
 triggers/boat_hull_water/boat_hull_water_02.wav,boat_hull_water,loop,119.161,true,0.4,CC0,https://freesound.org/people/kyles/sounds/637980/,waves lap at small boat hull motorboat +distant birds.flac by kyles
 triggers/wind_chime/wind_chime_01.wav,wind_chime,trigger,4.04,false,0.35,CC0,https://freesound.org/people/Anthousai/sounds/398496/,wind chimes - single 04.wav by Anthousai; fs_loopable=False
@@ -197,5 +194,23 @@ triggers/fireplace_tea_boil/fireplace_tea_boil_02.wav,fireplace_tea_boil,loop,61
 triggers/singing_bowl/singing_bowl_01.wav,singing_bowl,long_tail_trigger,18.762,false,0.3,CC0,https://freesound.org/people/airtaxi/sounds/76888/,Small bowl.wav by airtaxi; fs_loopable=False
 triggers/singing_bowl/singing_bowl_02.wav,singing_bowl,long_tail_trigger,20.498,false,0.3,CC0,https://freesound.org/people/dersinnsspace/sounds/417116/,Tibetan bowl_right hit.wav by dersinnsspace; fs_loopable=False
 triggers/singing_bowl/singing_bowl_03.wav,singing_bowl,long_tail_trigger,12.333,false,0.3,CC0,https://freesound.org/people/the_very_Real_Horst/sounds/240934/,NEPTUN-Solo-07 Tibetan Singing Bowl by the_very_Real_Horst; fs_loopable=False
-triggers/wind_chime_bronze/wind_chime_bronze_01.wav,wind_chime_bronze,long_tail_trigger,5.99,false,0.3,CC0,https://freesound.org/people/ceich93/sounds/266397/,Gong14.wav by ceich93; fs_loopable=False
 triggers/tv_static/tv_static_03.wav,tv_static,loop,90.0,true,0.25,CC0,https://freesound.org/people/ShawnyBoy/sounds/165395/,White Noise.wav by ShawnyBoy [from hq-mp3 preview]
+triggers/rain_on_roof/rain_on_roof_01.wav,rain_on_roof,loop,38.004,true,0.5,CC0,https://freesound.org/people/FenrirFangs/sounds/231687/,rain 1.wav by FenrirFangs
+triggers/rain_on_roof/rain_on_roof_02.wav,rain_on_roof,loop,81.716,true,0.5,CC0,https://freesound.org/people/kyles/sounds/454130/,rain light on awning close drops on fabric.flac by kyles
+triggers/distant_livestock/distant_livestock_01.wav,distant_livestock,trigger,5.5,false,0.3,CC0,https://freesound.org/people/Mystikuum/sounds/401636/,cows_mooing_mono_4824.wav by Mystikuum; fs_loopable=False
+triggers/distant_livestock/distant_livestock_02.wav,distant_livestock,trigger,1.653,false,0.3,CC0,https://freesound.org/people/Bird_man/sounds/275154/,Moo.wav by Bird_man; fs_loopable=False
+triggers/distant_livestock/distant_livestock_03.wav,distant_livestock,trigger,2.056,false,0.3,CC0,https://freesound.org/people/manofham/sounds/700378/,Moo 1 - Moo Moo the Cow by manofham; fs_loopable=True
+triggers/cup_clink/cup_clink_01.wav,cup_clink,trigger,0.944,false,0.35,CC0,https://freesound.org/people/squidge316/sounds/404922/,putting down a mug on a table.wav by squidge316; fs_loopable=False
+triggers/cup_clink/cup_clink_02.wav,cup_clink,trigger,0.249,false,0.35,CC0,https://freesound.org/people/robbeman/sounds/495645/,mug_wood1.wav by robbeman; fs_loopable=False
+triggers/cup_clink/cup_clink_03.wav,cup_clink,trigger,0.459,false,0.35,CC0,https://freesound.org/people/Nightflame/sounds/368613/,cup_02.wav by Nightflame; fs_loopable=False
+triggers/dish_handling/dish_handling_01.wav,dish_handling,trigger,1.912,false,0.35,CC0,https://freesound.org/people/bbrocer/sounds/382652/,Plate Topple Spin.wav by bbrocer; fs_loopable=True
+triggers/dish_handling/dish_handling_02.wav,dish_handling,trigger,4.53,false,0.35,CC0,https://freesound.org/people/gallagho/sounds/27366/,dishes.wav by gallagho; fs_loopable=True
+triggers/dish_handling/dish_handling_03.wav,dish_handling,trigger,1.568,false,0.35,CC0,https://freesound.org/people/cognito%20perceptu/sounds/718308/,casserole ceramic dishes glass lid rattling set down by cognito perceptu; fs_loopable=False
+triggers/tableware_ambience/tableware_ambience_01.wav,tableware_ambience,texture,31.174,false,0.35,CC0,https://freesound.org/people/Joao_Janz/sounds/473718/,Kitchen Ambience At Night .wav by Joao_Janz
+triggers/tableware_ambience/tableware_ambience_02.wav,tableware_ambience,texture,41.071,false,0.35,CC0,https://freesound.org/people/justingregoire/sounds/205165/,KITCHEN_AMBIENCE_ROOMTONE_01.wav by justingregoire
+triggers/tableware_ambience/tableware_ambience_03.wav,tableware_ambience,texture,37.486,false,0.35,CC0,https://freesound.org/people/ivolipa/sounds/326313/,Tavern_Ambience_Inside_Laughter.WAV by ivolipa
+triggers/airplane_cabin_hum/airplane_cabin_hum_01.wav,airplane_cabin_hum,loop,79.92,true,0.4,CC0,https://freesound.org/people/schots/sounds/265568/,"Helicopter interior, no rotor by schots"
+triggers/airplane_cabin_hum/airplane_cabin_hum_02.wav,airplane_cabin_hum,loop,135.681,true,0.4,CC0,https://freesound.org/people/SKrafft/sounds/681365/,Airplane Onboard by SKrafft
+triggers/wind_chime_bronze/wind_chime_bronze_01.wav,wind_chime_bronze,long_tail_trigger,7.669,false,0.3,CC0,https://freesound.org/people/nahmandub/sounds/131348/,"Bell at Daitokuji temple,kyoto.wav by nahmandub; fs_loopable=False"
+triggers/wind_chime_bronze/wind_chime_bronze_02.wav,wind_chime_bronze,long_tail_trigger,12.998,false,0.3,CC0,https://freesound.org/people/tec_studio/sounds/668647/,temple_bell_002.wav by tec_studio; fs_loopable=False
+triggers/wind_chime_bronze/wind_chime_bronze_03.wav,wind_chime_bronze,long_tail_trigger,14.803,false,0.3,CC0,https://freesound.org/people/ganapataye/sounds/390202/,BELL 01 by ganapataye; fs_loopable=False
