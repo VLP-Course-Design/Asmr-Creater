@@ -328,7 +328,7 @@ const CONFIG = {
    ════════════════════════════════════════════════════════════════ */
 const Assets = {
   triggerMap: {}, bridgeMap: {}, manifest: {triggers:{}, ambient:{}},
-  anchorSoundMap: {}, assetMap: {}, ready: null,
+  anchorSoundMap: {}, registry: {triggers:{}, ambient:{}}, assetMap: {}, ready: null,
 
   load(){
     if(this.ready) return this.ready;
@@ -337,16 +337,18 @@ const Assets = {
         try{ const r=await fetch(url); if(!r.ok) throw 0; return await r.json(); }
         catch(_){ return fallback; }
       };
-      const [triggerMapDoc, bridgeDoc, manifest, anchorSoundMap] = await Promise.all([
+      const [triggerMapDoc, bridgeDoc, manifest, anchorSoundMap, registry] = await Promise.all([
         safe("/sounds/trigger_map.json", {map:{}}),
         safe("/sounds/v23_sound_id_bridge.json", {map:{}}),
         safe("/sounds/manifest", {triggers:{}, ambient:{}}),
         safe("/api/anchor_sound_map", {}),
+        safe("/sounds/v23_registry.json", {triggers:{}, ambient:{}}),
       ]);
       this.triggerMap = triggerMapDoc.map || {};
       this.bridgeMap  = bridgeDoc.map || {};
       this.manifest   = manifest;
       this.anchorSoundMap = anchorSoundMap;
+      this.registry   = registry;
       // 合并成统一查表:v1.0 实体名(cat/bird/...)直接查 triggerMap;
       // v2.3 的 sound_id(cat_purr/bird_chirp/...)先经桥接表转到同一批文件夹。
       const merged = {...this.triggerMap};
@@ -361,11 +363,28 @@ const Assets = {
 
   /* 给定实体名,随机挑一个真实素材变体;查不到或该文件夹没有真实 wav 时返回 null */
   pickVariant(name){
+    const pick = pool => pool[Math.floor(Math.random()*pool.length)];
+    // 1) 与 sound_id 同名的 v2.3 目录已有真实素材 → 优先用。素材线按
+    //    sounds/v23_registry.json 往 triggers/<sound_id>/ 补文件后自动生效,
+    //    不需要改代码,也不再走下面的桥接回退。
+    const native = this.manifest.triggers[name];
+    if(native && native.length){
+      const meta = this.registry.triggers && this.registry.triggers[name];
+      return {
+        url: pick(native),
+        entry: this.triggerMap[name] || {
+          folder: name,
+          default_gain: 0.6,
+          loopable: !!(meta && meta.role === "loop"),
+        },
+      };
+    }
+    // 2) 否则查 v1.0 trigger_map / v2.3 桥接表,回退到既有素材目录
     const entry = this.assetMap[name];
     if(!entry) return null;
     const pool = this.manifest.triggers[entry.folder];
     if(!pool || !pool.length) return null;
-    return {url: pool[Math.floor(Math.random()*pool.length)], entry};
+    return {url: pick(pool), entry};
   },
 };
 Assets.load();

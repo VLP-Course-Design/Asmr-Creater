@@ -1,0 +1,899 @@
+{
+  "_comment": "视觉记录 v2.3 素材库采集清单。由 contracts/playback_proposal/recommended_structured_record_example.json(66 个 reference_sound_id + anchor_sound_mapping_reference)与 docs/playback/ASMR声音素材库准备与采集规范.md(20 份场景环境母版、角色→时长/变体数)生成,不要手工改;规范变化时重新生成。",
+  "_naming": "文件名 <sound_id>_<两位变体号>.wav;asset_id 建议 trg_<sound_id>_<变体> / amb_<sound_id>_<变体>",
+  "_format": "WAV PCM 48kHz;24-bit 优先。局部点声源优先单声道(便于 HRTF),宽环境声保留立体声。",
+  "_status": "folder 下有真实 wav 即视为已覆盖;运行 python scripts/check_sounds_coverage.py 查看进度。",
+  "triggers": {
+    "light_rain": {
+      "folder": "triggers/light_rain",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "umbrella_in_visible_rain",
+        "visible_rain_streaks"
+      ]
+    },
+    "rain_on_window": {
+      "folder": "triggers/rain_on_window",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "rain_dropped_window"
+      ]
+    },
+    "rain_on_roof": {
+      "folder": "triggers/rain_on_roof",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "roof_or_canopy_in_rain",
+        "vehicle_roof_in_visible_rain"
+      ]
+    },
+    "ocean_waves": {
+      "folder": "triggers/ocean_waves",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "breaking_ocean_waves"
+      ]
+    },
+    "shore_lapping": {
+      "folder": "triggers/shore_lapping",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "calm_shoreline"
+      ]
+    },
+    "stream_flow": {
+      "folder": "triggers/stream_flow",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "visible_stream_flow"
+      ]
+    },
+    "waterfall_distant": {
+      "folder": "triggers/waterfall_distant",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "visible_waterfall"
+      ]
+    },
+    "fountain_flow": {
+      "folder": "triggers/fountain_flow",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "visible_fountain"
+      ]
+    },
+    "water_drip": {
+      "folder": "triggers/water_drip",
+      "role": "trigger",
+      "mode": "random_trigger",
+      "sleep_safety": "medium",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "visible_dripping_water"
+      ]
+    },
+    "shower_flow": {
+      "folder": "triggers/shower_flow",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "running_shower"
+      ]
+    },
+    "gentle_wind": {
+      "folder": "triggers/gentle_wind",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "wind_bent_grass_or_foliage",
+        "wind_moved_flag",
+        "wind_moved_light_fabric"
+      ]
+    },
+    "leaf_rustle": {
+      "folder": "triggers/leaf_rustle",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "wind_moved_tree_leaves"
+      ]
+    },
+    "grass_rustle": {
+      "folder": "triggers/grass_rustle",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "tall_grass_reeds_or_crops"
+      ]
+    },
+    "bamboo_rustle": {
+      "folder": "triggers/bamboo_rustle",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "bamboo_forest_close"
+      ]
+    },
+    "window_wind": {
+      "folder": "triggers/window_wind",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "open_window_moving_curtain"
+      ]
+    },
+    "distant_thunder": {
+      "folder": "triggers/distant_thunder",
+      "role": "long_tail_trigger",
+      "mode": "random_trigger_long_interval",
+      "sleep_safety": "cautious",
+      "target_duration_s": "5-20",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "storm_clouds_or_lightning"
+      ]
+    },
+    "fireplace_crackle": {
+      "folder": "triggers/fireplace_crackle",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "burning_fireplace"
+      ]
+    },
+    "campfire_crackle": {
+      "folder": "triggers/campfire_crackle",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "burning_campfire"
+      ]
+    },
+    "cicada_chorus": {
+      "folder": "triggers/cicada_chorus",
+      "role": "loop",
+      "mode": "loop_low_gain",
+      "sleep_safety": "medium",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "dense_summer_tree_canopy",
+        "visible_cicada"
+      ]
+    },
+    "cricket_chirp": {
+      "folder": "triggers/cricket_chirp",
+      "role": "loop",
+      "mode": "loop_or_random_trigger",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "night_grass_or_courtyard",
+        "visible_cricket"
+      ]
+    },
+    "insect_ambience": {
+      "folder": "triggers/insect_ambience",
+      "role": "loop",
+      "mode": "loop_low_gain",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "night_low_vegetation"
+      ]
+    },
+    "bee_buzz": {
+      "folder": "triggers/bee_buzz",
+      "role": "trigger",
+      "mode": "random_trigger_low_probability",
+      "sleep_safety": "cautious",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "beehive_or_bee_on_flower",
+        "visible_bee"
+      ]
+    },
+    "bird_chirp": {
+      "folder": "triggers/bird_chirp",
+      "role": "trigger",
+      "mode": "random_trigger",
+      "sleep_safety": "high",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "bird_group_in_flight",
+        "visible_bird"
+      ]
+    },
+    "bird_wing_flutter": {
+      "folder": "triggers/bird_wing_flutter",
+      "role": "trigger",
+      "mode": "random_trigger_low_probability",
+      "sleep_safety": "high",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "bird_takeoff_or_landing"
+      ]
+    },
+    "frog_croak": {
+      "folder": "triggers/frog_croak",
+      "role": "trigger",
+      "mode": "random_trigger",
+      "sleep_safety": "high",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "frog_at_pond_edge",
+        "night_low_vegetation",
+        "visible_frog"
+      ]
+    },
+    "cat_purr": {
+      "folder": "triggers/cat_purr",
+      "role": "texture",
+      "mode": "intermittent_texture",
+      "sleep_safety": "high",
+      "target_duration_s": "8-30",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "relaxed_or_sleeping_cat"
+      ]
+    },
+    "distant_livestock": {
+      "folder": "triggers/distant_livestock",
+      "role": "trigger",
+      "mode": "random_trigger_low_probability",
+      "sleep_safety": "medium",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "livestock_in_pasture"
+      ]
+    },
+    "keyboard_typing": {
+      "folder": "triggers/keyboard_typing",
+      "role": "texture",
+      "mode": "intermittent_texture",
+      "sleep_safety": "high",
+      "target_duration_s": "8-30",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "hands_on_keyboard_typing",
+        "visible_keyboard"
+      ]
+    },
+    "mouse_click": {
+      "folder": "triggers/mouse_click",
+      "role": "trigger",
+      "mode": "random_trigger_low_probability",
+      "sleep_safety": "cautious",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "hand_on_mouse",
+        "visible_computer_mouse"
+      ]
+    },
+    "page_turn": {
+      "folder": "triggers/page_turn",
+      "role": "trigger",
+      "mode": "random_trigger_long_interval",
+      "sleep_safety": "high",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "open_book_magazine_or_notebook",
+        "page_turning_action"
+      ]
+    },
+    "paper_rustle": {
+      "folder": "triggers/paper_rustle",
+      "role": "trigger",
+      "mode": "random_trigger",
+      "sleep_safety": "high",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "visible_paper_or_documents"
+      ]
+    },
+    "pencil_writing": {
+      "folder": "triggers/pencil_writing",
+      "role": "texture",
+      "mode": "intermittent_texture",
+      "sleep_safety": "high",
+      "target_duration_s": "8-30",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "hand_writing_with_pencil"
+      ]
+    },
+    "pen_writing": {
+      "folder": "triggers/pen_writing",
+      "role": "texture",
+      "mode": "intermittent_texture",
+      "sleep_safety": "high",
+      "target_duration_s": "8-30",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "hand_writing_with_pen"
+      ]
+    },
+    "book_handling": {
+      "folder": "triggers/book_handling",
+      "role": "trigger",
+      "mode": "random_trigger_low_probability",
+      "sleep_safety": "high",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "book_handling_action",
+        "book_stack_or_bookshelf"
+      ]
+    },
+    "clock_tick": {
+      "folder": "triggers/clock_tick",
+      "role": "loop",
+      "mode": "loop_very_low_gain",
+      "sleep_safety": "cautious",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "visible_clock"
+      ]
+    },
+    "fan_hum": {
+      "folder": "triggers/fan_hum",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "running_fan"
+      ]
+    },
+    "air_conditioner_hum": {
+      "folder": "triggers/air_conditioner_hum",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "visible_air_conditioner"
+      ]
+    },
+    "refrigerator_hum": {
+      "folder": "triggers/refrigerator_hum",
+      "role": "loop",
+      "mode": "loop_very_low_gain",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "visible_refrigerator_or_freezer"
+      ]
+    },
+    "washing_machine_hum": {
+      "folder": "triggers/washing_machine_hum",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "running_washing_machine"
+      ]
+    },
+    "kettle_simmer": {
+      "folder": "triggers/kettle_simmer",
+      "role": "texture",
+      "mode": "intermittent_texture",
+      "sleep_safety": "high",
+      "target_duration_s": "8-30",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "steaming_kettle",
+        "visible_kettle"
+      ]
+    },
+    "coffee_machine": {
+      "folder": "triggers/coffee_machine",
+      "role": "trigger",
+      "mode": "random_trigger",
+      "sleep_safety": "medium",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "operating_coffee_machine"
+      ]
+    },
+    "cup_clink": {
+      "folder": "triggers/cup_clink",
+      "role": "trigger",
+      "mode": "random_trigger_very_low_probability",
+      "sleep_safety": "cautious",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "hand_holding_cup",
+        "multiple_cups_or_cup_saucer",
+        "single_visible_cup"
+      ]
+    },
+    "dish_handling": {
+      "folder": "triggers/dish_handling",
+      "role": "trigger",
+      "mode": "random_trigger_low_probability",
+      "sleep_safety": "medium",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "table_setting_action",
+        "visible_tableware"
+      ]
+    },
+    "door_soft_close": {
+      "folder": "triggers/door_soft_close",
+      "role": "trigger",
+      "mode": "random_trigger_very_low_probability",
+      "sleep_safety": "cautious",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "hand_on_door",
+        "partly_open_interior_door"
+      ]
+    },
+    "fabric_rustle": {
+      "folder": "triggers/fabric_rustle",
+      "role": "trigger",
+      "mode": "random_trigger",
+      "sleep_safety": "high",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "handled_clothing",
+        "handled_fabric_or_bedding"
+      ]
+    },
+    "broom_sweeping": {
+      "folder": "triggers/broom_sweeping",
+      "role": "texture",
+      "mode": "intermittent_texture",
+      "sleep_safety": "high",
+      "target_duration_s": "8-30",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "sweeping_action"
+      ]
+    },
+    "cooking_sizzle": {
+      "folder": "triggers/cooking_sizzle",
+      "role": "texture",
+      "mode": "intermittent_texture_low_gain",
+      "sleep_safety": "medium",
+      "target_duration_s": "8-30",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "active_cooking_pan"
+      ]
+    },
+    "soft_footsteps": {
+      "folder": "triggers/soft_footsteps",
+      "role": "trigger",
+      "mode": "random_trigger",
+      "sleep_safety": "medium",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "walking_person"
+      ]
+    },
+    "crowd_murmur": {
+      "folder": "triggers/crowd_murmur",
+      "role": "loop",
+      "mode": "loop_low_gain",
+      "sleep_safety": "medium",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "gathered_crowd"
+      ]
+    },
+    "tableware_ambience": {
+      "folder": "triggers/tableware_ambience",
+      "role": "trigger",
+      "mode": "random_trigger_sparse",
+      "sleep_safety": "medium",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "occupied_dining_tables",
+        "visible_tableware"
+      ]
+    },
+    "distant_traffic": {
+      "folder": "triggers/distant_traffic",
+      "role": "loop",
+      "mode": "loop_low_gain",
+      "sleep_safety": "medium",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "road_vehicle_flow"
+      ]
+    },
+    "train_rumble": {
+      "folder": "triggers/train_rumble",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "medium",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "visible_train_or_railway"
+      ]
+    },
+    "subway_rumble": {
+      "folder": "triggers/subway_rumble",
+      "role": "loop",
+      "mode": "loop_low_gain",
+      "sleep_safety": "medium",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "visible_subway_train_or_platform"
+      ]
+    },
+    "airplane_cabin_hum": {
+      "folder": "triggers/airplane_cabin_hum",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "airplane_cabin_or_window_wing_view"
+      ]
+    },
+    "boat_hull_water": {
+      "folder": "triggers/boat_hull_water",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "boat_hull_at_water"
+      ]
+    },
+    "wind_chime": {
+      "folder": "triggers/wind_chime",
+      "role": "trigger",
+      "mode": "random_trigger_long_interval",
+      "sleep_safety": "cautious",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "visible_wind_chime"
+      ]
+    },
+    "distant_bell": {
+      "folder": "triggers/distant_bell",
+      "role": "long_tail_trigger",
+      "mode": "random_trigger_very_long_interval",
+      "sleep_safety": "cautious",
+      "target_duration_s": "5-20",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "large_temple_or_church_bell"
+      ]
+    },
+    "vinyl_crackle": {
+      "folder": "triggers/vinyl_crackle",
+      "role": "loop",
+      "mode": "loop_very_low_gain",
+      "sleep_safety": "medium",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "visible_record_player"
+      ]
+    },
+    "tv_static": {
+      "folder": "triggers/tv_static",
+      "role": "loop",
+      "mode": "loop_very_low_gain",
+      "sleep_safety": "cautious",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "television_no_signal"
+      ]
+    },
+    "radio_static": {
+      "folder": "triggers/radio_static",
+      "role": "texture",
+      "mode": "intermittent_texture_low_gain",
+      "sleep_safety": "cautious",
+      "target_duration_s": "8-30",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "visible_radio_or_tuning_knob"
+      ]
+    },
+    "electronic_hum": {
+      "folder": "triggers/electronic_hum",
+      "role": "loop",
+      "mode": "loop_very_low_gain",
+      "sleep_safety": "medium",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "server_rack_or_lab_electronics"
+      ]
+    },
+    "snow_crunch": {
+      "folder": "triggers/snow_crunch",
+      "role": "trigger",
+      "mode": "random_trigger",
+      "sleep_safety": "medium",
+      "target_duration_s": "0.3-8",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "snow_covered_ground",
+        "walking_person_on_snow"
+      ]
+    },
+    "blizzard_wind": {
+      "folder": "triggers/blizzard_wind",
+      "role": "loop",
+      "mode": "loop_low_gain",
+      "sleep_safety": "medium",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "visible_blizzard"
+      ]
+    },
+    "fireplace_tea_boil": {
+      "folder": "triggers/fireplace_tea_boil",
+      "role": "loop",
+      "mode": "loop",
+      "sleep_safety": "high",
+      "target_duration_s": "30-120(优先 60-120)",
+      "min_variants_mvp": 2,
+      "anchors": [
+        "kettle_on_fireplace_or_stove"
+      ]
+    },
+    "singing_bowl": {
+      "folder": "triggers/singing_bowl",
+      "role": "long_tail_trigger",
+      "mode": "random_trigger_very_long_interval",
+      "sleep_safety": "cautious",
+      "target_duration_s": "5-20",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "meditation_or_yoga_setup",
+        "visible_singing_bowl"
+      ]
+    },
+    "wind_chime_bronze": {
+      "folder": "triggers/wind_chime_bronze",
+      "role": "long_tail_trigger",
+      "mode": "random_trigger_long_interval",
+      "sleep_safety": "cautious",
+      "target_duration_s": "5-20",
+      "min_variants_mvp": 3,
+      "anchors": [
+        "bronze_temple_chime_or_bianzhong"
+      ]
+    }
+  },
+  "ambient": {
+    "open_nature_wind": {
+      "folder": "ambient/open_nature_wind",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "natural_terrain:mountain/hill/valley/grassland/meadow"
+    },
+    "arid_wind": {
+      "folder": "ambient/arid_wind",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "desert/sand_dunes/badlands/plateau"
+    },
+    "snow_wind_soft": {
+      "folder": "ambient/snow_wind_soft",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "tundra/glacier/ice_field/snowfield/polar_landscape"
+    },
+    "forest_day_bed": {
+      "folder": "ambient/forest_day_bed",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "forest_vegetation:forest/woodland/grove/garden/park"
+    },
+    "wetland_night_bed": {
+      "folder": "ambient/wetland_night_bed",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "wetland/marsh/swamp/bog/mangrove"
+    },
+    "ocean_coast_bed": {
+      "folder": "ambient/ocean_coast_bed",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "water_coastal:ocean/sea/beach/coast/shoreline/island"
+    },
+    "freshwater_flow_bed": {
+      "folder": "ambient/freshwater_flow_bed",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "river/stream/creek/canal/waterway/waterfall"
+    },
+    "rain_surface_bed": {
+      "folder": "ambient/rain_surface_bed",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "sky_weather:storm_landscape/thunderstorm_landscape;明确雨景"
+    },
+    "rural_bed": {
+      "folder": "ambient/rural_bed",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "agriculture_rural:farm/farmland/pasture/rural_village/country_road"
+    },
+    "urban_distant_bed": {
+      "folder": "ambient/urban_distant_bed",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "urban_outdoor:street/residential_area/downtown/cityscape/suburb"
+    },
+    "transport_exterior_bed": {
+      "folder": "ambient/transport_exterior_bed",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "transport_outdoor:road/highway/railway/bridge/tunnel/port_terminal"
+    },
+    "transport_cabin_bed": {
+      "folder": "ambient/transport_cabin_bed",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "transport_indoor:subway/train/car/airplane_cabin/ship_interior"
+    },
+    "indoor_roomtone": {
+      "folder": "ambient/indoor_roomtone",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "residential_indoor:living_room/bedroom/home_office;hotel_room"
+    },
+    "study_office_bed": {
+      "folder": "ambient/study_office_bed",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "study_room/office/private_office/library/reading_room"
+    },
+    "cafe_hospitality_bed": {
+      "folder": "ambient/cafe_hospitality_bed",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "food_hospitality:cafe/coffee_shop/restaurant/tea_house/hotel_lobby"
+    },
+    "public_interior_murmur": {
+      "folder": "ambient/public_interior_murmur",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "retail/culture/healthcare 中的公共室内"
+    },
+    "mechanical_hum_soft": {
+      "folder": "ambient/mechanical_hum_soft",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "workplace_industrial:factory/warehouse/server_room/control_room;laundromat"
+    },
+    "large_hall_roomtone": {
+      "folder": "ambient/large_hall_roomtone",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "religion_heritage:church/cathedral/temple/mosque/palace/concert_hall"
+    },
+    "recreation_distant_bed": {
+      "folder": "ambient/recreation_distant_bed",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "sports_recreation/events_social:picnic_area/campsite/hiking_trail"
+    },
+    "animal_facility_distant_bed": {
+      "folder": "ambient/animal_facility_distant_bed",
+      "role": "loop",
+      "target_duration_s": "60-120(最低 30)",
+      "min_variants_mvp": 2,
+      "covers": "animal_facilities:zoo/wildlife_sanctuary/aviary/fish_farm"
+    }
+  }
+}
