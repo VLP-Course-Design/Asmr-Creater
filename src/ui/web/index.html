@@ -361,22 +361,23 @@ const Assets = {
     return this.ready;
   },
 
-  /* 给定实体名,随机挑一个真实素材变体;查不到或该文件夹没有真实 wav 时返回 null */
-  pickVariant(name){
-    const pick = pool => pool[Math.floor(Math.random()*pool.length)];
+  /* 给定实体名,返回该类的全部真实素材变体 + 角色元信息;
+     查不到或该文件夹没有真实 wav 时返回 null(调用方回退合成音)。*/
+  poolFor(name){
+    const meta = (this.registry.triggers && this.registry.triggers[name]) || null;
     // 1) 与 sound_id 同名的 v2.3 目录已有真实素材 → 优先用。素材线按
     //    sounds/v23_registry.json 往 triggers/<sound_id>/ 补文件后自动生效,
     //    不需要改代码,也不再走下面的桥接回退。
     const native = this.manifest.triggers[name];
     if(native && native.length){
-      const meta = this.registry.triggers && this.registry.triggers[name];
       return {
-        url: pick(native),
+        urls: native,
         entry: this.triggerMap[name] || {
           folder: name,
           default_gain: 0.6,
           loopable: !!(meta && meta.role === "loop"),
         },
+        meta,
       };
     }
     // 2) 否则查 v1.0 trigger_map / v2.3 桥接表,回退到既有素材目录
@@ -384,9 +385,49 @@ const Assets = {
     if(!entry) return null;
     const pool = this.manifest.triggers[entry.folder];
     if(!pool || !pool.length) return null;
-    return {url: pick(pool), entry};
+    return {urls: pool, entry, meta};
   },
 };
+
+/* ════════════════════════════════════════════════════════════════
+   0b. 前景音调度 —— 让 trigger/texture 类按间隔重复触发,而不是只响一次
+   ════════════════════════════════════════════════════════════════ */
+/* 从 v23_registry 的 mode + sleep_safety 推导间隔与概率。
+   数值刻意与 src/audio/playback_converter.py 的 schedule_for_candidate() 逐行对齐
+   (含 very_long_interval / very_low_probability 会同时命中 long_/low_ 分支的行为),
+   两边任何一侧改动都必须同步,否则播放计划与前端实际听感会对不上。 */
+function scheduleFor(role, mode, safety){
+  mode = mode || ""; safety = safety || "high";
+  let min, max, p;
+  if(role === "texture"){ min = 24; max = 55; p = 0.45; }
+  else                  { min = 35; max = 90; p = 0.35; }
+  if(mode.includes("long_interval"))        { min = 60; max = 150; }
+  if(mode.includes("very_long_interval"))   { min = 90; max = 240; }
+  if(mode.includes("low_probability"))      p *= 0.55;
+  if(mode.includes("very_low_probability")) p *= 0.35;
+  if(safety === "medium")        p *= 0.8;
+  else if(safety === "cautious") p *= 0.5;
+  return {min, max, probability: Math.max(0, Math.min(1, p))};
+}
+
+/* shuffle_no_repeat:洗牌成一袋,取空再洗,并保证跨袋衔接处不连播同一个变体。
+   比每次独立随机更不容易听出机械重复 —— 这正是每类准备 3 个变体的意义。*/
+function makeShuffler(urls){
+  let bag = [], last = null;
+  return () => {
+    if(urls.length === 1) return urls[0];
+    if(!bag.length){
+      bag = urls.slice();
+      for(let i = bag.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [bag[i], bag[j]] = [bag[j], bag[i]];
+      }
+      if(bag[0] === last) bag.push(bag.shift());
+    }
+    last = bag.shift();
+    return last;
+  };
+}
 Assets.load();
 
 /* ════════════════════════════════════════════════════════════════
@@ -507,8 +548,13 @@ const VOICE={
   _default        :{f:1000,q:2  ,rate:0  ,depth:0  }
 };
 
+/* 播放计划规范里 master.max_foreground_simultaneous 默认为 1(助眠安全:
+   任一时刻最多一个前景事件在响)。调大会更热闹但不再符合规范。 */
+const MAX_FOREGROUND_SIMULTANEOUS=1;
+
 const Engine={
   ctx:null, master:null, tracks:[], buffers:{}, realBuffers:{}, playing:false,
+  foregroundLive:0,
   ensure(){
     if(!this.ctx){
       const AC=window.AudioContext||window.webkitAudioContext;
@@ -577,19 +623,62 @@ const Engine={
       src:bedSrc, nodes:[lp], level:bedLevel, pan:0.5});
 
     for(const en of contract.entities){
-      const picked=Assets.pickVariant(en.name);
-      if(picked){
-        // ── 素材库真实触发:直接播 sounds/ 里的 wav,不再用合成音顶替 ──
-        const buf=await this.loadRealBuffer(picked.url);
-        const src=ctx.createBufferSource();
-        src.buffer=buf; src.loop=!!picked.entry.loopable;
-        const level=(picked.entry.default_gain??0.6)*DEPTH_GAIN[en.depth]*(0.5+0.5*en.conf);
+      const pool=Assets.poolFor(en.name);
+      if(pool){
+        // ── 素材库真实素材:播 sounds/ 里的 wav,不再用合成音顶替 ──
+        // 角色优先取 v2.3 registry;v1.0 桥接来的名字(cat/window…)没有 registry
+        // 条目,退回 trigger_map 的 loopable 判断。
+        const meta=pool.meta;
+        const role=(meta&&meta.role) || (pool.entry.loopable ? "loop" : "trigger");
+        const level=(pool.entry.default_gain??0.6)*DEPTH_GAIN[en.depth]*(0.5+0.5*en.conf);
+        // vol/panner 建一次就长期持有:重触发时每次新建的 BufferSource 都接到
+        // 同一条链上,推子和声场点拖拽才能对后续每一次触发继续生效。
         const vol=ctx.createGain(); vol.gain.value=level;
         const panner=this.makePanner(en.x*2-1);
-        src.connect(vol); vol.connect(panner); panner.connect(this.master);
-        src.start();
-        this.tracks.push({name:en.name, state:en.state||"", kind:en.depth.toUpperCase(),
-          vol, panner, src, nodes:[], level, pan:en.x, real:true});
+        vol.connect(panner); panner.connect(this.master);
+
+        if(role==="loop"){
+          // 雨声/海浪/风扇这类:连续循环,和场景环境床一样
+          const src=ctx.createBufferSource();
+          src.buffer=await this.loadRealBuffer(pool.urls[Math.floor(Math.random()*pool.urls.length)]);
+          src.loop=true; src.connect(vol); src.start();
+          this.tracks.push({name:en.name, state:en.state||"", kind:en.depth.toUpperCase(),
+            vol, panner, src, nodes:[], level, pan:en.x, real:true, role});
+        }else{
+          // 蜂鸣/鸟鸣/翻页/键盘这类:按 schedule 随机间隔重复触发,
+          // 每次 shuffle_no_repeat 换一个变体
+          const sched=scheduleFor(role, meta&&meta.mode, meta&&meta.sleep_safety);
+          const nextUrl=makeShuffler(pool.urls);
+          const track={name:en.name, state:en.state||"", kind:en.depth.toUpperCase(),
+            vol, panner, src:null, nodes:[], level, pan:en.x, real:true,
+            role, sched, timer:null, live:[]};
+
+          const arm=(delayS)=>{ track.timer=setTimeout(fire, delayS*1000); };
+          const fire=async()=>{
+            track.timer=null;
+            // 暂停期间不触发,免得攒一堆声音在恢复瞬间一起炸开
+            if(!Engine.playing){ arm(sched.min); return; }
+            // master.max_foreground_simultaneous = 1(助眠安全,见播放计划规范)
+            if(Math.random()<sched.probability && Engine.foregroundLive<MAX_FOREGROUND_SIMULTANEOUS){
+              try{
+                const s=ctx.createBufferSource();
+                s.buffer=await this.loadRealBuffer(nextUrl());
+                s.connect(vol);
+                Engine.foregroundLive++;
+                s.onended=()=>{
+                  Engine.foregroundLive=Math.max(0,Engine.foregroundLive-1);
+                  track.live=track.live.filter(x=>x!==s);
+                };
+                track.live.push(s);
+                s.start();
+              }catch(_){ /* 单次触发失败不影响后续调度 */ }
+            }
+            arm(sched.min+Math.random()*(sched.max-sched.min));
+          };
+          // 首次不等满一个完整间隔,否则刚进场景要静默几十秒才有动静
+          arm(2+Math.random()*Math.max(2,sched.min-2));
+          this.tracks.push(track);
+        }
         continue;
       }
       // ── 素材库里没有对应文件:回退到带通滤波白噪声合成音(原有逻辑不变) ──
@@ -620,11 +709,19 @@ const Engine={
   },
   disposeTracks(){
     this.tracks.forEach(t=>{
-      try{ t.src.stop(); }catch(_){}
-      try{ t.src.disconnect(); t.vol.disconnect(); t.panner&&t.panner.disconnect();
+      // 定时重触发的轨:先停掉调度器,否则切场景后旧场景的音效还会继续冒出来
+      if(t.timer){ clearTimeout(t.timer); t.timer=null; }
+      (t.live||[]).forEach(s=>{
+        try{ s.onended=null; s.stop(); }catch(_){}
+        try{ s.disconnect(); }catch(_){}
+      });
+      t.live=[];
+      try{ t.src&&t.src.stop(); }catch(_){}
+      try{ t.src&&t.src.disconnect(); t.vol.disconnect(); t.panner&&t.panner.disconnect();
            t.nodes.forEach(n=>{ try{ n.stop&&n.stop(); }catch(_){} n.disconnect(); }); }catch(_){}
     });
     this.tracks=[];
+    this.foregroundLive=0;
   },
   async play(){ const ctx=this.ensure(); await ctx.resume(); this.playing=true; },
   async pause(){ if(this.ctx){ await this.ctx.suspend(); } this.playing=false; },
