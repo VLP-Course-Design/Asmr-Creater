@@ -323,13 +323,12 @@ const CONFIG = {
 };
 
 /* ════════════════════════════════════════════════════════════════
-   0. 素材库真实资源 —— trigger_map(v1.0) + v2.3 桥接表 + 真实文件清单 +
-      锚点→声音映射。启动时并行拉取一次,合并成一张统一查表给 Engine 用。
+   0. 后端资源:播放计划里只有 asset_id,需要一张表把它换成可取用的 URL;
+      锚点→声音语义表只用于界面文案(显示"鸟鸣"而不是"visible_bird")。
+      选哪个素材、多大声、多久响一次,全部由播放计划决定,前端不再自己查表。
    ════════════════════════════════════════════════════════════════ */
 const Assets = {
-  triggerMap: {}, bridgeMap: {}, manifest: {triggers:{}, ambient:{}},
-  anchorSoundMap: {}, registry: {triggers:{}, ambient:{}}, assetMap: {}, ready: null,
-
+  assetUrls: {}, anchorSoundMap: {}, ready: null,
   load(){
     if(this.ready) return this.ready;
     this.ready = (async()=>{
@@ -337,81 +336,29 @@ const Assets = {
         try{ const r=await fetch(url); if(!r.ok) throw 0; return await r.json(); }
         catch(_){ return fallback; }
       };
-      const [triggerMapDoc, bridgeDoc, manifest, anchorSoundMap, registry] = await Promise.all([
-        safe("/sounds/trigger_map.json", {map:{}}),
-        safe("/sounds/v23_sound_id_bridge.json", {map:{}}),
-        safe("/sounds/manifest", {triggers:{}, ambient:{}}),
+      const [assetUrls, anchorSoundMap] = await Promise.all([
+        safe("/api/asset_urls", {}),
         safe("/api/anchor_sound_map", {}),
-        safe("/sounds/v23_registry.json", {triggers:{}, ambient:{}}),
       ]);
-      this.triggerMap = triggerMapDoc.map || {};
-      this.bridgeMap  = bridgeDoc.map || {};
-      this.manifest   = manifest;
+      this.assetUrls = assetUrls;
       this.anchorSoundMap = anchorSoundMap;
-      this.registry   = registry;
-      // 合并成统一查表:v1.0 实体名(cat/bird/...)直接查 triggerMap;
-      // v2.3 的 sound_id(cat_purr/bird_chirp/...)先经桥接表转到同一批文件夹。
-      const merged = {...this.triggerMap};
-      for(const [soundId, folder] of Object.entries(this.bridgeMap)){
-        const base = this.triggerMap[folder];
-        if(base) merged[soundId] = base;
-      }
-      this.assetMap = merged;
     })();
     return this.ready;
   },
-
-  /* 给定实体名,返回该类的全部真实素材变体 + 角色元信息;
-     查不到或该文件夹没有真实 wav 时返回 null(调用方回退合成音)。*/
-  poolFor(name){
-    const meta = (this.registry.triggers && this.registry.triggers[name]) || null;
-    // 1) 与 sound_id 同名的 v2.3 目录已有真实素材 → 优先用。素材线按
-    //    sounds/v23_registry.json 往 triggers/<sound_id>/ 补文件后自动生效,
-    //    不需要改代码,也不再走下面的桥接回退。
-    const native = this.manifest.triggers[name];
-    if(native && native.length){
-      return {
-        urls: native,
-        entry: this.triggerMap[name] || {
-          folder: name,
-          default_gain: 0.6,
-          loopable: !!(meta && meta.role === "loop"),
-        },
-        meta,
-      };
-    }
-    // 2) 否则查 v1.0 trigger_map / v2.3 桥接表,回退到既有素材目录
-    const entry = this.assetMap[name];
-    if(!entry) return null;
-    const pool = this.manifest.triggers[entry.folder];
-    if(!pool || !pool.length) return null;
-    return {urls: pool, entry, meta};
-  },
 };
+Assets.load();
 
 /* ════════════════════════════════════════════════════════════════
-   0b. 前景音调度 —— 让 trigger/texture 类按间隔重复触发,而不是只响一次
+   0b. 播放计划执行辅助
    ════════════════════════════════════════════════════════════════ */
-/* 从 v23_registry 的 mode + sleep_safety 推导间隔与概率。
-   数值刻意与 src/audio/playback_converter.py 的 schedule_for_candidate() 逐行对齐
-   (含 very_long_interval / very_low_probability 会同时命中 long_/low_ 分支的行为),
-   两边任何一侧改动都必须同步,否则播放计划与前端实际听感会对不上。 */
-function scheduleFor(role, mode, safety){
-  mode = mode || ""; safety = safety || "high";
-  let min, max, p;
-  if(role === "texture"){ min = 24; max = 55; p = 0.45; }
-  else                  { min = 35; max = 90; p = 0.35; }
-  if(mode.includes("long_interval"))        { min = 60; max = 150; }
-  if(mode.includes("very_long_interval"))   { min = 90; max = 240; }
-  if(mode.includes("low_probability"))      p *= 0.55;
-  if(mode.includes("very_low_probability")) p *= 0.35;
-  if(safety === "medium")        p *= 0.8;
-  else if(safety === "cautious") p *= 0.5;
-  return {min, max, probability: Math.max(0, Math.min(1, p))};
-}
+/* 声音选型、增益、触发间隔与概率、环境床全部由后端 src/audio/playback_converter.py
+   决定并写进播放计划,前端不再自行推导 —— 避免同一套规则存在两份实现。
+   这里只保留「执行」需要的工具:dB→线性增益、shuffle_no_repeat 选材。*/
+const dbToGain = db => Math.pow(10, (db ?? 0) / 20);
 
 /* shuffle_no_repeat:洗牌成一袋,取空再洗,并保证跨袋衔接处不连播同一个变体。
-   比每次独立随机更不容易听出机械重复 —— 这正是每类准备 3 个变体的意义。*/
+   比每次独立随机更不容易听出机械重复 —— 这正是每类准备 3 个变体的意义。
+   计划里的 schedule.selection 就是要求这个策略。*/
 function makeShuffler(urls){
   let bag = [], last = null;
   return () => {
@@ -428,68 +375,83 @@ function makeShuffler(urls){
     return last;
   };
 }
-Assets.load();
 
 /* ════════════════════════════════════════════════════════════════
    1. 样例场景 —— 与 contracts/examples/ 保持一致
    ════════════════════════════════════════════════════════════════ */
+/* 4 个预设场景。注意:这里的检测框与锚点仍是手写的示意数据(不经过真实推理,
+   见 docs/TEST_REPORT 的遗留项),但格式是标准的视觉记录 v2.3 —— 页面会把它们
+   POST 到 /api/plan,由后端同一套音频决策代码产出播放计划。也就是说声音部分
+   走的是真实链路,只有"看到了什么"是预置的。*/
 const SCENES = {
   bedroom:{
     label:"夜晚卧室", img:"samples/bedroom.jpg",
     ph:"未找到 samples/bedroom.jpg —— 放入一张「暗调卧室,窗边下雨、左侧有猫在睡觉」的图即可显示",
-    boxes:[{x:8,y:52,w:26,h:32,name:"cat 0.91"},{x:66,y:14,w:27,h:46,name:"window 0.75"}],
-    contract:{
-      schema_version:"1.0",
-      image:{id:"sample_bedroom",path:"img_dataset/Train/42.jpg"},
-      global_vibe:{scene_type:"bedroom",mood:"calm",brightness:0.28,warmth:"cool",base_noise:"brown",time_of_day:"night"},
-      entities:[
-        {name:"cat",state:"sleeping",x:0.22,depth:"near",conf:0.91,source:"yolo"},
-        {name:"window",state:"rainy",x:0.80,depth:"far",conf:0.75,source:"fused"}
-      ]
-    }
+    record:{
+      schema_version:"2.3", id:"sample_bedroom",
+      image:{path:"samples/bedroom.jpg", width:1536, height:1024},
+      global_vibe:{scene_type:"bedroom", secondary_scene_types:[], scene_group:"residential_indoor",
+        mood:"calm", warmth:"cool", time_of_day:"night", brightness:0.28},
+      trigger_anchors:[
+        {anchor_id:"relaxed_or_sleeping_cat",
+         bbox_norm:{format:"xyxy",x_min:0.08,y_min:0.52,x_max:0.34,y_max:0.84},
+         confidence:0.91, source:"manual"},
+        {anchor_id:"rain_dropped_window",
+         bbox_norm:{format:"xyxy",x_min:0.66,y_min:0.14,x_max:0.93,y_max:0.60},
+         confidence:0.75, source:"manual"},
+      ],
+    },
   },
   cafe:{
     label:"午后咖啡馆", img:"samples/cafe.jpg",
     ph:"未找到 samples/cafe.jpg —— 放入一张「暖光咖啡馆,杯子、笔记本、聊天的人」的图即可显示",
-    boxes:[{x:26,y:48,w:20,h:30,name:"cup 0.88"},{x:44,y:40,w:24,h:34,name:"laptop 0.83"},{x:66,y:30,w:22,h:44,name:"person 0.79"}],
-    contract:{
-      schema_version:"1.0",
-      image:{id:"sample_cafe",path:"img_dataset/Train/108.jpg"},
-      global_vibe:{scene_type:"cafe",mood:"lively",brightness:0.62,warmth:"warm",base_noise:"pink",time_of_day:"afternoon"},
-      entities:[
-        {name:"cup",state:"steaming",x:0.35,depth:"near",conf:0.88,source:"yolo"},
-        {name:"laptop",state:"typing",x:0.52,depth:"near",conf:0.83,source:"yolo"},
-        {name:"person",state:"chatting",x:0.72,depth:"mid",conf:0.79,source:"yolo"},
-        {name:"espresso_machine",state:"brewing",x:0.90,depth:"far",conf:0.5,source:"vlm"}
-      ]
-    }
+    record:{
+      schema_version:"2.3", id:"sample_cafe",
+      image:{path:"samples/cafe.jpg", width:1536, height:1024},
+      global_vibe:{scene_type:"cafe", secondary_scene_types:[], scene_group:"food_hospitality",
+        mood:"lively", warmth:"warm", time_of_day:"afternoon", brightness:0.62},
+      trigger_anchors:[
+        {anchor_id:"multiple_cups_or_cup_saucer",
+         bbox_norm:{format:"xyxy",x_min:0.26,y_min:0.48,x_max:0.46,y_max:0.78},
+         confidence:0.88, source:"manual"},
+        {anchor_id:"hands_on_keyboard_typing",
+         bbox_norm:{format:"xyxy",x_min:0.44,y_min:0.40,x_max:0.68,y_max:0.74},
+         confidence:0.83, source:"manual"},
+        {anchor_id:"gathered_crowd",
+         bbox_norm:{format:"xyxy",x_min:0.60,y_min:0.30,x_max:0.92,y_max:0.74},
+         confidence:0.79, source:"manual"},
+      ],
+    },
   },
   forest:{
     label:"清晨森林", img:"samples/forest.jpg",
     ph:"未找到 samples/forest.jpg —— 放入一张「明亮暖调森林,有鸟、有溪流」的图即可显示",
-    boxes:[{x:10,y:18,w:14,h:16,name:"bird 0.64"},{x:76,y:36,w:14,h:16,name:"bird 0.58"}],
-    contract:{
-      schema_version:"1.0",
-      image:{id:"sample_forest",path:"img_dataset/Train/507.jpg"},
-      global_vibe:{scene_type:"forest",mood:"cheerful",brightness:0.71,warmth:"warm",base_noise:"pink",time_of_day:"morning"},
-      entities:[
-        {name:"bird",state:"singing",x:0.18,depth:"far",conf:0.64,source:"yolo"},
-        {name:"bird",state:"flying",x:0.83,depth:"mid",conf:0.58,source:"yolo"},
-        {name:"stream",state:"flowing",x:0.45,depth:"near",conf:0.5,source:"vlm"}
-      ]
-    }
+    record:{
+      schema_version:"2.3", id:"sample_forest",
+      image:{path:"samples/forest.jpg", width:1536, height:1024},
+      global_vibe:{scene_type:"forest", secondary_scene_types:["stream"], scene_group:"forest_vegetation",
+        mood:"cheerful", warmth:"warm", time_of_day:"morning", brightness:0.71},
+      trigger_anchors:[
+        {anchor_id:"visible_bird",
+         bbox_norm:{format:"xyxy",x_min:0.10,y_min:0.18,x_max:0.24,y_max:0.34},
+         confidence:0.64, source:"manual"},
+        {anchor_id:"visible_stream_flow",
+         bbox_norm:{format:"xyxy",x_min:0.30,y_min:0.62,x_max:0.78,y_max:0.95},
+         confidence:0.70, source:"manual"},
+      ],
+    },
   },
   misty:{
     label:"雾山黎明", img:"samples/misty.jpg",
     ph:"未找到 samples/misty.jpg —— 放入一张「冷调雾山,无明显可发声物体」的图即可显示",
-    boxes:[],
-    contract:{
-      schema_version:"1.0",
-      image:{id:"sample_misty",path:"img_dataset/Train/889.jpg"},
-      global_vibe:{scene_type:"misty_mountain",mood:"melancholic",brightness:0.40,warmth:"cool",base_noise:"brown",time_of_day:"dawn"},
-      entities:[]
-    }
-  }
+    record:{
+      schema_version:"2.3", id:"sample_misty",
+      image:{path:"samples/misty.jpg", width:1536, height:1024},
+      global_vibe:{scene_type:"mountain", secondary_scene_types:[], scene_group:"natural_terrain",
+        mood:"melancholic", warmth:"cool", time_of_day:"dawn", brightness:0.40},
+      trigger_anchors:[],
+    },
+  },
 };
 
 /* ════════════════════════════════════════════════════════════════
@@ -531,30 +493,13 @@ function validateScene(s){
 /* ════════════════════════════════════════════════════════════════
    3. 音频引擎(Web Audio API)—— 真实 DSP,对应 src/audio/
    ════════════════════════════════════════════════════════════════ */
-const DEPTH_GAIN={near:1.0,mid:0.7,far:0.45};
-const VOICE={
-  cat             :{f:200 ,q:1.2,rate:24 ,depth:.7 },
-  bird            :{f:3400,q:9  ,rate:1.6,depth:.9 },
-  window          :{f:1200,q:0.7,rate:0  ,depth:0  },
-  stream          :{f:900 ,q:0.8,rate:0  ,depth:0  },
-  sink            :{f:1100,q:0.8,rate:0  ,depth:0  },
-  kettle          :{f:2000,q:3  ,rate:0  ,depth:0  },
-  cup             :{f:2200,q:6  ,rate:0.5,depth:.6 },
-  laptop          :{f:1800,q:4  ,rate:7  ,depth:.5 },
-  keyboard        :{f:1800,q:4  ,rate:7  ,depth:.5 },
-  person          :{f:600 ,q:1.5,rate:0.8,depth:.4 },
-  clock           :{f:2600,q:12 ,rate:1  ,depth:.95},
-  espresso_machine:{f:1500,q:2  ,rate:3  ,depth:.6 },
-  _default        :{f:1000,q:2  ,rate:0  ,depth:0  }
-};
-
 /* 播放计划规范里 master.max_foreground_simultaneous 默认为 1(助眠安全:
    任一时刻最多一个前景事件在响)。调大会更热闹但不再符合规范。 */
 const MAX_FOREGROUND_SIMULTANEOUS=1;
 
 const Engine={
   ctx:null, master:null, tracks:[], buffers:{}, realBuffers:{}, playing:false,
-  foregroundLive:0,
+  foregroundLive:0, maxSimultaneous:MAX_FOREGROUND_SIMULTANEOUS,
   ensure(){
     if(!this.ctx){
       const AC=window.AudioContext||window.webkitAudioContext;
@@ -604,106 +549,108 @@ const Engine={
     this.realBuffers[url]=buf;
     return buf;
   },
-  async build(contract){
+  /* 执行一份播放计划(2.0-mono / 2.0-binaural)。
+     计划由后端 src/audio/playback_converter.py 生成:放什么声音、多大增益、
+     多久触发一次、用哪张环境床,都已经定好,这里只负责把它变成实际的声音。
+     view 是同一次推理的视觉侧结果,只用来取 x 坐标做声像(见下方说明)。*/
+  async build(plan, view){
     const ctx=this.ensure();
-    await Assets.load();
     this.disposeTracks();
-    const g=contract.global_vibe;
+    if(!plan){ return this.tracks; }
+    const L=plan.layers||{};
+    const master=plan.master||{};
+    this.maxSimultaneous=master.max_foreground_simultaneous ?? 1;
+    if(this.master) this.master.gain.value=dbToGain(master.gain_db ?? -2);
 
-    const bedSrc=ctx.createBufferSource();
-    bedSrc.buffer=this.noise(g.base_noise); bedSrc.loop=true;
-    const lp=ctx.createBiquadFilter();
-    lp.type="lowpass"; lp.frequency.value=400+6000*g.brightness;
-    const bedVol=ctx.createGain();
-    const bedLevel=0.25+0.35*g.brightness;
-    bedVol.gain.value=bedLevel;
-    bedSrc.connect(lp); lp.connect(bedVol); bedVol.connect(this.master);
-    bedSrc.start();
-    this.tracks.push({name:`${g.base_noise} 底噪`, kind:"BED", vol:bedVol, panner:null,
-      src:bedSrc, nodes:[lp], level:bedLevel, pan:0.5});
+    // ── 环境层:场景决定的环境床,播真实素材 ──
+    for(const a of (L.ambient||[])){
+      const url=Assets.assetUrls[a.asset_id];
+      if(!url) continue;                       // Manifest 里解析不到就跳过,不出声也不报错
+      try{
+        const src=ctx.createBufferSource();
+        src.buffer=await this.loadRealBuffer(url);
+        src.loop=true;
+        const lp=ctx.createBiquadFilter();
+        lp.type="lowpass"; lp.frequency.value=a.lowpass_hz||16000;
+        const vol=ctx.createGain(); const level=dbToGain(a.gain_db);
+        vol.gain.value=level;
+        src.connect(lp); lp.connect(vol); vol.connect(this.master);
+        src.start();
+        this.tracks.push({name:a.sound_id, state:"", kind:"环境", vol, panner:null,
+          src, nodes:[lp], level, pan:0.5, role:"ambient"});
+      }catch(_){ /* 单条环境床失败不影响其它层 */ }
+    }
 
-    for(const en of contract.entities){
-      const pool=Assets.poolFor(en.name);
-      if(pool){
-        // ── 素材库真实素材:播 sounds/ 里的 wav,不再用合成音顶替 ──
-        // 角色优先取 v2.3 registry;v1.0 桥接来的名字(cat/window…)没有 registry
-        // 条目,退回 trigger_map 的 loopable 判断。
-        const meta=pool.meta;
-        const role=(meta&&meta.role) || (pool.entry.loopable ? "loop" : "trigger");
-        const level=(pool.entry.default_gain??0.6)*DEPTH_GAIN[en.depth]*(0.5+0.5*en.conf);
-        // vol/panner 建一次就长期持有:重触发时每次新建的 BufferSource 都接到
-        // 同一条链上,推子和声场点拖拽才能对后续每一次触发继续生效。
-        const vol=ctx.createGain(); vol.gain.value=level;
-        const panner=this.makePanner(en.x*2-1);
-        vol.connect(panner); panner.connect(this.master);
-
-        if(role==="loop"){
-          // 雨声/海浪/风扇这类:连续循环,和场景环境床一样
-          const src=ctx.createBufferSource();
-          src.buffer=await this.loadRealBuffer(pool.urls[Math.floor(Math.random()*pool.urls.length)]);
-          src.loop=true; src.connect(vol); src.start();
-          this.tracks.push({name:en.name, state:en.state||"", kind:en.depth.toUpperCase(),
-            vol, panner, src, nodes:[], level, pan:en.x, real:true, role});
-        }else{
-          // 蜂鸣/鸟鸣/翻页/键盘这类:按 schedule 随机间隔重复触发,
-          // 每次 shuffle_no_repeat 换一个变体
-          const sched=scheduleFor(role, meta&&meta.mode, meta&&meta.sleep_safety);
-          const nextUrl=makeShuffler(pool.urls);
-          const track={name:en.name, state:en.state||"", kind:en.depth.toUpperCase(),
-            vol, panner, src:null, nodes:[], level, pan:en.x, real:true,
-            role, sched, timer:null, live:[]};
-
-          const arm=(delayS)=>{ track.timer=setTimeout(fire, delayS*1000); };
-          const fire=async()=>{
-            track.timer=null;
-            // 暂停期间不触发,免得攒一堆声音在恢复瞬间一起炸开
-            if(!Engine.playing){ arm(sched.min); return; }
-            // master.max_foreground_simultaneous = 1(助眠安全,见播放计划规范)
-            if(Math.random()<sched.probability && Engine.foregroundLive<MAX_FOREGROUND_SIMULTANEOUS){
-              try{
-                const s=ctx.createBufferSource();
-                s.buffer=await this.loadRealBuffer(nextUrl());
-                s.connect(vol);
-                Engine.foregroundLive++;
-                s.onended=()=>{
-                  Engine.foregroundLive=Math.max(0,Engine.foregroundLive-1);
-                  track.live=track.live.filter(x=>x!==s);
-                };
-                track.live.push(s);
-                s.start();
-              }catch(_){ /* 单次触发失败不影响后续调度 */ }
-            }
-            arm(sched.min+Math.random()*(sched.max-sched.min));
-          };
-          // 首次不等满一个完整间隔,否则刚进场景要静默几十秒才有动静
-          arm(2+Math.random()*Math.max(2,sched.min-2));
-          this.tracks.push(track);
-        }
-        continue;
-      }
-      // ── 素材库里没有对应文件:回退到带通滤波白噪声合成音(原有逻辑不变) ──
-      const v=VOICE[en.name]||VOICE._default;
+    // ── 底噪层:只有计划明确要求时才出,真实环境声足够时计划会给 null ──
+    const nb=L.noise_bed;
+    if(nb){
+      const type=(nb.sound_id||"pink_noise").replace("_noise","");
       const src=ctx.createBufferSource();
-      src.buffer=this.noise("white"); src.loop=true;
-      const bp=ctx.createBiquadFilter();
-      bp.type="bandpass"; bp.frequency.value=v.f; bp.Q.value=v.q;
-      const trem=ctx.createGain();
-      const level=DEPTH_GAIN[en.depth]*(0.5+0.5*en.conf)*0.5;
-      const nodes=[bp,trem];
-      if(v.rate>0){
-        trem.gain.value=1-v.depth;
-        const lfo=ctx.createOscillator(); lfo.frequency.value=v.rate;
-        const lfoGain=ctx.createGain();   lfoGain.gain.value=v.depth;
-        lfo.connect(lfoGain); lfoGain.connect(trem.gain); lfo.start();
-        nodes.push(lfo,lfoGain);
-      }else{ trem.gain.value=1; }
-      const vol=ctx.createGain(); vol.gain.value=level;
-      const panner=this.makePanner(en.x*2-1);
-      src.connect(bp); bp.connect(trem); trem.connect(vol); vol.connect(panner);
-      panner.connect(this.master);
+      src.buffer=this.noise(["white","pink","brown"].includes(type)?type:"pink");
+      src.loop=true;
+      const lp=ctx.createBiquadFilter();
+      lp.type="lowpass"; lp.frequency.value=nb.lowpass_hz||9000;
+      const vol=ctx.createGain(); const level=dbToGain(nb.gain_db);
+      vol.gain.value=level;
+      src.connect(lp); lp.connect(vol); vol.connect(this.master);
       src.start();
-      this.tracks.push({name:en.name, state:en.state||"", kind:en.depth.toUpperCase(),
-        vol, panner, src, nodes, level, pan:en.x, real:false});
+      this.tracks.push({name:nb.sound_id||"noise_bed", state:"", kind:"底噪", vol, panner:null,
+        src, nodes:[lp], level, pan:0.5, role:"noise_bed"});
+    }
+
+    // ── 前景层:按计划里的 schedule 定时重触发 ──
+    const anchors=(view&&view.record&&view.record.trigger_anchors)||[];
+    for(const f of (L.foreground||[])){
+      const pool=(f.asset_pool||[]).map(id=>Assets.assetUrls[id]).filter(Boolean);
+      if(!pool.length) continue;
+      const level=dbToGain(f.gain_db);
+      const vol=ctx.createGain(); vol.gain.value=level;
+
+      // 声像:计划里若带 spatial(双耳模式)就用它的方位,否则退回锚点框的水平中心。
+      // 注意:2.0-mono 规范要求不做声像,但本项目 MVP 明确包含「2D 声像平移」,
+      // 且拖拽声场点是现有交互,故保留 —— 这是对 mono 规范的一处有意偏离。
+      let x=0.5;
+      const sp=f.spatial&&f.spatial.base_position;
+      if(sp&&typeof sp.azimuth_deg==="number"){ x=Math.max(0,Math.min(1,sp.azimuth_deg/120+0.5)); }
+      else{
+        const a=anchors[f.source_anchor_index];
+        if(a&&a.bbox_norm) x=(a.bbox_norm.x_min+a.bbox_norm.x_max)/2;
+      }
+      const panner=this.makePanner(x*2-1);
+      vol.connect(panner); panner.connect(this.master);
+
+      const sc=f.schedule||{};
+      const minS=sc.min_interval_s ?? 35, maxS=sc.max_interval_s ?? 90;
+      const prob=sc.probability ?? 0.35;
+      const nextUrl=makeShuffler(pool);        // schedule.selection = shuffle_no_repeat
+      const track={name:f.sound_id, state:"", kind:(f.role||"前景").toUpperCase(),
+        vol, panner, src:null, nodes:[], level, pan:x, role:f.role||"trigger",
+        timer:null, live:[], layerId:f.layer_id};
+
+      const arm=d=>{ track.timer=setTimeout(fire, d*1000); };
+      const fire=async()=>{
+        track.timer=null;
+        // 暂停期间不触发,免得攒一堆声音在恢复瞬间一起炸开
+        if(!Engine.playing){ arm(minS); return; }
+        if(Math.random()<prob && Engine.foregroundLive<Engine.maxSimultaneous){
+          try{
+            const s=ctx.createBufferSource();
+            s.buffer=await this.loadRealBuffer(nextUrl());
+            s.connect(vol);
+            Engine.foregroundLive++;
+            s.onended=()=>{
+              Engine.foregroundLive=Math.max(0,Engine.foregroundLive-1);
+              track.live=track.live.filter(x=>x!==s);
+            };
+            track.live.push(s);
+            s.start();
+          }catch(_){ /* 单次触发失败不影响后续调度 */ }
+        }
+        arm(minS+Math.random()*(maxS-minS));
+      };
+      // 首次不等满一个完整间隔,否则刚进场景要静默几十秒才有动静
+      arm(2+Math.random()*Math.max(2,minS-2));
+      this.tracks.push(track);
     }
     return this.tracks;
   },
@@ -803,19 +750,50 @@ async function viewFromVisualRecordV23(record){
     entities,
   };
 }
+/* 没有后端时的降级计划:只出一层底噪,按亮度选类型。
+   这不是"另写一套决策"——它是后端不可用时的兜底,不参与正常链路。*/
+function offlinePlan(brightness){
+  return {
+    schema_version:"2.0-mono-offline",
+    layers:{ambient:[], noise_bed:{
+      sound_id:baseNoiseFromVibe(brightness)+"_noise",
+      gain_db:-30+10*brightness, lowpass_hz:Math.round(400+6000*brightness),
+    }, foreground:[]},
+    master:{gain_db:-2, max_foreground_simultaneous:1},
+  };
+}
+
+async function readErr(r){
+  let msg="后端返回 "+r.status;
+  try{ const e=await r.json(); if(e&&e.error) msg=e.error; }catch(_){}
+  return new Error(msg);
+}
+
+/* 返回 {view, plan, record}:view 供画面渲染,plan 供音频引擎执行。*/
 async function inferScene(file,objUrl){
   if(CONFIG.BACKEND){
     const fd=new FormData(); fd.append("image",file);
     const r=await fetch(CONFIG.ENDPOINT,{method:"POST",body:fd});
-    if(!r.ok){
-      let msg="后端返回 "+r.status;
-      try{ const err=await r.json(); if(err&&err.error) msg=err.error; }catch(_){}
-      throw new Error(msg);
-    }
+    if(!r.ok) throw await readErr(r);
     const data=await r.json();
-    return data.schema_version==="2.3" ? await viewFromVisualRecordV23(data) : data;
+    return {view: await viewFromVisualRecordV23(data.record), plan: data.plan, record: data.record};
   }
-  return await localAnalyze(file,objUrl);
+  const view=await localAnalyze(file,objUrl);
+  return {view, plan: offlinePlan(view.global_vibe.brightness), record:null};
+}
+
+/* 预设样例:同样把 v2.3 记录交给后端的音频决策层,拿真实播放计划。
+   后端不可用时退回离线底噪,保证页面仍能出声。*/
+async function planForRecord(record){
+  if(CONFIG.BACKEND){
+    try{
+      const r=await fetch("/api/plan",{method:"POST",
+        headers:{"Content-Type":"application/json"}, body:JSON.stringify(record)});
+      if(r.ok){ const d=await r.json(); return d.plan; }
+      console.warn("样例取播放计划失败:", (await r.json().catch(()=>({}))).error || r.status);
+    }catch(e){ console.warn("样例取播放计划异常:", e.message); }
+  }
+  return offlinePlan(record.global_vibe.brightness);
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -871,7 +849,7 @@ function buildProse(c){
    ════════════════════════════════════════════════════════════════ */
 const $=s=>document.querySelector(s);
 // boxNorm: 归一化(0~1)检测框列表;imgW/imgH: 当前图原始像素尺寸,供 cover 映射用
-let current={contract:null, boxes:[], boxNorm:[], imgW:0, imgH:0, objUrl:null, key:"bedroom"};
+let current={contract:null, plan:null, record:null, boxes:[], boxNorm:[], imgW:0, imgH:0, objUrl:null, key:"bedroom"};
 const trackColor=(i,n)=>`hsl(${Math.round(14+(i/Math.max(1,n))*300)} 72% 60%)`;
 
 /* 场景文字链接组(myNoise Presets 风格) */
@@ -897,7 +875,11 @@ async function selectSample(key){
   let src=null, dims=null;
   try{ const im=await loadImage(s.img); src=s.img; dims={w:im.naturalWidth,h:im.naturalHeight}; }catch(_){}
   $("#phNote").textContent = src ? "" : s.ph;
-  await applyScene(s.contract, s.boxes, src, s.label, dims);
+  const [view, plan] = await Promise.all([
+    viewFromVisualRecordV23(s.record),
+    planForRecord(s.record),
+  ]);
+  await applyScene(view, plan, s.record, src, s.label, dims);
   banner("","");
 }
 function randomScene(){
@@ -929,11 +911,11 @@ function layoutBoxes(){
 }
 window.addEventListener("resize", layoutBoxes);
 
-/* 统一渲染一份 Scene Contract */
-async function applyScene(contract, boxes, imgSrc, title, imgDims){
+/* 统一渲染:view 负责画面(框/散文/标签),plan 负责声音,record 是 v2.3 原始记录 */
+async function applyScene(contract, plan, record, imgSrc, title, imgDims){
   const errs=validateScene(contract);
   if(errs.length){ banner("err","契约校验未通过:"+errs.slice(0,3).join(";")); return; }
-  current.contract=contract; current.boxes=boxes||[];
+  current.contract=contract; current.plan=plan; current.record=record;
   // 原始图尺寸:优先实测,回落契约里的 image.width/height
   current.imgW = (imgDims&&imgDims.w) || (contract.image&&contract.image.width) || 0;
   current.imgH = (imgDims&&imgDims.h) || (contract.image&&contract.image.height) || 0;
@@ -954,8 +936,7 @@ async function applyScene(contract, boxes, imgSrc, title, imgDims){
   const fromBbox=contract.entities.filter(e=>Array.isArray(e.bbox)&&e.bbox.length===4)
     .map(e=>({x:e.bbox[0], y:e.bbox[1], w:e.bbox[2]-e.bbox[0], h:e.bbox[3]-e.bbox[1],
               name:`${e.name} ${e.conf.toFixed(2)}`}));
-  const fromSample=(boxes||[]).map(b=>({x:b.x/100,y:b.y/100,w:b.w/100,h:b.h/100,name:b.name}));
-  current.boxNorm = imgSrc ? (fromBbox.length?fromBbox:fromSample) : [];
+  current.boxNorm = imgSrc ? fromBbox : [];
 
   const boxWrap=$("#boxes");
   boxWrap.innerHTML="";
@@ -976,7 +957,7 @@ async function applyScene(contract, boxes, imgSrc, title, imgDims){
   $("#chips").innerHTML=chips;
 
   renderJSON(contract);
-  await buildTracks(contract);
+  await buildTracks(plan, {record});
 }
 
 function renderJSON(obj){
@@ -989,9 +970,9 @@ function renderJSON(obj){
 }
 
 /* ── 竖推子阵列 + 声场条 ─────────────────────────────────────── */
-async function buildTracks(contract){
+async function buildTracks(plan, view){
   const wasPlaying=Engine.playing;
-  const tracks=await Engine.build(contract);
+  const tracks=await Engine.build(plan, view);
   if(!wasPlaying && Engine.ctx) Engine.ctx.suspend();
 
   const fw=$("#faders"); fw.innerHTML="";
@@ -1071,7 +1052,7 @@ $("#playBtn").onclick=async()=>{
     btn.classList.remove("playing"); btn.textContent="▶";
     $("#status").textContent="已暂停";
   }else{
-    if(!Engine.tracks.length) await Engine.build(current.contract);
+    if(!Engine.tracks.length) await Engine.build(current.plan, {record:current.record});
     await Engine.play();
     btn.classList.add("playing"); btn.textContent="⏸";
     $("#status").textContent=`正在播放 · ${Engine.tracks.length} 轨空间混流`;
@@ -1121,16 +1102,18 @@ async function handleFile(file){
   const url=URL.createObjectURL(file);
   current.objUrl=url; current.key=null;
   try{
-    const contract=await inferScene(file,url);
+    const {view, plan, record}=await inferScene(file,url);
     $("#phNote").textContent="";
     // 取原始尺寸,供检测框 cover 映射(后端返回的 bbox 也据此定位)
     let dims=null;
     try{ const im=await loadImage(url); dims={w:im.naturalWidth,h:im.naturalHeight}; }catch(_){}
-    await applyScene(contract, [], url, file.name.replace(/\.[^.]+$/,""), dims);
+    await applyScene(view, plan, record, url, file.name.replace(/\.[^.]+$/,""), dims);
+    const amb=(plan&&plan.layers&&plan.layers.ambient||[]).map(a=>a.sound_id).join("、");
+    const fg =(plan&&plan.layers&&plan.layers.foreground||[]).map(f=>f.sound_id).join("、");
     banner(CONFIG.BACKEND?"info":"warn",
       CONFIG.BACKEND
-        ? "已由后端 /infer 推理完成。"
-        : `前端本地分析完成:亮度 ${contract.global_vibe.brightness}、${contract.global_vibe.warmth}调 → ${contract.global_vibe.base_noise} 底噪。实体检测需接后端 YOLO(把 CONFIG.BACKEND 设为 true)。`);
+        ? `已由后端推理并生成播放计划(${plan&&plan.schema_version})。环境床:${amb||"无"};前景音:${fg||"无"}。`
+        : `前端本地分析完成:亮度 ${view.global_vibe.brightness}、${view.global_vibe.warmth}调 → ${view.global_vibe.base_noise} 底噪。实体检测与播放计划需接后端(把 CONFIG.BACKEND 设为 true)。`);
   }catch(err){
     banner("err", err.message==="CANVAS_BLOCKED"
       ? "浏览器禁止读取本地图片像素。请用 http 方式打开:python -m http.server 8000"

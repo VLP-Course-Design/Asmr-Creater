@@ -37,7 +37,9 @@ os.environ.setdefault("VLM_MODEL", "qwen2.5-vl:7b")
 from common.contract import validate_visual_record_v23, SchemaValidationError
 from vision.preprocess import load_and_preprocess_image
 from vision.visual_record import build_visual_record_v23
-from audio.playback_converter import load_mapping_config, build_anchor_mapping
+from audio.playback_converter import (
+    load_mapping_config, build_anchor_mapping, build_plans, ConversionError,
+)
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -99,7 +101,17 @@ def _vlm_or_default(image_path: Path, filename: str) -> dict:
 
 # ── 锚点 → 声音语义映射（懒加载并缓存） ──────────────────
 _anchor_sound_map = None
+_asset_urls = None
 _STRENGTH_ORDER = {"strong": 0, "medium": 1, "weak": 2, "cautious": 3}
+
+
+def _get_asset_urls() -> dict:
+    """asset_id → 可直接取用的 URL。播放计划里只有 asset_id,前端靠这张表取文件。"""
+    global _asset_urls
+    if _asset_urls is None:
+        _, _, manifest, _ = load_mapping_config(PLAYBACK_CONFIG_DIR)
+        _asset_urls = {a["asset_id"]: a["path"] for a in manifest.get("assets", [])}
+    return _asset_urls
 
 
 def _get_anchor_sound_map() -> dict:
@@ -161,6 +173,37 @@ def sounds_manifest():
 @app.route("/api/anchor_sound_map")
 def anchor_sound_map():
     return jsonify(_get_anchor_sound_map())
+
+
+@app.route("/api/asset_urls")
+def asset_urls():
+    return jsonify(_get_asset_urls())
+
+
+@app.route("/api/plan", methods=["POST"])
+def api_plan():
+    """一条视觉记录 v2.3 → 播放计划。
+
+    /infer 内部已经会产出计划;这个端点给「不经过图像推理」的调用方用
+    (例如页面上的预设样例场景),保证它们走的也是同一套音频决策代码。
+    """
+    record = request.get_json(silent=True)
+    if not isinstance(record, dict):
+        return jsonify({"error": "请求体必须是一条视觉记录 JSON"}), 400
+    try:
+        validate_visual_record_v23(record)
+    except SchemaValidationError as e:
+        return jsonify({"error": f"视觉记录不符合 v2.3 契约: {e}"}), 422
+    try:
+        mono, binaural, gate = build_plans(record, PLAYBACK_CONFIG_DIR, duration_s=None)
+    except ConversionError as e:
+        return jsonify({"error": f"生成播放计划失败: {e}"}), 422
+    return jsonify({
+        "record": record,
+        "plan": binaural or mono,
+        "spatial_gate_passed": gate["passed"],
+        "asset_urls": _get_asset_urls(),
+    })
 
 
 @app.route("/health")
@@ -236,12 +279,29 @@ def infer():
             logger.warning("v2.3 contract validation failed: %s", e)
             return jsonify({"error": f"视觉记录不符合 v2.3 契约: {e}"}), 422
 
+        # ── 5. 音频决策:直接调用 playback_converter,不在前端另写一套 ──
+        # 声音选型、增益、触发间隔/概率、环境床全部由这里产出;前端只负责执行。
+        try:
+            mono, binaural, gate = build_plans(record, PLAYBACK_CONFIG_DIR, duration_s=None)
+        except ConversionError as e:
+            logger.warning("playback plan failed: %s", e)
+            return jsonify({"error": f"生成播放计划失败: {e}"}), 422
+
+        plan = binaural or mono
         logger.info(
-            "OK: scene=%s anchors=%d",
+            "OK: scene=%s anchors=%d -> plan=%s ambient=%s foreground=%d",
             record["global_vibe"].get("scene_type"),
             len(record["trigger_anchors"]),
+            plan["schema_version"],
+            (plan["layers"]["ambient"][0]["sound_id"] if plan["layers"]["ambient"] else "无"),
+            len(plan["layers"]["foreground"]),
         )
-        return jsonify(record)
+        return jsonify({
+            "record": record,
+            "plan": plan,
+            "spatial_gate_passed": gate["passed"],
+            "asset_urls": _get_asset_urls(),
+        })
 
     except Exception as e:
         logger.exception("Inference failed")
