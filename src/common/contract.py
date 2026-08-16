@@ -20,6 +20,9 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = REPO_ROOT / "contracts" / "scene_contract.schema.json"
 EXAMPLES_DIR = REPO_ROOT / "contracts" / "examples"
 
+# 视觉记录契约 v2.3(提案,见 contracts/playback_proposal/)
+V23_SCHEMA_PATH = REPO_ROOT / "contracts" / "playback_proposal" / "visual_record.schema.json"
+
 
 class SchemaValidationError(ValueError):
     """场景数据不符合契约时抛出。message 会指明第一个出错的字段路径。"""
@@ -56,6 +59,38 @@ def validate_scene(scene: Dict[str, Any]) -> Dict[str, Any]:
             f"场景数据不符合契约(共 {len(errors)} 处问题)。首个:字段 [{location}] {first.message}"
         )
     return scene
+
+
+@lru_cache(maxsize=1)
+def load_v23_schema() -> Dict[str, Any]:
+    """加载并缓存视觉记录 v2.3(提案)的 JSON Schema 定义。"""
+    with V23_SCHEMA_PATH.open(encoding="utf-8") as f:
+        return json.load(f)
+
+
+def validate_visual_record_v23(record: Dict[str, Any]) -> Dict[str, Any]:
+    """校验一条视觉记录是否符合 v2.3 提案契约(见 contracts/playback_proposal/)。
+
+    合法则原样返回该对象;不合法抛 ``SchemaValidationError``。镜像 ``validate_scene``
+    的写法,但走的是 v2.3 的 schema,与冻结的 v1.0 ``validate_scene`` 互不影响。
+    """
+    try:
+        import jsonschema
+    except ImportError as exc:  # pragma: no cover - 环境问题
+        raise RuntimeError(
+            "校验契约需要 jsonschema,请先 `pip install -r requirements.txt`。"
+        ) from exc
+
+    schema = load_v23_schema()
+    validator = jsonschema.Draft7Validator(schema)
+    errors = sorted(validator.iter_errors(record), key=lambda e: e.path)
+    if errors:
+        first = errors[0]
+        location = "/".join(str(p) for p in first.path) or "<根>"
+        raise SchemaValidationError(
+            f"视觉记录不符合 v2.3 契约(共 {len(errors)} 处问题)。首个:字段 [{location}] {first.message}"
+        )
+    return record
 
 
 def load_scene(path: str | Path, *, validate: bool = True) -> Dict[str, Any]:

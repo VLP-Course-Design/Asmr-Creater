@@ -1,0 +1,20 @@
+{
+  "_comment": "过渡桥接表:contracts/playback_proposal/ 里 v2.3 提案的 66 个 sound_id,与本仓库现有的 v1.0 素材库(sounds/trigger_map.json,14 个真实 triggers 文件夹)之间语义相近的一部分,先接上真实播放,不等素材线把 66 类全部录完。剩余约 50 个 sound_id 没有对应真实素材,前端应回退到合成音,不应报错。",
+  "_schema": "sound_id(v2.3 anchor_sound_mapping_reference 里的值) -> trigger_map.json 里已存在的素材 folder key",
+  "map": {
+    "bird_chirp": "bird",
+    "cat_purr": "cat",
+    "keyboard_typing": "keyboard",
+    "clock_tick": "clock",
+    "window_wind": "window",
+    "cup_clink": "cup",
+    "page_turn": "book",
+    "book_handling": "book",
+    "kettle_simmer": "kettle",
+    "fireplace_crackle": "fire",
+    "wind_chime": "chime",
+    "coffee_machine": "espresso",
+    "tv_static": "tv_static",
+    "stream_flow": "water"
+  }
+}

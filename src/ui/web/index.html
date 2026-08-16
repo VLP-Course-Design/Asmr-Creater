@@ -319,8 +319,56 @@
    ════════════════════════════════════════════════════════════════ */
 const CONFIG = {
   BACKEND : true,         // true → 上传图片走后端 /infer;false → 前端本地氛围分析
-  ENDPOINT: "/infer"      // 后端推理接口,应返回一份 Scene Contract JSON
+  ENDPOINT: "/infer"      // 后端推理接口,应返回一份视觉记录 v2.3 JSON
 };
+
+/* ════════════════════════════════════════════════════════════════
+   0. 素材库真实资源 —— trigger_map(v1.0) + v2.3 桥接表 + 真实文件清单 +
+      锚点→声音映射。启动时并行拉取一次,合并成一张统一查表给 Engine 用。
+   ════════════════════════════════════════════════════════════════ */
+const Assets = {
+  triggerMap: {}, bridgeMap: {}, manifest: {triggers:{}, ambient:{}},
+  anchorSoundMap: {}, assetMap: {}, ready: null,
+
+  load(){
+    if(this.ready) return this.ready;
+    this.ready = (async()=>{
+      const safe=async(url,fallback)=>{
+        try{ const r=await fetch(url); if(!r.ok) throw 0; return await r.json(); }
+        catch(_){ return fallback; }
+      };
+      const [triggerMapDoc, bridgeDoc, manifest, anchorSoundMap] = await Promise.all([
+        safe("/sounds/trigger_map.json", {map:{}}),
+        safe("/sounds/v23_sound_id_bridge.json", {map:{}}),
+        safe("/sounds/manifest", {triggers:{}, ambient:{}}),
+        safe("/api/anchor_sound_map", {}),
+      ]);
+      this.triggerMap = triggerMapDoc.map || {};
+      this.bridgeMap  = bridgeDoc.map || {};
+      this.manifest   = manifest;
+      this.anchorSoundMap = anchorSoundMap;
+      // 合并成统一查表:v1.0 实体名(cat/bird/...)直接查 triggerMap;
+      // v2.3 的 sound_id(cat_purr/bird_chirp/...)先经桥接表转到同一批文件夹。
+      const merged = {...this.triggerMap};
+      for(const [soundId, folder] of Object.entries(this.bridgeMap)){
+        const base = this.triggerMap[folder];
+        if(base) merged[soundId] = base;
+      }
+      this.assetMap = merged;
+    })();
+    return this.ready;
+  },
+
+  /* 给定实体名,随机挑一个真实素材变体;查不到或该文件夹没有真实 wav 时返回 null */
+  pickVariant(name){
+    const entry = this.assetMap[name];
+    if(!entry) return null;
+    const pool = this.manifest.triggers[entry.folder];
+    if(!pool || !pool.length) return null;
+    return {url: pool[Math.floor(Math.random()*pool.length)], entry};
+  },
+};
+Assets.load();
 
 /* ════════════════════════════════════════════════════════════════
    1. 样例场景 —— 与 contracts/examples/ 保持一致
@@ -388,10 +436,13 @@ const SCENES = {
    2. 契约轻量校验 —— 镜像 contracts/scene_contract.schema.json
    ════════════════════════════════════════════════════════════════ */
 const ENUMS={
-  mood:["calm","cozy","lively","tense","gloomy","melancholic","eerie","cheerful"],
+  // mood/time_of_day 并入视觉记录 v2.3(contracts/playback_proposal/)的受控词表,
+  // 与 v1.0 旧值取并集,新旧两种来源(硬编码样例 vs /infer 真实返回)都能通过校验。
+  mood:["calm","cozy","lively","tense","gloomy","melancholic","eerie","cheerful",
+        "neutral","majestic","mysterious"],
   warmth:["warm","neutral","cool"],
   base_noise:["white","pink","brown"],
-  time_of_day:["dawn","morning","noon","afternoon","dusk","night"],
+  time_of_day:["dawn","morning","noon","afternoon","dusk","night","unknown"],
   depth:["near","mid","far"]
 };
 function validateScene(s){
@@ -438,7 +489,7 @@ const VOICE={
 };
 
 const Engine={
-  ctx:null, master:null, tracks:[], buffers:{}, playing:false,
+  ctx:null, master:null, tracks:[], buffers:{}, realBuffers:{}, playing:false,
   ensure(){
     if(!this.ctx){
       const AC=window.AudioContext||window.webkitAudioContext;
@@ -478,8 +529,19 @@ const Engine={
     const p=ctx.createPanner(); p.panningModel="equalpower";
     p.setPosition(pan,0,1-Math.abs(pan)); return p;
   },
-  build(contract){
+  /* fetch + decodeAudioData 真实 wav,按 URL 缓存,避免同一素材反复解码 */
+  async loadRealBuffer(url){
+    if(this.realBuffers[url]) return this.realBuffers[url];
     const ctx=this.ensure();
+    const resp=await fetch(url);
+    const arr=await resp.arrayBuffer();
+    const buf=await ctx.decodeAudioData(arr);
+    this.realBuffers[url]=buf;
+    return buf;
+  },
+  async build(contract){
+    const ctx=this.ensure();
+    await Assets.load();
     this.disposeTracks();
     const g=contract.global_vibe;
 
@@ -495,7 +557,23 @@ const Engine={
     this.tracks.push({name:`${g.base_noise} 底噪`, kind:"BED", vol:bedVol, panner:null,
       src:bedSrc, nodes:[lp], level:bedLevel, pan:0.5});
 
-    contract.entities.forEach(en=>{
+    for(const en of contract.entities){
+      const picked=Assets.pickVariant(en.name);
+      if(picked){
+        // ── 素材库真实触发:直接播 sounds/ 里的 wav,不再用合成音顶替 ──
+        const buf=await this.loadRealBuffer(picked.url);
+        const src=ctx.createBufferSource();
+        src.buffer=buf; src.loop=!!picked.entry.loopable;
+        const level=(picked.entry.default_gain??0.6)*DEPTH_GAIN[en.depth]*(0.5+0.5*en.conf);
+        const vol=ctx.createGain(); vol.gain.value=level;
+        const panner=this.makePanner(en.x*2-1);
+        src.connect(vol); vol.connect(panner); panner.connect(this.master);
+        src.start();
+        this.tracks.push({name:en.name, state:en.state||"", kind:en.depth.toUpperCase(),
+          vol, panner, src, nodes:[], level, pan:en.x, real:true});
+        continue;
+      }
+      // ── 素材库里没有对应文件:回退到带通滤波白噪声合成音(原有逻辑不变) ──
       const v=VOICE[en.name]||VOICE._default;
       const src=ctx.createBufferSource();
       src.buffer=this.noise("white"); src.loop=true;
@@ -517,8 +595,8 @@ const Engine={
       panner.connect(this.master);
       src.start();
       this.tracks.push({name:en.name, state:en.state||"", kind:en.depth.toUpperCase(),
-        vol, panner, src, nodes, level, pan:en.x});
-    });
+        vol, panner, src, nodes, level, pan:en.x, real:false});
+    }
     return this.tracks;
   },
   disposeTracks(){
@@ -576,12 +654,50 @@ async function localAnalyze(file,objUrl){
     entities:[]
   };
 }
+/* 视觉记录 v2.3(schema_version:"2.3", trigger_anchors[]/bbox_norm)→
+   前端已经在消费的 v1.0 形状(global_vibe.base_noise, entities[].x/depth/bbox)。
+   下游 applyScene/buildProse/box 渲染/Engine 都不需要认识 v2.3,只有这里做一次转换。*/
+function baseNoiseFromVibe(brightness){
+  return brightness<0.35?"brown" : brightness<0.68?"pink" : "white";
+}
+async function viewFromVisualRecordV23(record){
+  await Assets.load();
+  const g=record.global_vibe;
+  const entities=(record.trigger_anchors||[]).map(a=>{
+    const b=a.bbox_norm;
+    const cands=Assets.anchorSoundMap[a.anchor_id];
+    const name=(cands&&cands.length)?cands[0].sound_id:a.anchor_id;
+    const area=(b.x_max-b.x_min)*(b.y_max-b.y_min);
+    // MVP 阶段没有深度模型(record 不带 depth_hint)时的临时代理:用框面积粗估远近。
+    // depth_hint 真正上线后应改用它,而不是继续用框面积冒充距离。
+    const depth = area>0.25?"near" : area>0.08?"mid" : "far";
+    return {
+      name, state:"", x:(b.x_min+b.x_max)/2, depth, conf:a.confidence,
+      bbox:[b.x_min,b.y_min,b.x_max,b.y_max],
+      source: a.source==="vlm"?"vlm":"yolo",
+    };
+  });
+  return {
+    schema_version: record.schema_version,
+    image: record.image,
+    global_vibe:{
+      scene_type:g.scene_type, mood:g.mood, brightness:g.brightness,
+      warmth:g.warmth, base_noise:baseNoiseFromVibe(g.brightness), time_of_day:g.time_of_day,
+    },
+    entities,
+  };
+}
 async function inferScene(file,objUrl){
   if(CONFIG.BACKEND){
     const fd=new FormData(); fd.append("image",file);
     const r=await fetch(CONFIG.ENDPOINT,{method:"POST",body:fd});
-    if(!r.ok) throw new Error("后端返回 "+r.status);
-    return await r.json();
+    if(!r.ok){
+      let msg="后端返回 "+r.status;
+      try{ const err=await r.json(); if(err&&err.error) msg=err.error; }catch(_){}
+      throw new Error(msg);
+    }
+    const data=await r.json();
+    return data.schema_version==="2.3" ? await viewFromVisualRecordV23(data) : data;
   }
   return await localAnalyze(file,objUrl);
 }
@@ -591,7 +707,8 @@ async function inferScene(file,objUrl){
    ════════════════════════════════════════════════════════════════ */
 const CN={
   mood:{calm:"宁静",cozy:"温馨",lively:"热闹",tense:"紧绷",gloomy:"阴郁",
-        melancholic:"怅惘",eerie:"诡谧",cheerful:"明快"},
+        melancholic:"怅惘",eerie:"诡谧",cheerful:"明快",
+        neutral:"平和",majestic:"壮阔",mysterious:"幽秘"},
   tod:{dawn:"黎明",morning:"清晨",noon:"正午",afternoon:"午后",dusk:"黄昏",night:"夜晚"},
   warmth:{warm:"暖调",neutral:"中性色调",cool:"冷调"},
   noise:{white:"白噪音",pink:"粉噪音",brown:"棕噪音"},
@@ -664,7 +781,7 @@ async function selectSample(key){
   let src=null, dims=null;
   try{ const im=await loadImage(s.img); src=s.img; dims={w:im.naturalWidth,h:im.naturalHeight}; }catch(_){}
   $("#phNote").textContent = src ? "" : s.ph;
-  applyScene(s.contract, s.boxes, src, s.label, dims);
+  await applyScene(s.contract, s.boxes, src, s.label, dims);
   banner("","");
 }
 function randomScene(){
@@ -697,7 +814,7 @@ function layoutBoxes(){
 window.addEventListener("resize", layoutBoxes);
 
 /* 统一渲染一份 Scene Contract */
-function applyScene(contract, boxes, imgSrc, title, imgDims){
+async function applyScene(contract, boxes, imgSrc, title, imgDims){
   const errs=validateScene(contract);
   if(errs.length){ banner("err","契约校验未通过:"+errs.slice(0,3).join(";")); return; }
   current.contract=contract; current.boxes=boxes||[];
@@ -743,7 +860,7 @@ function applyScene(contract, boxes, imgSrc, title, imgDims){
   $("#chips").innerHTML=chips;
 
   renderJSON(contract);
-  buildTracks(contract);
+  await buildTracks(contract);
 }
 
 function renderJSON(obj){
@@ -756,9 +873,9 @@ function renderJSON(obj){
 }
 
 /* ── 竖推子阵列 + 声场条 ─────────────────────────────────────── */
-function buildTracks(contract){
+async function buildTracks(contract){
   const wasPlaying=Engine.playing;
-  const tracks=Engine.build(contract);
+  const tracks=await Engine.build(contract);
   if(!wasPlaying && Engine.ctx) Engine.ctx.suspend();
 
   const fw=$("#faders"); fw.innerHTML="";
@@ -838,7 +955,7 @@ $("#playBtn").onclick=async()=>{
     btn.classList.remove("playing"); btn.textContent="▶";
     $("#status").textContent="已暂停";
   }else{
-    if(!Engine.tracks.length) Engine.build(current.contract);
+    if(!Engine.tracks.length) await Engine.build(current.contract);
     await Engine.play();
     btn.classList.add("playing"); btn.textContent="⏸";
     $("#status").textContent=`正在播放 · ${Engine.tracks.length} 轨空间混流`;
@@ -861,7 +978,7 @@ $("#btnReset").onclick=async()=>{
   await Engine.pause();
   const btn=$("#playBtn"); btn.classList.remove("playing"); btn.textContent="▶";
   $("#status").textContent="按播放键开始";
-  selectSample("bedroom");
+  await selectSample("bedroom");
 };
 $("#masterVol").addEventListener("input",e=>{
   const v=+e.target.value;
@@ -893,7 +1010,7 @@ async function handleFile(file){
     // 取原始尺寸,供检测框 cover 映射(后端返回的 bbox 也据此定位)
     let dims=null;
     try{ const im=await loadImage(url); dims={w:im.naturalWidth,h:im.naturalHeight}; }catch(_){}
-    applyScene(contract, [], url, file.name.replace(/\.[^.]+$/,""), dims);
+    await applyScene(contract, [], url, file.name.replace(/\.[^.]+$/,""), dims);
     banner(CONFIG.BACKEND?"info":"warn",
       CONFIG.BACKEND
         ? "已由后端 /infer 推理完成。"
