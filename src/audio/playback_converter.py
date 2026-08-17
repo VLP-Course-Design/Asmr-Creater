@@ -178,6 +178,7 @@ def build_ambient_layers(
     assets: dict[str, list[dict[str, Any]]],
     rng: random.Random,
     mono: bool,
+    settings: dict[str, Any] | None = None,
 ) -> tuple[list[dict[str, Any]], str]:
     vibe = record["global_vibe"]
     scene_type = vibe["scene_type"]
@@ -195,8 +196,15 @@ def build_ambient_layers(
         return [], source
     asset = pick_asset(sound_id, "ambient", assets, rng)
     loop = asset.get("loop", {})
-    if not loop.get("enabled") or not loop.get("seamless_verified"):
-        raise ConversionError(f"环境循环素材未验证: {asset['asset_id']}")
+    if not loop.get("enabled"):
+        raise ConversionError(f"环境素材未标记为可循环: {asset['asset_id']}")
+    if not loop.get("seamless_verified"):
+        # 无缝循环只能靠人耳试听确认(采集规范 §11:环境循环至少在耳机上连播 5 分钟
+        # 检查接缝)。素材是程序批量下载的,尚无人试听,所以 manifest 里如实写
+        # seamless_verified=false。允许开关由 decision_settings 控制,正式上线前
+        # 应在试听后把素材标为 true、并把这个开关关掉。
+        if not (settings or {}).get("allow_unverified_loops"):
+            raise ConversionError(f"环境循环素材未经试听验证: {asset['asset_id']}")
     layer: dict[str, Any] = {
         "layer_id": "ambient_primary",
         "role": "primary",
@@ -470,7 +478,7 @@ def build_mono_plan(
     gate: dict[str, Any],
 ) -> dict[str, Any]:
     rng = random.Random(seed)
-    ambient, ambient_source = build_ambient_layers(record, scene_profiles, assets, rng, mono=True)
+    ambient, ambient_source = build_ambient_layers(record, scene_profiles, assets, rng, mono=True, settings=settings)
     foreground = [
         build_foreground_layer(candidate, assets, float(record["global_vibe"]["brightness"]), True, settings, index)
         for index, candidate in enumerate(candidates)
@@ -538,7 +546,7 @@ def build_binaural_plan(
     if not gate["passed"]:
         raise ConversionError("空间门控未通过，不能生成双耳计划")
     rng = random.Random(seed)
-    ambient, ambient_source = build_ambient_layers(record, scene_profiles, assets, rng, mono=False)
+    ambient, ambient_source = build_ambient_layers(record, scene_profiles, assets, rng, mono=False, settings=settings)
     foreground = [
         build_foreground_layer(candidate, assets, float(record["global_vibe"]["brightness"]), False, settings, index)
         for index, candidate in enumerate(candidates)
@@ -597,6 +605,35 @@ def build_binaural_plan(
     }
 
 
+def build_plans(
+    record: dict[str, Any],
+    config_dir: Path,
+    explicit_seed: int | None = None,
+    duration_s: float | None = 1800.0,
+) -> tuple[dict[str, Any], dict[str, Any] | None, dict[str, Any]]:
+    """内存版:一条视觉记录 → (单声道计划, 双耳计划或 None, 空间门控结果)。
+
+    不读写任何文件,供在线服务(src/ui/app.py 的 /infer)直接调用;
+    命令行的 convert() 也走这里,保证线上与离线是同一套决策逻辑。
+    """
+    settings, scene_profiles, manifest, visual_spec = load_mapping_config(config_dir)
+    allowed_anchors, mapping_by_anchor = build_anchor_mapping(visual_spec)
+    validate_record(record, allowed_anchors)
+    seed = stable_seed(record["id"], explicit_seed)
+    assets = asset_index(manifest)
+    candidates = collect_foreground_candidates(record, mapping_by_anchor, settings)
+    gate = evaluate_spatial_gate(candidates, settings)
+    mono = build_mono_plan(
+        record, seed, duration_s, settings, scene_profiles, assets, candidates, gate
+    )
+    binaural = None
+    if gate["passed"]:
+        binaural = build_binaural_plan(
+            record, seed, duration_s, settings, scene_profiles, assets, candidates, gate
+        )
+    return mono, binaural, gate
+
+
 def convert(
     input_path: Path,
     output_dir: Path,
@@ -604,15 +641,8 @@ def convert(
     explicit_seed: int | None,
     duration_s: float | None,
 ) -> dict[str, Any]:
-    settings, scene_profiles, manifest, visual_spec = load_mapping_config(config_dir)
-    allowed_anchors, mapping_by_anchor = build_anchor_mapping(visual_spec)
     record = unwrap_record(load_json(input_path))
-    validate_record(record, allowed_anchors)
-    seed = stable_seed(record["id"], explicit_seed)
-    assets = asset_index(manifest)
-    candidates = collect_foreground_candidates(record, mapping_by_anchor, settings)
-    gate = evaluate_spatial_gate(candidates, settings)
-    mono = build_mono_plan(record, seed, duration_s, settings, scene_profiles, assets, candidates, gate)
+    mono, binaural, gate = build_plans(record, config_dir, explicit_seed, duration_s)
     output_dir.mkdir(parents=True, exist_ok=True)
     mono_path = output_dir / f"{record['id']}.mono.playback-plan.json"
     write_json(mono_path, mono)
@@ -623,10 +653,7 @@ def convert(
         "binaural_plan": None,
         "spatial_gate": gate,
     }
-    if gate["passed"]:
-        binaural = build_binaural_plan(
-            record, seed, duration_s, settings, scene_profiles, assets, candidates, gate
-        )
+    if binaural is not None:
         binaural_path = output_dir / f"{record['id']}.binaural.playback-plan.json"
         write_json(binaural_path, binaural)
         report["binaural_plan"] = str(binaural_path.resolve())

@@ -1,6 +1,8 @@
 {
   "config_version": "1.0",
   "visual_spec_path": "contracts/playback_proposal/recommended_structured_record_example.json",
+  "_allow_unverified_loops": "环境素材的无缝循环只能靠人耳试听确认(采集规范 §11)。当前素材是程序批量下载的，manifest 里如实标 seamless_verified=false；试听通过后逐条改 true，并把下面这项关掉。",
+  "allow_unverified_loops": true,
   "max_foreground_layers": 2,
   "foreground_candidate_score_threshold": 0.18,
   "strength_values": {

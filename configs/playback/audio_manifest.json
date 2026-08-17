@@ -1,78 +1,2174 @@
 {
-  "library_version": "0.1-placeholder",
-  "description": "演示用占位Manifest。路径对应尚未准备的音频目录；转换器生成计划但不读取音频字节。",
+  "library_version": "1.0",
+  "_comment": "由 scripts 从 sounds/ 下的真实文件生成。role 用 playback_converter 的词汇(ambient/texture/trigger),不是 v23_registry 的角色名。path 是给前端直接取用的 URL。",
+  "_seamless_verified": "全部为 false:素材是程序批量下载的,无缝循环只能靠人耳试听确认(采集规范 §11)。试听通过后逐条改 true,并把 decision_settings.json 的 allow_unverified_loops 关掉。",
   "assets": [
     {
-      "asset_id": "amb_ocean_coast_bed_placeholder_01",
-      "sound_id": "ocean_coast_bed",
-      "role": "ambient",
-      "path": "../audio/ambient/ocean_coast_bed_placeholder_01.wav",
-      "placeholder": true,
-      "loop": {"enabled": true, "seamless_verified": true, "crossfade_ms": 2500}
+      "asset_id": "trg_air_conditioner_hum_01",
+      "sound_id": "air_conditioner_hum",
+      "role": "texture",
+      "path": "/sounds/triggers/air_conditioner_hum/air_conditioner_hum_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
     },
     {
-      "asset_id": "amb_study_office_bed_placeholder_01",
-      "sound_id": "study_office_bed",
-      "role": "ambient",
-      "path": "../audio/ambient/study_office_bed_placeholder_01.wav",
-      "placeholder": true,
-      "loop": {"enabled": true, "seamless_verified": true, "crossfade_ms": 2500}
+      "asset_id": "trg_air_conditioner_hum_02",
+      "sound_id": "air_conditioner_hum",
+      "role": "texture",
+      "path": "/sounds/triggers/air_conditioner_hum/air_conditioner_hum_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
     },
     {
-      "asset_id": "amb_indoor_roomtone_placeholder_01",
+      "asset_id": "trg_airplane_cabin_hum_01",
+      "sound_id": "airplane_cabin_hum",
+      "role": "texture",
+      "path": "/sounds/triggers/airplane_cabin_hum/airplane_cabin_hum_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_airplane_cabin_hum_02",
+      "sound_id": "airplane_cabin_hum",
+      "role": "texture",
+      "path": "/sounds/triggers/airplane_cabin_hum/airplane_cabin_hum_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_bamboo_rustle_01",
+      "sound_id": "bamboo_rustle",
+      "role": "texture",
+      "path": "/sounds/triggers/bamboo_rustle/bamboo_rustle_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_bamboo_rustle_02",
+      "sound_id": "bamboo_rustle",
+      "role": "texture",
+      "path": "/sounds/triggers/bamboo_rustle/bamboo_rustle_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_bee_buzz_01",
+      "sound_id": "bee_buzz",
+      "role": "trigger",
+      "path": "/sounds/triggers/bee_buzz/bee_buzz_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_bee_buzz_02",
+      "sound_id": "bee_buzz",
+      "role": "trigger",
+      "path": "/sounds/triggers/bee_buzz/bee_buzz_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_bee_buzz_03",
+      "sound_id": "bee_buzz",
+      "role": "trigger",
+      "path": "/sounds/triggers/bee_buzz/bee_buzz_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_bird_chirp_01",
+      "sound_id": "bird_chirp",
+      "role": "trigger",
+      "path": "/sounds/triggers/bird_chirp/bird_chirp_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_bird_chirp_02",
+      "sound_id": "bird_chirp",
+      "role": "trigger",
+      "path": "/sounds/triggers/bird_chirp/bird_chirp_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_bird_chirp_03",
+      "sound_id": "bird_chirp",
+      "role": "trigger",
+      "path": "/sounds/triggers/bird_chirp/bird_chirp_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_bird_wing_flutter_01",
+      "sound_id": "bird_wing_flutter",
+      "role": "trigger",
+      "path": "/sounds/triggers/bird_wing_flutter/bird_wing_flutter_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_bird_wing_flutter_02",
+      "sound_id": "bird_wing_flutter",
+      "role": "trigger",
+      "path": "/sounds/triggers/bird_wing_flutter/bird_wing_flutter_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_bird_wing_flutter_03",
+      "sound_id": "bird_wing_flutter",
+      "role": "trigger",
+      "path": "/sounds/triggers/bird_wing_flutter/bird_wing_flutter_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_blizzard_wind_01",
+      "sound_id": "blizzard_wind",
+      "role": "texture",
+      "path": "/sounds/triggers/blizzard_wind/blizzard_wind_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_blizzard_wind_02",
+      "sound_id": "blizzard_wind",
+      "role": "texture",
+      "path": "/sounds/triggers/blizzard_wind/blizzard_wind_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_boat_hull_water_01",
+      "sound_id": "boat_hull_water",
+      "role": "texture",
+      "path": "/sounds/triggers/boat_hull_water/boat_hull_water_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_boat_hull_water_02",
+      "sound_id": "boat_hull_water",
+      "role": "texture",
+      "path": "/sounds/triggers/boat_hull_water/boat_hull_water_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_book_handling_01",
+      "sound_id": "book_handling",
+      "role": "trigger",
+      "path": "/sounds/triggers/book_handling/book_handling_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_book_handling_02",
+      "sound_id": "book_handling",
+      "role": "trigger",
+      "path": "/sounds/triggers/book_handling/book_handling_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_book_handling_03",
+      "sound_id": "book_handling",
+      "role": "trigger",
+      "path": "/sounds/triggers/book_handling/book_handling_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_broom_sweeping_01",
+      "sound_id": "broom_sweeping",
+      "role": "texture",
+      "path": "/sounds/triggers/broom_sweeping/broom_sweeping_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_broom_sweeping_02",
+      "sound_id": "broom_sweeping",
+      "role": "texture",
+      "path": "/sounds/triggers/broom_sweeping/broom_sweeping_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_campfire_crackle_01",
+      "sound_id": "campfire_crackle",
+      "role": "texture",
+      "path": "/sounds/triggers/campfire_crackle/campfire_crackle_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_campfire_crackle_02",
+      "sound_id": "campfire_crackle",
+      "role": "texture",
+      "path": "/sounds/triggers/campfire_crackle/campfire_crackle_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_cat_purr_01",
+      "sound_id": "cat_purr",
+      "role": "texture",
+      "path": "/sounds/triggers/cat_purr/cat_purr_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_cat_purr_02",
+      "sound_id": "cat_purr",
+      "role": "texture",
+      "path": "/sounds/triggers/cat_purr/cat_purr_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_cicada_chorus_01",
+      "sound_id": "cicada_chorus",
+      "role": "texture",
+      "path": "/sounds/triggers/cicada_chorus/cicada_chorus_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_cicada_chorus_02",
+      "sound_id": "cicada_chorus",
+      "role": "texture",
+      "path": "/sounds/triggers/cicada_chorus/cicada_chorus_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_clock_tick_01",
+      "sound_id": "clock_tick",
+      "role": "texture",
+      "path": "/sounds/triggers/clock_tick/clock_tick_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_clock_tick_02",
+      "sound_id": "clock_tick",
+      "role": "texture",
+      "path": "/sounds/triggers/clock_tick/clock_tick_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_coffee_machine_01",
+      "sound_id": "coffee_machine",
+      "role": "trigger",
+      "path": "/sounds/triggers/coffee_machine/coffee_machine_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_coffee_machine_02",
+      "sound_id": "coffee_machine",
+      "role": "trigger",
+      "path": "/sounds/triggers/coffee_machine/coffee_machine_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_coffee_machine_03",
+      "sound_id": "coffee_machine",
+      "role": "trigger",
+      "path": "/sounds/triggers/coffee_machine/coffee_machine_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_cooking_sizzle_01",
+      "sound_id": "cooking_sizzle",
+      "role": "texture",
+      "path": "/sounds/triggers/cooking_sizzle/cooking_sizzle_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_cooking_sizzle_02",
+      "sound_id": "cooking_sizzle",
+      "role": "texture",
+      "path": "/sounds/triggers/cooking_sizzle/cooking_sizzle_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_cricket_chirp_01",
+      "sound_id": "cricket_chirp",
+      "role": "texture",
+      "path": "/sounds/triggers/cricket_chirp/cricket_chirp_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_cricket_chirp_02",
+      "sound_id": "cricket_chirp",
+      "role": "texture",
+      "path": "/sounds/triggers/cricket_chirp/cricket_chirp_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_cricket_chirp_03",
+      "sound_id": "cricket_chirp",
+      "role": "texture",
+      "path": "/sounds/triggers/cricket_chirp/cricket_chirp_03.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_crowd_murmur_01",
+      "sound_id": "crowd_murmur",
+      "role": "texture",
+      "path": "/sounds/triggers/crowd_murmur/crowd_murmur_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_crowd_murmur_02",
+      "sound_id": "crowd_murmur",
+      "role": "texture",
+      "path": "/sounds/triggers/crowd_murmur/crowd_murmur_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_cup_clink_01",
+      "sound_id": "cup_clink",
+      "role": "trigger",
+      "path": "/sounds/triggers/cup_clink/cup_clink_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_cup_clink_02",
+      "sound_id": "cup_clink",
+      "role": "trigger",
+      "path": "/sounds/triggers/cup_clink/cup_clink_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_cup_clink_03",
+      "sound_id": "cup_clink",
+      "role": "trigger",
+      "path": "/sounds/triggers/cup_clink/cup_clink_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_dish_handling_01",
+      "sound_id": "dish_handling",
+      "role": "trigger",
+      "path": "/sounds/triggers/dish_handling/dish_handling_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_dish_handling_02",
+      "sound_id": "dish_handling",
+      "role": "trigger",
+      "path": "/sounds/triggers/dish_handling/dish_handling_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_dish_handling_03",
+      "sound_id": "dish_handling",
+      "role": "trigger",
+      "path": "/sounds/triggers/dish_handling/dish_handling_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_distant_bell_01",
+      "sound_id": "distant_bell",
+      "role": "trigger",
+      "path": "/sounds/triggers/distant_bell/distant_bell_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_distant_bell_02",
+      "sound_id": "distant_bell",
+      "role": "trigger",
+      "path": "/sounds/triggers/distant_bell/distant_bell_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_distant_bell_03",
+      "sound_id": "distant_bell",
+      "role": "trigger",
+      "path": "/sounds/triggers/distant_bell/distant_bell_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_distant_livestock_01",
+      "sound_id": "distant_livestock",
+      "role": "trigger",
+      "path": "/sounds/triggers/distant_livestock/distant_livestock_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_distant_livestock_02",
+      "sound_id": "distant_livestock",
+      "role": "trigger",
+      "path": "/sounds/triggers/distant_livestock/distant_livestock_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_distant_livestock_03",
+      "sound_id": "distant_livestock",
+      "role": "trigger",
+      "path": "/sounds/triggers/distant_livestock/distant_livestock_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_distant_thunder_01",
+      "sound_id": "distant_thunder",
+      "role": "trigger",
+      "path": "/sounds/triggers/distant_thunder/distant_thunder_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_distant_thunder_02",
+      "sound_id": "distant_thunder",
+      "role": "trigger",
+      "path": "/sounds/triggers/distant_thunder/distant_thunder_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_distant_thunder_03",
+      "sound_id": "distant_thunder",
+      "role": "trigger",
+      "path": "/sounds/triggers/distant_thunder/distant_thunder_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_distant_traffic_01",
+      "sound_id": "distant_traffic",
+      "role": "texture",
+      "path": "/sounds/triggers/distant_traffic/distant_traffic_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_distant_traffic_02",
+      "sound_id": "distant_traffic",
+      "role": "texture",
+      "path": "/sounds/triggers/distant_traffic/distant_traffic_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_door_soft_close_01",
+      "sound_id": "door_soft_close",
+      "role": "trigger",
+      "path": "/sounds/triggers/door_soft_close/door_soft_close_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_door_soft_close_02",
+      "sound_id": "door_soft_close",
+      "role": "trigger",
+      "path": "/sounds/triggers/door_soft_close/door_soft_close_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_door_soft_close_03",
+      "sound_id": "door_soft_close",
+      "role": "trigger",
+      "path": "/sounds/triggers/door_soft_close/door_soft_close_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_electronic_hum_01",
+      "sound_id": "electronic_hum",
+      "role": "texture",
+      "path": "/sounds/triggers/electronic_hum/electronic_hum_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_electronic_hum_02",
+      "sound_id": "electronic_hum",
+      "role": "texture",
+      "path": "/sounds/triggers/electronic_hum/electronic_hum_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_fabric_rustle_01",
+      "sound_id": "fabric_rustle",
+      "role": "trigger",
+      "path": "/sounds/triggers/fabric_rustle/fabric_rustle_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_fabric_rustle_02",
+      "sound_id": "fabric_rustle",
+      "role": "trigger",
+      "path": "/sounds/triggers/fabric_rustle/fabric_rustle_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_fabric_rustle_03",
+      "sound_id": "fabric_rustle",
+      "role": "trigger",
+      "path": "/sounds/triggers/fabric_rustle/fabric_rustle_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_fan_hum_01",
+      "sound_id": "fan_hum",
+      "role": "texture",
+      "path": "/sounds/triggers/fan_hum/fan_hum_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_fan_hum_02",
+      "sound_id": "fan_hum",
+      "role": "texture",
+      "path": "/sounds/triggers/fan_hum/fan_hum_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_fireplace_crackle_01",
+      "sound_id": "fireplace_crackle",
+      "role": "texture",
+      "path": "/sounds/triggers/fireplace_crackle/fireplace_crackle_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_fireplace_crackle_02",
+      "sound_id": "fireplace_crackle",
+      "role": "texture",
+      "path": "/sounds/triggers/fireplace_crackle/fireplace_crackle_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_fireplace_tea_boil_01",
+      "sound_id": "fireplace_tea_boil",
+      "role": "texture",
+      "path": "/sounds/triggers/fireplace_tea_boil/fireplace_tea_boil_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_fireplace_tea_boil_02",
+      "sound_id": "fireplace_tea_boil",
+      "role": "texture",
+      "path": "/sounds/triggers/fireplace_tea_boil/fireplace_tea_boil_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_fountain_flow_01",
+      "sound_id": "fountain_flow",
+      "role": "texture",
+      "path": "/sounds/triggers/fountain_flow/fountain_flow_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_fountain_flow_02",
+      "sound_id": "fountain_flow",
+      "role": "texture",
+      "path": "/sounds/triggers/fountain_flow/fountain_flow_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_frog_croak_01",
+      "sound_id": "frog_croak",
+      "role": "trigger",
+      "path": "/sounds/triggers/frog_croak/frog_croak_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_frog_croak_02",
+      "sound_id": "frog_croak",
+      "role": "trigger",
+      "path": "/sounds/triggers/frog_croak/frog_croak_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_frog_croak_03",
+      "sound_id": "frog_croak",
+      "role": "trigger",
+      "path": "/sounds/triggers/frog_croak/frog_croak_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_gentle_wind_01",
+      "sound_id": "gentle_wind",
+      "role": "texture",
+      "path": "/sounds/triggers/gentle_wind/gentle_wind_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_gentle_wind_02",
+      "sound_id": "gentle_wind",
+      "role": "texture",
+      "path": "/sounds/triggers/gentle_wind/gentle_wind_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_grass_rustle_01",
+      "sound_id": "grass_rustle",
+      "role": "texture",
+      "path": "/sounds/triggers/grass_rustle/grass_rustle_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_grass_rustle_02",
+      "sound_id": "grass_rustle",
+      "role": "texture",
+      "path": "/sounds/triggers/grass_rustle/grass_rustle_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_insect_ambience_01",
+      "sound_id": "insect_ambience",
+      "role": "texture",
+      "path": "/sounds/triggers/insect_ambience/insect_ambience_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_insect_ambience_02",
+      "sound_id": "insect_ambience",
+      "role": "texture",
+      "path": "/sounds/triggers/insect_ambience/insect_ambience_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_kettle_simmer_01",
+      "sound_id": "kettle_simmer",
+      "role": "texture",
+      "path": "/sounds/triggers/kettle_simmer/kettle_simmer_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_kettle_simmer_02",
+      "sound_id": "kettle_simmer",
+      "role": "texture",
+      "path": "/sounds/triggers/kettle_simmer/kettle_simmer_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_keyboard_typing_01",
+      "sound_id": "keyboard_typing",
+      "role": "texture",
+      "path": "/sounds/triggers/keyboard_typing/keyboard_typing_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_keyboard_typing_02",
+      "sound_id": "keyboard_typing",
+      "role": "texture",
+      "path": "/sounds/triggers/keyboard_typing/keyboard_typing_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_leaf_rustle_01",
+      "sound_id": "leaf_rustle",
+      "role": "texture",
+      "path": "/sounds/triggers/leaf_rustle/leaf_rustle_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_leaf_rustle_02",
+      "sound_id": "leaf_rustle",
+      "role": "texture",
+      "path": "/sounds/triggers/leaf_rustle/leaf_rustle_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_light_rain_01",
+      "sound_id": "light_rain",
+      "role": "texture",
+      "path": "/sounds/triggers/light_rain/light_rain_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_light_rain_02",
+      "sound_id": "light_rain",
+      "role": "texture",
+      "path": "/sounds/triggers/light_rain/light_rain_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_mouse_click_01",
+      "sound_id": "mouse_click",
+      "role": "trigger",
+      "path": "/sounds/triggers/mouse_click/mouse_click_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_mouse_click_02",
+      "sound_id": "mouse_click",
+      "role": "trigger",
+      "path": "/sounds/triggers/mouse_click/mouse_click_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_mouse_click_03",
+      "sound_id": "mouse_click",
+      "role": "trigger",
+      "path": "/sounds/triggers/mouse_click/mouse_click_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_ocean_waves_01",
+      "sound_id": "ocean_waves",
+      "role": "texture",
+      "path": "/sounds/triggers/ocean_waves/ocean_waves_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_ocean_waves_02",
+      "sound_id": "ocean_waves",
+      "role": "texture",
+      "path": "/sounds/triggers/ocean_waves/ocean_waves_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_page_turn_01",
+      "sound_id": "page_turn",
+      "role": "trigger",
+      "path": "/sounds/triggers/page_turn/page_turn_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_page_turn_02",
+      "sound_id": "page_turn",
+      "role": "trigger",
+      "path": "/sounds/triggers/page_turn/page_turn_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_page_turn_03",
+      "sound_id": "page_turn",
+      "role": "trigger",
+      "path": "/sounds/triggers/page_turn/page_turn_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_paper_rustle_01",
+      "sound_id": "paper_rustle",
+      "role": "trigger",
+      "path": "/sounds/triggers/paper_rustle/paper_rustle_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_paper_rustle_02",
+      "sound_id": "paper_rustle",
+      "role": "trigger",
+      "path": "/sounds/triggers/paper_rustle/paper_rustle_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_paper_rustle_03",
+      "sound_id": "paper_rustle",
+      "role": "trigger",
+      "path": "/sounds/triggers/paper_rustle/paper_rustle_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_pen_writing_01",
+      "sound_id": "pen_writing",
+      "role": "texture",
+      "path": "/sounds/triggers/pen_writing/pen_writing_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_pen_writing_02",
+      "sound_id": "pen_writing",
+      "role": "texture",
+      "path": "/sounds/triggers/pen_writing/pen_writing_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_pencil_writing_01",
+      "sound_id": "pencil_writing",
+      "role": "texture",
+      "path": "/sounds/triggers/pencil_writing/pencil_writing_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_pencil_writing_02",
+      "sound_id": "pencil_writing",
+      "role": "texture",
+      "path": "/sounds/triggers/pencil_writing/pencil_writing_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_radio_static_01",
+      "sound_id": "radio_static",
+      "role": "texture",
+      "path": "/sounds/triggers/radio_static/radio_static_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_radio_static_02",
+      "sound_id": "radio_static",
+      "role": "texture",
+      "path": "/sounds/triggers/radio_static/radio_static_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_rain_on_roof_01",
+      "sound_id": "rain_on_roof",
+      "role": "texture",
+      "path": "/sounds/triggers/rain_on_roof/rain_on_roof_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_rain_on_roof_02",
+      "sound_id": "rain_on_roof",
+      "role": "texture",
+      "path": "/sounds/triggers/rain_on_roof/rain_on_roof_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_rain_on_window_01",
+      "sound_id": "rain_on_window",
+      "role": "texture",
+      "path": "/sounds/triggers/rain_on_window/rain_on_window_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_rain_on_window_02",
+      "sound_id": "rain_on_window",
+      "role": "texture",
+      "path": "/sounds/triggers/rain_on_window/rain_on_window_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_refrigerator_hum_01",
+      "sound_id": "refrigerator_hum",
+      "role": "texture",
+      "path": "/sounds/triggers/refrigerator_hum/refrigerator_hum_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_refrigerator_hum_02",
+      "sound_id": "refrigerator_hum",
+      "role": "texture",
+      "path": "/sounds/triggers/refrigerator_hum/refrigerator_hum_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_shore_lapping_01",
+      "sound_id": "shore_lapping",
+      "role": "texture",
+      "path": "/sounds/triggers/shore_lapping/shore_lapping_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_shore_lapping_02",
+      "sound_id": "shore_lapping",
+      "role": "texture",
+      "path": "/sounds/triggers/shore_lapping/shore_lapping_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_shower_flow_01",
+      "sound_id": "shower_flow",
+      "role": "texture",
+      "path": "/sounds/triggers/shower_flow/shower_flow_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_shower_flow_02",
+      "sound_id": "shower_flow",
+      "role": "texture",
+      "path": "/sounds/triggers/shower_flow/shower_flow_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_singing_bowl_01",
+      "sound_id": "singing_bowl",
+      "role": "trigger",
+      "path": "/sounds/triggers/singing_bowl/singing_bowl_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_singing_bowl_02",
+      "sound_id": "singing_bowl",
+      "role": "trigger",
+      "path": "/sounds/triggers/singing_bowl/singing_bowl_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_singing_bowl_03",
+      "sound_id": "singing_bowl",
+      "role": "trigger",
+      "path": "/sounds/triggers/singing_bowl/singing_bowl_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_snow_crunch_01",
+      "sound_id": "snow_crunch",
+      "role": "trigger",
+      "path": "/sounds/triggers/snow_crunch/snow_crunch_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_snow_crunch_02",
+      "sound_id": "snow_crunch",
+      "role": "trigger",
+      "path": "/sounds/triggers/snow_crunch/snow_crunch_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_snow_crunch_03",
+      "sound_id": "snow_crunch",
+      "role": "trigger",
+      "path": "/sounds/triggers/snow_crunch/snow_crunch_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_soft_footsteps_01",
+      "sound_id": "soft_footsteps",
+      "role": "trigger",
+      "path": "/sounds/triggers/soft_footsteps/soft_footsteps_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_soft_footsteps_02",
+      "sound_id": "soft_footsteps",
+      "role": "trigger",
+      "path": "/sounds/triggers/soft_footsteps/soft_footsteps_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_soft_footsteps_03",
+      "sound_id": "soft_footsteps",
+      "role": "trigger",
+      "path": "/sounds/triggers/soft_footsteps/soft_footsteps_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_stream_flow_01",
+      "sound_id": "stream_flow",
+      "role": "texture",
+      "path": "/sounds/triggers/stream_flow/stream_flow_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_stream_flow_02",
+      "sound_id": "stream_flow",
+      "role": "texture",
+      "path": "/sounds/triggers/stream_flow/stream_flow_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_subway_rumble_01",
+      "sound_id": "subway_rumble",
+      "role": "texture",
+      "path": "/sounds/triggers/subway_rumble/subway_rumble_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_subway_rumble_02",
+      "sound_id": "subway_rumble",
+      "role": "texture",
+      "path": "/sounds/triggers/subway_rumble/subway_rumble_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_tableware_ambience_01",
+      "sound_id": "tableware_ambience",
+      "role": "trigger",
+      "path": "/sounds/triggers/tableware_ambience/tableware_ambience_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_tableware_ambience_02",
+      "sound_id": "tableware_ambience",
+      "role": "trigger",
+      "path": "/sounds/triggers/tableware_ambience/tableware_ambience_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_tableware_ambience_03",
+      "sound_id": "tableware_ambience",
+      "role": "trigger",
+      "path": "/sounds/triggers/tableware_ambience/tableware_ambience_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_train_rumble_01",
+      "sound_id": "train_rumble",
+      "role": "texture",
+      "path": "/sounds/triggers/train_rumble/train_rumble_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_train_rumble_02",
+      "sound_id": "train_rumble",
+      "role": "texture",
+      "path": "/sounds/triggers/train_rumble/train_rumble_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_tv_static_01",
+      "sound_id": "tv_static",
+      "role": "texture",
+      "path": "/sounds/triggers/tv_static/tv_static_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_tv_static_02",
+      "sound_id": "tv_static",
+      "role": "texture",
+      "path": "/sounds/triggers/tv_static/tv_static_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_tv_static_03",
+      "sound_id": "tv_static",
+      "role": "texture",
+      "path": "/sounds/triggers/tv_static/tv_static_03.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_vinyl_crackle_01",
+      "sound_id": "vinyl_crackle",
+      "role": "texture",
+      "path": "/sounds/triggers/vinyl_crackle/vinyl_crackle_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_vinyl_crackle_02",
+      "sound_id": "vinyl_crackle",
+      "role": "texture",
+      "path": "/sounds/triggers/vinyl_crackle/vinyl_crackle_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_washing_machine_hum_01",
+      "sound_id": "washing_machine_hum",
+      "role": "texture",
+      "path": "/sounds/triggers/washing_machine_hum/washing_machine_hum_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_washing_machine_hum_02",
+      "sound_id": "washing_machine_hum",
+      "role": "texture",
+      "path": "/sounds/triggers/washing_machine_hum/washing_machine_hum_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_water_drip_01",
+      "sound_id": "water_drip",
+      "role": "trigger",
+      "path": "/sounds/triggers/water_drip/water_drip_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_water_drip_02",
+      "sound_id": "water_drip",
+      "role": "trigger",
+      "path": "/sounds/triggers/water_drip/water_drip_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_water_drip_03",
+      "sound_id": "water_drip",
+      "role": "trigger",
+      "path": "/sounds/triggers/water_drip/water_drip_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_waterfall_distant_01",
+      "sound_id": "waterfall_distant",
+      "role": "texture",
+      "path": "/sounds/triggers/waterfall_distant/waterfall_distant_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_waterfall_distant_02",
+      "sound_id": "waterfall_distant",
+      "role": "texture",
+      "path": "/sounds/triggers/waterfall_distant/waterfall_distant_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_wind_chime_01",
+      "sound_id": "wind_chime",
+      "role": "trigger",
+      "path": "/sounds/triggers/wind_chime/wind_chime_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_wind_chime_02",
+      "sound_id": "wind_chime",
+      "role": "trigger",
+      "path": "/sounds/triggers/wind_chime/wind_chime_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_wind_chime_03",
+      "sound_id": "wind_chime",
+      "role": "trigger",
+      "path": "/sounds/triggers/wind_chime/wind_chime_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_wind_chime_bronze_01",
+      "sound_id": "wind_chime_bronze",
+      "role": "trigger",
+      "path": "/sounds/triggers/wind_chime_bronze/wind_chime_bronze_01.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_wind_chime_bronze_02",
+      "sound_id": "wind_chime_bronze",
+      "role": "trigger",
+      "path": "/sounds/triggers/wind_chime_bronze/wind_chime_bronze_02.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_wind_chime_bronze_03",
+      "sound_id": "wind_chime_bronze",
+      "role": "trigger",
+      "path": "/sounds/triggers/wind_chime_bronze/wind_chime_bronze_03.wav",
+      "loop": {
+        "enabled": false,
+        "seamless_verified": false,
+        "crossfade_ms": 0
+      }
+    },
+    {
+      "asset_id": "trg_window_wind_01",
+      "sound_id": "window_wind",
+      "role": "texture",
+      "path": "/sounds/triggers/window_wind/window_wind_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "trg_window_wind_02",
+      "sound_id": "window_wind",
+      "role": "texture",
+      "path": "/sounds/triggers/window_wind/window_wind_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_animal_facility_distant_bed_01",
+      "sound_id": "animal_facility_distant_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/animal_facility_distant_bed/animal_facility_distant_bed_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_animal_facility_distant_bed_02",
+      "sound_id": "animal_facility_distant_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/animal_facility_distant_bed/animal_facility_distant_bed_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_arid_wind_01",
+      "sound_id": "arid_wind",
+      "role": "ambient",
+      "path": "/sounds/ambient/arid_wind/arid_wind_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_arid_wind_02",
+      "sound_id": "arid_wind",
+      "role": "ambient",
+      "path": "/sounds/ambient/arid_wind/arid_wind_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_cafe_hospitality_bed_01",
+      "sound_id": "cafe_hospitality_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/cafe_hospitality_bed/cafe_hospitality_bed_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_cafe_hospitality_bed_02",
+      "sound_id": "cafe_hospitality_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/cafe_hospitality_bed/cafe_hospitality_bed_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_forest_day_bed_01",
+      "sound_id": "forest_day_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/forest_day_bed/forest_day_bed_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_forest_day_bed_02",
+      "sound_id": "forest_day_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/forest_day_bed/forest_day_bed_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_freshwater_flow_bed_01",
+      "sound_id": "freshwater_flow_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/freshwater_flow_bed/freshwater_flow_bed_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_freshwater_flow_bed_02",
+      "sound_id": "freshwater_flow_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/freshwater_flow_bed/freshwater_flow_bed_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_indoor_roomtone_01",
       "sound_id": "indoor_roomtone",
       "role": "ambient",
-      "path": "../audio/ambient/indoor_roomtone_placeholder_01.wav",
-      "placeholder": true,
-      "loop": {"enabled": true, "seamless_verified": true, "crossfade_ms": 2500}
+      "path": "/sounds/ambient/indoor_roomtone/indoor_roomtone_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
     },
     {
-      "asset_id": "trg_bird_chirp_placeholder_01",
-      "sound_id": "bird_chirp",
-      "role": "trigger",
-      "path": "../audio/triggers/bird_chirp_placeholder_01.wav",
-      "placeholder": true,
-      "loop": {"enabled": false, "seamless_verified": false, "crossfade_ms": 0}
+      "asset_id": "amb_indoor_roomtone_02",
+      "sound_id": "indoor_roomtone",
+      "role": "ambient",
+      "path": "/sounds/ambient/indoor_roomtone/indoor_roomtone_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
     },
     {
-      "asset_id": "trg_bird_chirp_placeholder_02",
-      "sound_id": "bird_chirp",
-      "role": "trigger",
-      "path": "../audio/triggers/bird_chirp_placeholder_02.wav",
-      "placeholder": true,
-      "loop": {"enabled": false, "seamless_verified": false, "crossfade_ms": 0}
+      "asset_id": "amb_large_hall_roomtone_01",
+      "sound_id": "large_hall_roomtone",
+      "role": "ambient",
+      "path": "/sounds/ambient/large_hall_roomtone/large_hall_roomtone_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
     },
     {
-      "asset_id": "trg_bird_chirp_placeholder_03",
-      "sound_id": "bird_chirp",
-      "role": "trigger",
-      "path": "../audio/triggers/bird_chirp_placeholder_03.wav",
-      "placeholder": true,
-      "loop": {"enabled": false, "seamless_verified": false, "crossfade_ms": 0}
+      "asset_id": "amb_large_hall_roomtone_02",
+      "sound_id": "large_hall_roomtone",
+      "role": "ambient",
+      "path": "/sounds/ambient/large_hall_roomtone/large_hall_roomtone_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
     },
     {
-      "asset_id": "trg_keyboard_typing_placeholder_01",
-      "sound_id": "keyboard_typing",
-      "role": "texture",
-      "path": "../audio/triggers/keyboard_typing_placeholder_01.wav",
-      "placeholder": true,
-      "loop": {"enabled": false, "seamless_verified": false, "crossfade_ms": 0}
+      "asset_id": "amb_mechanical_hum_soft_01",
+      "sound_id": "mechanical_hum_soft",
+      "role": "ambient",
+      "path": "/sounds/ambient/mechanical_hum_soft/mechanical_hum_soft_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
     },
     {
-      "asset_id": "trg_keyboard_typing_placeholder_02",
-      "sound_id": "keyboard_typing",
-      "role": "texture",
-      "path": "../audio/triggers/keyboard_typing_placeholder_02.wav",
-      "placeholder": true,
-      "loop": {"enabled": false, "seamless_verified": false, "crossfade_ms": 0}
+      "asset_id": "amb_mechanical_hum_soft_02",
+      "sound_id": "mechanical_hum_soft",
+      "role": "ambient",
+      "path": "/sounds/ambient/mechanical_hum_soft/mechanical_hum_soft_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
     },
     {
-      "asset_id": "trg_keyboard_typing_placeholder_03",
-      "sound_id": "keyboard_typing",
-      "role": "texture",
-      "path": "../audio/triggers/keyboard_typing_placeholder_03.wav",
-      "placeholder": true,
-      "loop": {"enabled": false, "seamless_verified": false, "crossfade_ms": 0}
+      "asset_id": "amb_ocean_coast_bed_01",
+      "sound_id": "ocean_coast_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/ocean_coast_bed/ocean_coast_bed_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_ocean_coast_bed_02",
+      "sound_id": "ocean_coast_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/ocean_coast_bed/ocean_coast_bed_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_open_nature_wind_01",
+      "sound_id": "open_nature_wind",
+      "role": "ambient",
+      "path": "/sounds/ambient/open_nature_wind/open_nature_wind_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_open_nature_wind_02",
+      "sound_id": "open_nature_wind",
+      "role": "ambient",
+      "path": "/sounds/ambient/open_nature_wind/open_nature_wind_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_public_interior_murmur_01",
+      "sound_id": "public_interior_murmur",
+      "role": "ambient",
+      "path": "/sounds/ambient/public_interior_murmur/public_interior_murmur_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_public_interior_murmur_02",
+      "sound_id": "public_interior_murmur",
+      "role": "ambient",
+      "path": "/sounds/ambient/public_interior_murmur/public_interior_murmur_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_rain_surface_bed_01",
+      "sound_id": "rain_surface_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/rain_surface_bed/rain_surface_bed_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_rain_surface_bed_02",
+      "sound_id": "rain_surface_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/rain_surface_bed/rain_surface_bed_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_recreation_distant_bed_01",
+      "sound_id": "recreation_distant_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/recreation_distant_bed/recreation_distant_bed_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_recreation_distant_bed_02",
+      "sound_id": "recreation_distant_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/recreation_distant_bed/recreation_distant_bed_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_rural_bed_01",
+      "sound_id": "rural_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/rural_bed/rural_bed_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_rural_bed_02",
+      "sound_id": "rural_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/rural_bed/rural_bed_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_snow_wind_soft_01",
+      "sound_id": "snow_wind_soft",
+      "role": "ambient",
+      "path": "/sounds/ambient/snow_wind_soft/snow_wind_soft_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_snow_wind_soft_02",
+      "sound_id": "snow_wind_soft",
+      "role": "ambient",
+      "path": "/sounds/ambient/snow_wind_soft/snow_wind_soft_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_study_office_bed_01",
+      "sound_id": "study_office_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/study_office_bed/study_office_bed_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_study_office_bed_02",
+      "sound_id": "study_office_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/study_office_bed/study_office_bed_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_transport_cabin_bed_01",
+      "sound_id": "transport_cabin_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/transport_cabin_bed/transport_cabin_bed_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_transport_cabin_bed_02",
+      "sound_id": "transport_cabin_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/transport_cabin_bed/transport_cabin_bed_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_transport_exterior_bed_01",
+      "sound_id": "transport_exterior_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/transport_exterior_bed/transport_exterior_bed_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_transport_exterior_bed_02",
+      "sound_id": "transport_exterior_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/transport_exterior_bed/transport_exterior_bed_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_urban_distant_bed_01",
+      "sound_id": "urban_distant_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/urban_distant_bed/urban_distant_bed_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_urban_distant_bed_02",
+      "sound_id": "urban_distant_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/urban_distant_bed/urban_distant_bed_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_wetland_night_bed_01",
+      "sound_id": "wetland_night_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/wetland_night_bed/wetland_night_bed_01.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
+    },
+    {
+      "asset_id": "amb_wetland_night_bed_02",
+      "sound_id": "wetland_night_bed",
+      "role": "ambient",
+      "path": "/sounds/ambient/wetland_night_bed/wetland_night_bed_02.wav",
+      "loop": {
+        "enabled": true,
+        "seamless_verified": false,
+        "crossfade_ms": 2500
+      }
     }
   ]
 }

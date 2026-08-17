@@ -32,7 +32,9 @@ def test_1_preprocessing():
 
     test_img = np.random.randint(0, 255, (300, 400, 3), dtype=np.uint8)
     test_path = str(REPO_ROOT / "_test_tmp.jpg")
-    cv2.imwrite(test_path, cv2.cvtColor(test_img, cv2.COLOR_RGB2BGR))
+    # 用 Pillow 写图,与产品代码一致:cv2.imwrite 在含中文/非 ASCII 的路径下会静默失败
+    from PIL import Image
+    Image.fromarray(test_img).save(test_path)  # test_img 已是 RGB,无需 cvtColor
 
     result = load_and_preprocess_image(test_path,
                                        target_size_yolo=(640, 640),
@@ -42,8 +44,9 @@ def test_1_preprocessing():
     assert result['image_vlm'].shape == (224, 224, 3)
     for k in ['image', 'image_yolo', 'image_vlm', 'original_height',
               'original_width', 'scale', 'pad_left', 'pad_top',
-              'new_width', 'new_height', 'path']:
+              'new_width', 'new_height', 'path', 'brightness']:
         assert k in result, f"Missing field: {k}"
+    assert 0.0 <= result['brightness'] <= 1.0
     print(f"  image_yolo: {result['image_yolo'].shape}")
     print(f"  image_vlm: {result['image_vlm'].shape}")
     print(f"  scale={result['scale']:.4f} pad_left={result['pad_left']} pad_top={result['pad_top']}")
@@ -307,6 +310,214 @@ def test_8_vlm_format_normalization():
     print("  PASS\n")
 
 
+def test_9_exif_and_path_sanitize():
+    """EXIF 转正后宽高对调；绝对路径被收成相对文件名"""
+    print("=" * 50)
+    print("Test 9: EXIF orientation + path sanitization")
+    print("=" * 50)
+
+    from PIL import Image
+    from vision.preprocess import apply_exif_orientation, load_and_preprocess_image
+    from vision.visual_record import sanitize_relative_path, sanitize_record_id
+
+    tmp = REPO_ROOT / "_test_exif.jpg"
+    img = Image.new("RGB", (200, 100), (200, 30, 30))
+    exif = img.getexif()
+    exif[274] = 6  # Orientation: rotate 90 CW → 100x200
+    img.save(tmp, format="JPEG", exif=exif)
+
+    oriented = apply_exif_orientation(str(tmp))
+    assert oriented is not None
+    assert oriented.shape[0] == 200 and oriented.shape[1] == 100, oriented.shape
+    print(f"  EXIF 6: 200x100 -> {oriented.shape[1]}x{oriented.shape[0]}")
+
+    result = load_and_preprocess_image(str(tmp))
+    assert result is not None
+    assert result["original_width"] == 100 and result["original_height"] == 200
+    print(f"  preprocess size: {result['original_width']}x{result['original_height']}")
+
+    assert sanitize_relative_path(r"C:\Users\demo\AppData\Local\Temp\a.jpg") == "a.jpg"
+    assert sanitize_relative_path("/tmp/secret/b.jpg") == "b.jpg"
+    assert sanitize_relative_path("img_dataset/Train/42.jpg") == "img_dataset/Train/42.jpg"
+    assert sanitize_record_id("42.jpg") == "42"
+    print("  path sanitize: absolute stripped, relative kept")
+    print("  PASS\n")
+    tmp.unlink(missing_ok=True)
+
+
+def test_10_v23_visual_record():
+    """v2.3 记录可被播放计划转换器 validate_record 接受"""
+    print("=" * 50)
+    print("Test 10: visual record v2.3 for playback")
+    print("=" * 50)
+
+    from vision.detector import Detection
+    from vision.anchor_map import map_name_to_anchor
+    from vision.visual_record import build_visual_record_v23
+    from audio.playback_converter import build_anchor_mapping, load_mapping_config, validate_record
+
+    assert map_name_to_anchor("bird") == "visible_bird"
+    assert map_name_to_anchor("cat", "sleeping") == "relaxed_or_sleeping_cat"
+    assert map_name_to_anchor("cat", "running") is None
+    assert map_name_to_anchor("person") is None
+    assert map_name_to_anchor("person", "walking") == "walking_person"
+    print("  anchor map: bird/cat/person rules ok")
+
+    yolo = {
+        "image_path": "img_dataset/Train/test.jpg",
+        "original_width": 800,
+        "original_height": 600,
+        "brightness": 0.42,
+        "error": None,
+        "detections": [
+            Detection(name="bird", x=0.84, depth="far", conf=0.78,
+                      bbox=[0.82, 0.21, 0.87, 0.25]),
+            Detection(name="cat", x=0.22, depth="near", conf=0.91,
+                      bbox=[0.12, 0.20, 0.32, 0.85]),
+            Detection(name="person", x=0.70, depth="mid", conf=0.80,
+                      bbox=[0.60, 0.10, 0.80, 0.90]),
+        ],
+    }
+    vlm = {
+        "image": "test.jpg",
+        "path": r"C:\Users\demo\Temp\test.jpg",
+        "global_vibe": {
+            "scene_type": "beach",
+            "mood": "gloomy",
+            "brightness": 0.99,
+            "warmth": "warm",
+            "base_noise": "brown",
+            "time_of_day": "dusk",
+        },
+        "suggested_entities": [
+            {"name": "cat", "state": "sleeping"},
+            {"name": "bird", "state": "flying"},
+            {"name": "person", "state": "standing"},
+        ],
+    }
+    record = build_visual_record_v23(yolo, vlm)
+    assert record is not None
+    assert record["schema_version"] == "2.3"
+    assert record["image"]["path"] == "test.jpg"
+    assert record["global_vibe"]["brightness"] == 0.42
+    assert record["global_vibe"]["mood"] == "melancholic"
+    assert record["global_vibe"]["scene_type"] == "beach"
+    assert record["global_vibe"]["scene_group"] == "water_coastal"
+    assert "base_noise" not in record["global_vibe"]
+    ids = {a["anchor_id"] for a in record["trigger_anchors"]}
+    assert "visible_bird" in ids
+    assert "relaxed_or_sleeping_cat" in ids
+    assert "walking_person" not in ids
+    for anchor in record["trigger_anchors"]:
+        assert "depth_hint" not in anchor
+    print(f"  anchors: {sorted(ids)}")
+
+    _, _, _, visual_spec = load_mapping_config(REPO_ROOT / "configs" / "playback")
+    allowed, _ = build_anchor_mapping(visual_spec)
+    validate_record(record, allowed)
+    print("  playback_converter.validate_record: ok")
+    print("  PASS\n")
+
+
+def test_11_handover_v23_input():
+    """handover_v23 JSONL（无 bbox）+ YOLO 框 → 带 bbox_norm 的正式记录"""
+    print("=" * 50)
+    print("Test 11: handover v2.3 input + YOLO boxes")
+    print("=" * 50)
+
+    from vision.detector import Detection
+    from vision.vlm_yolo_fusion import load_jsonl, merge_structured_payload, process_batch
+    from vision.visual_record import (
+        build_visual_record_v23,
+        normalize_upstream_record,
+        process_batch_v23,
+    )
+    from common.contract import validate_scene
+    from audio.playback_converter import build_anchor_mapping, load_mapping_config, validate_record
+
+    handover = {
+        "schema_version": "2.3",
+        "id": "1014",
+        "image": {"path": "data/Train/1014.jpg", "width": 2508, "height": 3440},
+        "global_vibe": {
+            "scene_type": "forest",
+            "secondary_scene_types": ["stream"],
+            "scene_group": "forest_vegetation",
+            "mood": "calm",
+            "warmth": "cool",
+            "time_of_day": "afternoon",
+            "brightness": 0.99,
+        },
+        "trigger_anchors": [
+            {"anchor_id": "visible_bird", "confidence": 0.5, "source": "vlm_legacy"},
+            {
+                "anchor_id": "relaxed_or_sleeping_cat",
+                "confidence": 0.5,
+                "source": "vlm_legacy",
+                "state_note": "sleeping",
+            },
+        ],
+    }
+    norm = normalize_upstream_record(handover)
+    assert norm["image"] == "1014.jpg"
+    assert norm["path"] == "data/Train/1014.jpg"
+    assert {e["name"] for e in norm["suggested_entities"]} >= {
+        "visible_bird", "relaxed_or_sleeping_cat",
+    }
+    print("  normalize: id/path/anchors -> suggested_entities")
+
+    yolo = {
+        "image_path": "img_dataset/Train/1014.jpg",
+        "original_width": 800,
+        "original_height": 600,
+        "brightness": 0.41,
+        "error": None,
+        "detections": [
+            Detection(name="bird", x=0.20, depth="far", conf=0.88,
+                      bbox=[0.10, 0.10, 0.30, 0.25]),
+            Detection(name="cat", x=0.55, depth="near", conf=0.93,
+                      bbox=[0.40, 0.30, 0.70, 0.90]),
+        ],
+    }
+    record = build_visual_record_v23(yolo, handover)
+    assert record["id"] == "1014"
+    assert record["global_vibe"]["scene_group"] == "forest_vegetation"
+    assert record["global_vibe"]["brightness"] == 0.41
+    assert record["global_vibe"]["secondary_scene_types"] == ["stream"]
+    ids = {a["anchor_id"] for a in record["trigger_anchors"]}
+    assert ids == {"visible_bird", "relaxed_or_sleeping_cat"}
+    for a in record["trigger_anchors"]:
+        box = a["bbox_norm"]
+        assert box["format"] == "xyxy"
+        assert box["x_min"] < box["x_max"]
+        assert "depth_hint" not in a
+    print(f"  v2.3 anchors with bbox: {sorted(ids)}")
+
+    v1 = merge_structured_payload(yolo, handover)
+    validate_scene(v1)
+    assert v1["schema_version"] == "1.0"
+    assert "scene_group" not in v1["global_vibe"]
+    print("  v1.0 still passes Scene Contract (extra 2.3 fields stripped)")
+
+    tmp = tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False, encoding="utf-8")
+    tmp.write(json.dumps(handover, ensure_ascii=False) + "\n")
+    tmp.close()
+    loaded = load_jsonl(tmp.name)
+    os.unlink(tmp.name)
+    assert loaded[0]["image"] == "1014.jpg"
+
+    batch_v1 = process_batch([yolo], [handover], [])
+    batch_v23 = process_batch_v23([yolo], [handover])
+    assert batch_v1[0]["entities"]
+    assert batch_v23[0]["trigger_anchors"]
+
+    _, _, _, visual_spec = load_mapping_config(REPO_ROOT / "configs" / "playback")
+    allowed, _ = build_anchor_mapping(visual_spec)
+    validate_record(batch_v23[0], allowed)
+    print("  load_jsonl + process_batch + playback validate: ok")
+    print("  PASS\n")
+
+
 def main():
     print("=" * 60)
     print("ASMR-Creater Vision Layer - Full Test Suite")
@@ -322,6 +533,9 @@ def main():
         test_6_schema_validation,
         test_7_coordinate_mapping,
         test_8_vlm_format_normalization,
+        test_9_exif_and_path_sanitize,
+        test_10_v23_visual_record,
+        test_11_handover_v23_input,
     ]
 
     passed = 0

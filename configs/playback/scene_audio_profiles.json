@@ -1,32 +1,360 @@
 {
-  "config_version": "1.0-demo",
-  "description": "仅覆盖本演示输入。素材库完成后应扩充为完整scene_type和scene_group映射。",
+  "config_version": "1.0",
+  "_comment": "scene_type → 环境床。先查 scene_types(精确覆写),再回退 scene_groups(大组),最后 fallbacks.silence。映射依据 docs/playback/ASMR声音素材库准备与采集规范.md §3。",
   "scene_types": {
-    "beach": {
-      "primary_sound_id": "ocean_coast_bed",
-      "gain_db": -18.0
+    "aerial_landscape": {
+      "primary_sound_id": "open_nature_wind",
+      "gain_db": -24.0
+    },
+    "auditorium": {
+      "primary_sound_id": "large_hall_roomtone",
+      "gain_db": -20.0
+    },
+    "aurora_sky": {
+      "primary_sound_id": "open_nature_wind",
+      "gain_db": -24.0
+    },
+    "badlands": {
+      "primary_sound_id": "arid_wind",
+      "gain_db": -20.0
+    },
+    "bedroom": {
+      "primary_sound_id": "indoor_roomtone",
+      "gain_db": -20.0
+    },
+    "bog": {
+      "primary_sound_id": "wetland_night_bed",
+      "gain_db": -20.0
+    },
+    "canal": {
+      "primary_sound_id": "freshwater_flow_bed",
+      "gain_db": -19.0
+    },
+    "cloudscape": {
+      "primary_sound_id": "open_nature_wind",
+      "gain_db": -24.0
+    },
+    "concert_event": {
+      "primary_sound_id": null,
+      "gain_db": -20.0
+    },
+    "concert_hall": {
+      "primary_sound_id": "large_hall_roomtone",
+      "gain_db": -20.0
+    },
+    "conference_room": {
+      "primary_sound_id": "study_office_bed",
+      "gain_db": -20.0
+    },
+    "control_room": {
+      "primary_sound_id": "mechanical_hum_soft",
+      "gain_db": -22.0
+    },
+    "coworking_space": {
+      "primary_sound_id": "study_office_bed",
+      "gain_db": -20.0
+    },
+    "creek": {
+      "primary_sound_id": "freshwater_flow_bed",
+      "gain_db": -19.0
+    },
+    "desert": {
+      "primary_sound_id": "arid_wind",
+      "gain_db": -20.0
+    },
+    "eclipse_sky": {
+      "primary_sound_id": "open_nature_wind",
+      "gain_db": -24.0
+    },
+    "emergency_room": {
+      "primary_sound_id": null,
+      "gain_db": -20.0
+    },
+    "estuary": {
+      "primary_sound_id": "freshwater_flow_bed",
+      "gain_db": -19.0
+    },
+    "funeral_ceremony": {
+      "primary_sound_id": null,
+      "gain_db": -20.0
+    },
+    "geyser": {
+      "primary_sound_id": "freshwater_flow_bed",
+      "gain_db": -19.0
+    },
+    "glacier": {
+      "primary_sound_id": "snow_wind_soft",
+      "gain_db": -20.0
+    },
+    "home_office": {
+      "primary_sound_id": "study_office_bed",
+      "gain_db": -20.0
+    },
+    "hostel_room": {
+      "primary_sound_id": "indoor_roomtone",
+      "gain_db": -20.0
+    },
+    "hot_spring": {
+      "primary_sound_id": "freshwater_flow_bed",
+      "gain_db": -19.0
+    },
+    "hotel_room": {
+      "primary_sound_id": "indoor_roomtone",
+      "gain_db": -20.0
+    },
+    "ice_field": {
+      "primary_sound_id": "snow_wind_soft",
+      "gain_db": -20.0
+    },
+    "laundromat": {
+      "primary_sound_id": "mechanical_hum_soft",
+      "gain_db": -22.0
+    },
+    "library": {
+      "primary_sound_id": "study_office_bed",
+      "gain_db": -20.0
+    },
+    "living_room": {
+      "primary_sound_id": "indoor_roomtone",
+      "gain_db": -20.0
+    },
+    "mangrove": {
+      "primary_sound_id": "wetland_night_bed",
+      "gain_db": -20.0
+    },
+    "marsh": {
+      "primary_sound_id": "wetland_night_bed",
+      "gain_db": -20.0
+    },
+    "meeting_room": {
+      "primary_sound_id": "study_office_bed",
+      "gain_db": -20.0
+    },
+    "military_base": {
+      "primary_sound_id": null,
+      "gain_db": -20.0
+    },
+    "nightclub": {
+      "primary_sound_id": null,
+      "gain_db": -20.0
+    },
+    "oasis": {
+      "primary_sound_id": "arid_wind",
+      "gain_db": -20.0
+    },
+    "office": {
+      "primary_sound_id": "study_office_bed",
+      "gain_db": -20.0
+    },
+    "open_plan_office": {
+      "primary_sound_id": "study_office_bed",
+      "gain_db": -20.0
+    },
+    "opera_house": {
+      "primary_sound_id": "large_hall_roomtone",
+      "gain_db": -20.0
+    },
+    "operating_room": {
+      "primary_sound_id": null,
+      "gain_db": -20.0
+    },
+    "planetarium": {
+      "primary_sound_id": "large_hall_roomtone",
+      "gain_db": -20.0
+    },
+    "plateau": {
+      "primary_sound_id": "arid_wind",
+      "gain_db": -20.0
+    },
+    "polar_landscape": {
+      "primary_sound_id": "snow_wind_soft",
+      "gain_db": -20.0
+    },
+    "police_station": {
+      "primary_sound_id": null,
+      "gain_db": -20.0
+    },
+    "power_plant": {
+      "primary_sound_id": "mechanical_hum_soft",
+      "gain_db": -22.0
+    },
+    "prison": {
+      "primary_sound_id": null,
+      "gain_db": -20.0
+    },
+    "private_office": {
+      "primary_sound_id": "study_office_bed",
+      "gain_db": -20.0
+    },
+    "protest_scene": {
+      "primary_sound_id": null,
+      "gain_db": -20.0
+    },
+    "rainbow_sky": {
+      "primary_sound_id": "open_nature_wind",
+      "gain_db": -24.0
+    },
+    "reading_room": {
+      "primary_sound_id": "study_office_bed",
+      "gain_db": -20.0
+    },
+    "reed_bed": {
+      "primary_sound_id": "wetland_night_bed",
+      "gain_db": -20.0
+    },
+    "river": {
+      "primary_sound_id": "freshwater_flow_bed",
+      "gain_db": -19.0
+    },
+    "river_delta": {
+      "primary_sound_id": "freshwater_flow_bed",
+      "gain_db": -19.0
+    },
+    "sand_dunes": {
+      "primary_sound_id": "arid_wind",
+      "gain_db": -20.0
+    },
+    "server_room": {
+      "primary_sound_id": "mechanical_hum_soft",
+      "gain_db": -22.0
+    },
+    "sky": {
+      "primary_sound_id": "open_nature_wind",
+      "gain_db": -24.0
+    },
+    "snowfield": {
+      "primary_sound_id": "snow_wind_soft",
+      "gain_db": -20.0
+    },
+    "snowstorm_landscape": {
+      "primary_sound_id": "snow_wind_soft",
+      "gain_db": -20.0
+    },
+    "sports_event": {
+      "primary_sound_id": null,
+      "gain_db": -20.0
+    },
+    "starry_sky": {
+      "primary_sound_id": "open_nature_wind",
+      "gain_db": -24.0
+    },
+    "storm_landscape": {
+      "primary_sound_id": "rain_surface_bed",
+      "gain_db": -19.0
+    },
+    "stream": {
+      "primary_sound_id": "freshwater_flow_bed",
+      "gain_db": -19.0
     },
     "study_room": {
       "primary_sound_id": "study_office_bed",
       "gain_db": -20.0
     },
-    "none": {
-      "primary_sound_id": null,
+    "swamp": {
+      "primary_sound_id": "wetland_night_bed",
+      "gain_db": -20.0
+    },
+    "thunderstorm_landscape": {
+      "primary_sound_id": "rain_surface_bed",
+      "gain_db": -19.0
+    },
+    "tundra": {
+      "primary_sound_id": "snow_wind_soft",
+      "gain_db": -20.0
+    },
+    "waterfall": {
+      "primary_sound_id": "freshwater_flow_bed",
+      "gain_db": -19.0
+    },
+    "waterway": {
+      "primary_sound_id": "freshwater_flow_bed",
+      "gain_db": -19.0
+    },
+    "wetland": {
+      "primary_sound_id": "wetland_night_bed",
       "gain_db": -20.0
     }
   },
   "scene_groups": {
-    "water_coastal": {
-      "primary_sound_id": "ocean_coast_bed",
-      "gain_db": -18.0
+    "agriculture_rural": {
+      "primary_sound_id": "rural_bed",
+      "gain_db": -20.0
+    },
+    "animal_facilities": {
+      "primary_sound_id": "animal_facility_distant_bed",
+      "gain_db": -21.0
+    },
+    "culture_entertainment": {
+      "primary_sound_id": "public_interior_murmur",
+      "gain_db": -21.0
+    },
+    "education_research": {
+      "primary_sound_id": "study_office_bed",
+      "gain_db": -20.0
+    },
+    "events_social": {
+      "primary_sound_id": "recreation_distant_bed",
+      "gain_db": -21.0
+    },
+    "food_hospitality": {
+      "primary_sound_id": "cafe_hospitality_bed",
+      "gain_db": -20.0
+    },
+    "forest_vegetation": {
+      "primary_sound_id": "forest_day_bed",
+      "gain_db": -19.0
+    },
+    "healthcare_civic_security": {
+      "primary_sound_id": "public_interior_murmur",
+      "gain_db": -22.0
+    },
+    "natural_terrain": {
+      "primary_sound_id": "open_nature_wind",
+      "gain_db": -20.0
+    },
+    "non_scene": {
+      "primary_sound_id": null,
+      "gain_db": -20.0
+    },
+    "religion_heritage": {
+      "primary_sound_id": "large_hall_roomtone",
+      "gain_db": -20.0
     },
     "residential_indoor": {
       "primary_sound_id": "indoor_roomtone",
       "gain_db": -20.0
     },
-    "education_research": {
-      "primary_sound_id": "study_office_bed",
+    "retail_personal_service": {
+      "primary_sound_id": "public_interior_murmur",
+      "gain_db": -21.0
+    },
+    "sky_weather": {
+      "primary_sound_id": "open_nature_wind",
+      "gain_db": -22.0
+    },
+    "sports_recreation": {
+      "primary_sound_id": "recreation_distant_bed",
+      "gain_db": -21.0
+    },
+    "transport_indoor": {
+      "primary_sound_id": "transport_cabin_bed",
       "gain_db": -20.0
+    },
+    "transport_outdoor": {
+      "primary_sound_id": "transport_exterior_bed",
+      "gain_db": -21.0
+    },
+    "urban_outdoor": {
+      "primary_sound_id": "urban_distant_bed",
+      "gain_db": -21.0
+    },
+    "water_coastal": {
+      "primary_sound_id": "ocean_coast_bed",
+      "gain_db": -18.0
+    },
+    "workplace_industrial": {
+      "primary_sound_id": "mechanical_hum_soft",
+      "gain_db": -22.0
     }
   },
   "fallbacks": {
