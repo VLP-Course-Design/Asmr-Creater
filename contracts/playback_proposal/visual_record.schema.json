@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://asmr-creater/contracts/playback_proposal/visual_record.schema.json",
-  "title": "ASMR Creater 视觉记录契约 v2.3(提案)",
-  "description": "视觉层单张图片结构化记录的正式 JSON Schema 定义,由 recommended_structured_record_example.json(spec/词表 + 示范记录)与 scene_type_vocabulary.json(场景闭合词表)反推生成。本文件是 contracts/scene_contract.schema.json(已冻结 v1.0)的候选下一代提案,尚未替代 v1.0,仅供三线评审对齐、以及 src/audio/playback_converter.py 校验输入使用。字段语义详见 docs/playback/ 与 recommended_structured_record_example.json。",
+  "title": "ASMR Creater 视觉记录契约 v2.3（历史提案镜像）",
+  "description": "视觉层单张图片结构化记录的历史提案镜像。v2.3 已正式批准，当前正式定义见 contracts/scene_contract.schema.json；本文件仅为 playback_proposal 目录中的历史评审资料和兼容引用保留。字段语义详见 docs/playback/ 与 recommended_structured_record_example.json。",
   "type": "object",
   "required": [
     "schema_version",

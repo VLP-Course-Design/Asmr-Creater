@@ -1,13 +1,15 @@
 {
-  "schema_version": "1.0",
-  "image": { "id": "sample_fog", "path": "img_dataset/Train/889.jpg", "width": 1920, "height": 1080 },
+  "schema_version": "2.3",
+  "id": "sample_fog",
+  "image": { "path": "img_dataset/Train/889.jpg", "width": 1920, "height": 1080 },
   "global_vibe": {
-    "scene_type": "misty_mountain",
+    "scene_type": "fog_landscape",
+    "secondary_scene_types": [],
+    "scene_group": "sky_weather",
     "mood": "melancholic",
-    "brightness": 0.40,
     "warmth": "cool",
-    "base_noise": "brown",
-    "time_of_day": "dawn"
+    "time_of_day": "dawn",
+    "brightness": 0.40
   },
-  "entities": []
+  "trigger_anchors": []
 }

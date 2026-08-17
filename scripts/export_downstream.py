@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python3
-"""导出第二人给下游的文件，并做播放计划 / Scene Contract 校验。
+"""导出第二人给下游的文件，并做播放计划 / 视觉记录契约校验。
 
 有图片目录时：读 handover 或旧 VLM JSONL，跑预处理+YOLO，写出全量 JSONL。
 无图片时：写出已校验的格式样例（供音频先对接），并提示全量命令。
@@ -14,7 +15,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "src"))
 
-from common.contract import validate_scene
+from common.contract import validate_visual_record_v23
 from vision.detector import Detection
 from vision.preprocess import get_image_files
 from vision.vlm_yolo_fusion import merge_structured_payload, process_batch
@@ -28,6 +29,7 @@ def _validate_v23_list(records: list) -> None:
     _, _, _, spec = load_mapping_config(REPO / "configs" / "playback")
     allowed, _ = build_anchor_mapping(spec)
     for rec in records:
+        validate_visual_record_v23(rec)
         validate_record(rec, allowed)
         vibe = rec["global_vibe"]
         assert "base_noise" not in vibe
@@ -80,7 +82,6 @@ def export_samples() -> None:
     }
     v1 = process_batch([yolo], [handover], [])
     v23 = process_batch_v23([yolo], [handover])
-    validate_scene(v1[0])
     _validate_v23_list(v23)
 
     _write_jsonl(OUT_DIR / "final_structured_results.sample.jsonl", v1)
@@ -102,9 +103,6 @@ def export_full(image_dir: Path, vlm_jsonl: Path) -> None:
     yolo_results = detect_images_chunked(paths, detector, chunk_size=32)
     v1 = process_batch(yolo_results, vlm, [])
     v23 = process_batch_v23(yolo_results, vlm)
-    for row in v1:
-        if "error" not in row.get("image", {}):
-            validate_scene(row)
     _validate_v23_list(v23)
     _write_jsonl(OUT_DIR / "final_structured_results.jsonl", v1)
     _write_jsonl(OUT_DIR / "visual_analysis.jsonl", v23)

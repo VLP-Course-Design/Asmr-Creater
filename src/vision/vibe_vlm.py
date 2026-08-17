@@ -4,8 +4,8 @@
 角色 A（视觉-氛围）维护此文件。
 v2: 新增 targeted retry —— 缺字段时换 prompt 专门追要。
 v6: scene_type 按分层词表取值；suggested_entities 只保留视觉锚点词典内的实体。
-v7: 对齐音频层权威规范——scene_type 走 contracts/playback_proposal/scene_type_vocabulary.json(424 值)，none/other_* 兜底，
-    scene_group 查表生成；实体收敛到 contracts/anchor_dictionary.json(87 锚点)。
+v6: 对齐音频层权威规范——scene_type 走 contracts/playback_proposal/scene_type_vocabulary.json(424 值)，none/other_* 兜底，
+    scene_group 查表生成；实体收敛到 contracts/anchor_dictionary.json(87 锚点)。当前 prompt 尚未完成全量验证。
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ from openai import OpenAI
 logger = logging.getLogger(__name__)
 
 OLLAMA_BASE_URL = "http://localhost:11434/v1"
-OLLAMA_MODEL = os.environ.get("VLM_MODEL", "minicpm-v:8b")
+OLLAMA_MODEL = os.environ.get("VLM_MODEL", "qwen2.5-vl:7b")
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CONFIG_PATH = REPO_ROOT / "configs" / "prompts.yaml"
@@ -119,7 +119,7 @@ def _load_prompts() -> Dict[str, Any]:
 
 
 def _load_scene_vocab() -> Dict[str, List[str]]:
-    """读取场景受控词表 contracts/playback_proposal/scene_type_vocabulary.json（音频层 v1.0）。
+    """读取场景受控词表 contracts/playback_proposal/scene_type_vocabulary.json（v2.3 词表）。
 
     Returns:
         大类 -> 叶子场景值列表 的映射。
@@ -129,7 +129,7 @@ def _load_scene_vocab() -> Dict[str, List[str]]:
 
 
 def _load_anchor_dictionary() -> Dict[str, Dict[str, Any]]:
-    """读取视觉锚点词典 contracts/anchor_dictionary.json（音频层 v1.0，87 个锚点）。
+    """读取视觉锚点词典 contracts/anchor_dictionary.json（v2.3，87 个锚点）。
 
     Returns:
         anchor_id -> {type, sound_id, strength, definition} 的映射。

@@ -1,17 +1,34 @@
 {
-  "schema_version": "1.0",
-  "image": { "id": "sample_forest", "path": "img_dataset/Train/507.jpg", "width": 1024, "height": 1024 },
+  "schema_version": "2.3",
+  "id": "sample_forest",
+  "image": { "path": "img_dataset/Train/507.jpg", "width": 1024, "height": 1024 },
   "global_vibe": {
     "scene_type": "forest",
+    "secondary_scene_types": ["stream"],
+    "scene_group": "forest_vegetation",
     "mood": "cheerful",
-    "brightness": 0.71,
     "warmth": "warm",
-    "base_noise": "pink",
-    "time_of_day": "morning"
+    "time_of_day": "morning",
+    "brightness": 0.71
   },
-  "entities": [
-    { "name": "bird",   "state": "singing",  "x": 0.18, "depth": "far",  "conf": 0.64, "source": "yolo" },
-    { "name": "bird",   "state": "flying",   "x": 0.83, "depth": "mid",  "conf": 0.58, "source": "yolo" },
-    { "name": "stream", "state": "flowing",  "x": 0.45, "depth": "near", "conf": 0.5,  "source": "vlm" }
+  "trigger_anchors": [
+    {
+      "anchor_id": "visible_bird",
+      "bbox_norm": { "format": "xyxy", "x_min": 0.10, "y_min": 0.18, "x_max": 0.24, "y_max": 0.34 },
+      "confidence": 0.64,
+      "source": "manual"
+    },
+    {
+      "anchor_id": "visible_bird",
+      "bbox_norm": { "format": "xyxy", "x_min": 0.76, "y_min": 0.20, "x_max": 0.90, "y_max": 0.40 },
+      "confidence": 0.58,
+      "source": "manual"
+    },
+    {
+      "anchor_id": "visible_stream_flow",
+      "bbox_norm": { "format": "xyxy", "x_min": 0.30, "y_min": 0.62, "x_max": 0.78, "y_max": 0.95 },
+      "confidence": 0.50,
+      "source": "manual"
+    }
   ]
 }

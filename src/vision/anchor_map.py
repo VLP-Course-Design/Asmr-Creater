@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """COCO / VLM 自由词 → 视觉记录 v2.3 `anchor_id` 映射。
 
 音频决策层只认 87 项受控锚点，不再消费 COCO 类名或 `suggested_entities`。
@@ -277,6 +278,7 @@ def detections_to_anchors(
                 "y_max": round(bbox[3], 4),
             },
             "confidence": round(max(0.0, min(1.0, conf)), 4),
-            "source": "yolo",
+            # v2.3 正式契约把检测来源统一记为 yoloe；底层模型仍可替换。
+            "source": "yoloe",
         })
     return anchors

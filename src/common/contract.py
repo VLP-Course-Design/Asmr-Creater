@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Scene Contract 的加载与校验工具 —— 视觉层与音频层共用的唯一真相源。
 
 设计目标:
@@ -20,8 +21,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = REPO_ROOT / "contracts" / "scene_contract.schema.json"
 EXAMPLES_DIR = REPO_ROOT / "contracts" / "examples"
 
-# 视觉记录契约 v2.3(提案,见 contracts/playback_proposal/)
-V23_SCHEMA_PATH = REPO_ROOT / "contracts" / "playback_proposal" / "visual_record.schema.json"
+# 视觉记录契约 v2.3 正式定义，与 Scene Contract 主 Schema 共用唯一真源。
+V23_SCHEMA_PATH = SCHEMA_PATH
 
 
 class SchemaValidationError(ValueError):
@@ -63,16 +64,16 @@ def validate_scene(scene: Dict[str, Any]) -> Dict[str, Any]:
 
 @lru_cache(maxsize=1)
 def load_v23_schema() -> Dict[str, Any]:
-    """加载并缓存视觉记录 v2.3(提案)的 JSON Schema 定义。"""
+    """加载并缓存视觉记录 v2.3 正式 JSON Schema 定义。"""
     with V23_SCHEMA_PATH.open(encoding="utf-8") as f:
         return json.load(f)
 
 
 def validate_visual_record_v23(record: Dict[str, Any]) -> Dict[str, Any]:
-    """校验一条视觉记录是否符合 v2.3 提案契约(见 contracts/playback_proposal/)。
+    """校验一条视觉记录是否符合 v2.3 正式契约。
 
-    合法则原样返回该对象;不合法抛 ``SchemaValidationError``。镜像 ``validate_scene``
-    的写法,但走的是 v2.3 的 schema,与冻结的 v1.0 ``validate_scene`` 互不影响。
+    合法则原样返回该对象;不合法抛 ``SchemaValidationError``。该函数保留旧名称，
+    方便视觉管线调用；实际加载与 ``validate_scene`` 相同的正式 Schema。
     """
     try:
         import jsonschema

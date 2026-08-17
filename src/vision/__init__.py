@@ -37,7 +37,7 @@ from .vlm_yolo_fusion import (
     process_batch,
 )
 
-# ── 视觉记录 v2.3（适配音频播放计划，不替代 v1.0）──
+# ── 视觉记录 v2.3（当前正式主契约；v1.0 仅保留兼容适配）──
 from .visual_record import (
     build_visual_record_v23,
     normalize_upstream_record,

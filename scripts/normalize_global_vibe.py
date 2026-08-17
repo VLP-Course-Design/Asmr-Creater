@@ -153,7 +153,7 @@ def main() -> None:
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
     if args.strict:
-        schema_path = REPO_ROOT / "contracts" / "playback_proposal" / "visual_record.schema.json"
+        schema_path = REPO_ROOT / "contracts" / "scene_contract.schema.json"
         schema = json.load(open(schema_path, encoding="utf-8"))
         fail_list = []
         for rec in records:
