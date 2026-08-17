@@ -1,20 +1,31 @@
+# ASMR Creater 运行时依赖
+# 按仓库内实际 import 整理；版本下限取已验证可用的版本。
+# 部署步骤见 部署文档.md。
+
 # ── 公共 ─────────────────────────────────────────────
-jsonschema>=4.0        # Scene Contract 校验(src/common/contract.py)
+jsonschema>=4.0        # 契约校验(src/common/contract.py):Scene Contract v1.0 + 视觉记录 v2.3
 
 # ── 视觉层 ───────────────────────────────────────────
-Pillow>=10.0           # 图像预处理
-ultralytics>=8.2       # YOLOv10/v11-Nano(COCO 80 类)
-# VLM 走免费 API 时按所选服务商加 SDK,例如:
-#   dashscope           # 通义千问-VL
-#   zhipuai             # 智谱 GLM-4V
-# 本地量化 VLM(Qwen2.5-VL)则按其部署方式加 transformers / vllm 等
+Pillow>=10.0           # EXIF 方向转正(src/vision/preprocess.py)
+opencv-python>=4.8     # 图像读取与 Letterbox 缩放(src/vision/preprocess.py)
+numpy>=1.24            # 亮度计算与数组处理
+ultralytics>=8.2       # YOLO11n 检测器(src/vision/yolo.py);会自动带入 torch / torchvision,无需单独声明
+PyYAML>=6.0            # 读取 configs/prompts.yaml(src/vision/vibe_vlm.py)
+openai>=1.0            # 以 OpenAI 兼容协议访问本地 Ollama(src/vision/vibe_vlm.py)
+                       # 需本机先运行 Ollama 并 pull qwen2.5-vl:7b,详见 部署文档.md §3.2
 
 # ── 音频层 ───────────────────────────────────────────
-pyo>=1.0               # 实时 DSP 底噪 + 混流(本地音频服务器)
-numpy>=1.24
-soundfile>=0.12        # 渲染 wav 供网页播放(见 audio/README 工程提醒)
+# 音频决策(src/audio/playback_converter.py)只用标准库,无第三方依赖。
+# 音频执行在浏览器端由 Web Audio API 完成,不需要 Python 侧的 DSP 库。
 
-# ── UI ───────────────────────────────────────────────
-gradio>=4.0            # 极简 Web 界面
+# ── 交互与服务 ───────────────────────────────────────
+flask>=3.0             # 后端服务与 /infer 等接口(src/ui/app.py)
 
-flask>=3.0              # /infer 后端接口 (src/ui/app.py)
+# ── 素材采集(可选) ──────────────────────────────────
+# 仅在用 sounds/fs_collect.py 重新抓取 Freesound 素材时需要;
+# 日常运行与演示不装也可以(这三个包在脚本内是按需 import 的)。
+# 安装:pip install requests soundfile soxr
+#
+# requests>=2.31       # Freesound APIv2 调用
+# soundfile>=0.12      # 读写 WAV、探测声道与采样率
+# soxr>=0.3            # 重采样到 48 kHz 母版
