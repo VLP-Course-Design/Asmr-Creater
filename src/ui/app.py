@@ -5,8 +5,8 @@
     1. VLM 氛围分析 (vision.vibe_vlm.get_global_vibe) → global_vibe
     2. YOLO 目标检测 (vision.yolo.YoloDetector)         → Detection[]
     3. 视觉记录 v2.3 (vision.visual_record)              → trigger_anchors + bbox_norm
-       (契约见 contracts/playback_proposal/;v1.0 冻结契约仍由 vision.vlm_yolo_fusion 提供,
-        供离线批处理/旧样例使用,不再是本接口的输出形状)
+       (正式契约见 contracts/scene_contract.schema.json；v1.0 仅由
+        vision.vlm_yolo_fusion 提供离线批处理/旧样例兼容)
 
 另外还托管:
     - /sounds/<path>       素材库静态文件(wav、trigger_map.json、桥接表)
@@ -77,7 +77,7 @@ def _vlm_or_default(image_path: Path, filename: str) -> dict:
     尝试调用 VLM 获取 global_vibe + suggested_entities。
     若 VLM 不可用则返回中性默认值。
 
-    这里的默认值仍是 v1.0 词表形状（scene_type="unknown" 等）；
+    这里的默认值保留历史输入形状（scene_type="unknown" 等）；
     build_visual_record_v23() 内部的 normalize_scene_type/_normalize_mood 等函数
     会把它们归一化到 v2.3 受控词表（如 unknown → none），不需要在这里改。
     """
@@ -87,7 +87,11 @@ def _vlm_or_default(image_path: Path, filename: str) -> dict:
         suggested = vibe.pop("suggested_entities", [])
         logger.info("VLM: scene=%s mood=%s entities=%d",
                     vibe.get("scene_type"), vibe.get("mood"), len(suggested))
-        return {"global_vibe": vibe, "suggested_entities": suggested}
+        return {
+            "global_vibe": vibe,
+            "suggested_entities": suggested,
+            "_vibe_source": "vlm",
+        }
     except Exception as e:
         logger.warning("VLM unavailable (%s), using default ambiance", e)
         return {
@@ -96,6 +100,8 @@ def _vlm_or_default(image_path: Path, filename: str) -> dict:
                 "warmth": "neutral", "base_noise": "pink", "time_of_day": "afternoon",
             },
             "suggested_entities": [],
+            "_vibe_source": "default_fallback",
+            "_vibe_error": str(e),
         }
 
 
@@ -237,6 +243,8 @@ def infer():
     try:
         # ── 1. VLM 氛围分析 ──
         vlm_data = _vlm_or_default(tmp_path, f.filename)
+        vibe_source = vlm_data.pop("_vibe_source", "unknown")
+        vibe_error = vlm_data.pop("_vibe_error", None)
 
         # ── 2. YOLO 实体检测 ──
         preprocessed = load_and_preprocess_image(
@@ -263,14 +271,6 @@ def infer():
         )
         if record is None:
             return jsonify({"error": "图像预处理失败，无法生成视觉记录"}), 422
-
-        # anchor_map.detections_to_anchors() 给 YOLO 来源的锚点标 source="yolo"，但
-        # v2.3 规范的 anchor_source 枚举只认 yoloe/yolo_world/grounding_dino/vlm/manual，
-        # 没有 "yolo"。这是视觉层与契约枚举之间的不一致，理想情况应在 anchor_map.py 修，
-        # 这里先在集成边界做归一化，避免所有真实检测都过不了下面的校验。
-        _SOURCE_FIX = {"yolo": "yoloe"}
-        for anchor in record["trigger_anchors"]:
-            anchor["source"] = _SOURCE_FIX.get(anchor["source"], anchor["source"])
 
         # ── 4. 校验（严格拒绝，不只 warning） ──
         try:
@@ -301,6 +301,10 @@ def infer():
             "plan": plan,
             "spatial_gate_passed": gate["passed"],
             "asset_urls": _get_asset_urls(),
+            "diagnostics": {
+                "vibe_source": vibe_source,
+                "vibe_error": vibe_error,
+            },
         })
 
     except Exception as e:
