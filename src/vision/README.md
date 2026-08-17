@@ -40,13 +40,12 @@
 ┌──────────────────────────────────────────────────────────┐
 │  vlm_yolo_fusion.py  (步骤 4 + 步骤 5)                   │
 │  load_jsonl() → process_batch() → merge_structured_payload()
-│  输出 A: final_structured_results.jsonl  (Scene Contract v1.0, UI)
-│  输出 B: visual_analysis.jsonl           (视觉记录 v2.3, 播放计划)
-│  v1.0 校验: src.common.validate_scene()                   │
+│  输出: visual_analysis.jsonl               (视觉记录 v2.3, UI/播放计划)
+│  校验: src.common.validate_scene()                       │
 └──────────────────────────────────────────────────────────┘
 ```
 
-双格式原因：UI 仍消费冻结的 v1.0；音频播放计划转换器（`src/audio/playback_converter.py`）只接受 schema 2.3 的 `trigger_anchors`。第二人侧用 `anchor_map.py` 把 COCO 检测保守映射到 87 项锚点，**不改**已冻结的 v1.0 契约。
+当前主流程统一消费正式视觉记录 v2.3。`anchor_map.py` 把检测结果保守映射到 87 项锚点；旧 v1.0 融合结果仅供历史兼容，不作为新 UI 输出。
 
 ### 与 [PR #7](https://github.com/VLP-Course-Design/Asmr-Creater/pull/7) 的分工
 
@@ -198,7 +197,7 @@ class BaseDetector(ABC):
 
 | 匹配结果 | `detected_by_yolo` (→ `source`) | `physical_location` (→ `x`/`depth`) | `conf` |
 |----------|-------------------------------|--------------------------------------|--------|
-| 匹配成功 | `true` → `"yolo"` | 填入 YOLO 检测的归一化坐标 | YOLO 置信度 |
+| 匹配成功 | `true` → `"yolo"`（历史 v1.0 适配器） | 填入 YOLO 检测的归一化坐标 | YOLO 置信度 |
 | 匹配失败 | `false` → `"vlm"` | `null` → `x=0.5, depth="mid"` | `0.5` (约定值) |
 
 **失败条目处理**: VLM 推理失败的图片（来自 `_failed.jsonl`）仍输出到最终 JSONL，`image.error` 字段标记原因，`global_vibe` 给默认值，`entities` 为空数组。确保下游音频层知晓该图片不可用于音频生成。
@@ -218,11 +217,11 @@ Qwen2.5VL / MiniCPM-V 在批量推理时偶发输出不规范数据，融合管�
 
 **单图推理端点**（供 UI 调用）:
 
-`src/ui/app.py` 中的 `image_to_scene()` 函数封装了预处理→检测→组装的完整链路。Demo 模式下无 VLM JSONL 可供查询，YOLO 检测到的所有实体直接作为 entities 输出（source="yolo"），global_vibe 使用中性默认值。前端 UI 可用 Canvas 像素分析结果覆盖 global_vibe。
+`src/ui/app.py` 中的 `image_to_scene()` 函数封装了预处理→检测→组装的 v2.3 链路。VLM 不可用时使用带 diagnostics 标记的默认氛围；YOLO 检测锚点在正式记录中统一写 source="yoloe"。旧 entities 输出仅由 v1.0 兼容适配器保留。
 
 ### 5. `anchor_map.py` + `visual_record.py` — 适配播放计划 v2.3
 
-**对应任务**: 同步 main 上音频决策层的视觉记录提案，不改冻结的 Scene Contract v1.0。
+**对应任务**: 生成正式视觉记录 v2.3；v1.0 仅保留兼容适配器。
 
 | 规则 | 做法 |
 |------|------|
@@ -233,7 +232,7 @@ Qwen2.5VL / MiniCPM-V 在批量推理时偶发输出不规范数据，融合管�
 | `depth_hint` | 无单目深度模型时整段省略，不用框面积冒充 |
 | `image.path` | 去掉盘符与绝对路径 |
 
-v2.3 `source` 枚举尚未收录闭合词表 YOLO。当前检测器仍是 `yolo11n`，记录里如实写 `"yolo"`。播放转换器不校验该字段；若用正式 JSON Schema 审记录，需契约侧补枚举。
+v2.3 `source` 枚举使用契约允许的 `yoloe` 表示当前 YOLO 检测器来源；底层检测模型可替换为 `yolo_world` 或 `grounding_dino`，不改变上层字段。
 
 **命令行入口**:
 
@@ -261,7 +260,7 @@ class Detection:
     depth: str         # "near" | "mid" | "far"
     conf: float        # 置信度 0~1
     bbox: List[float]  # 归一化 [x1,y1,x2,y2]
-    source: str        # "yolo" | "vlm" | "fused"
+    source: str        # 历史 Detection 字段: "yolo" | "vlm" | "fused"
     
     def to_entity_dict(self, state=None) -> dict:
         """转为 Scene Contract entities[] 元素格式"""
@@ -269,7 +268,7 @@ class Detection:
 
 ---
 
-## 输出格式对照 (Scene Contract v1.0)
+## 输出格式对照 (Scene Contract v1.0 历史兼容)
 
 融合管线的最终输出与 `contracts/scene_contract.schema.json` 严格对齐：
 
@@ -326,8 +325,8 @@ python scripts/run_vision_pipeline.py
 # 端到端可视化 (使用 ultralytics 内置 bus.jpg)
 python scripts/visualize_stage2.py
 
-# 完整融合管线 (需要 VLM JSONL + 图片目录)
-# 默认同时写出 v1.0（UI）与 v2.3（播放计划）
+# 完整融合管线（旧 v1.0 兼容适配器；需要 VLM JSONL + 图片目录）
+# 正式 UI 主流程由 src/ui/app.py 直接输出 v2.3
 python -m src.vision.vlm_yolo_fusion \
     --image_dir ./data \
     --vlm_success ./global_vibe_results.jsonl \
@@ -343,7 +342,7 @@ python src/ui/app.py --port 5000
 ## 关键纪律
 
 - 受控字段(`mood`/`warmth`/`base_noise`/`time_of_day`/`depth`)只能取词表内的值 —— 在 VLM prompt 里用 few-shot 钉死。
-- scene_type 按 contracts/playback_proposal/scene_type_vocabulary.json(音频层 v1.0,424 值)取值,scene_group 查表生成,none/other_* 兜底(v6 起,2.3 对齐版);suggested_entities 只输出 contracts/anchor_dictionary.json 的 87 个锚点 id。
+- scene_type 按 contracts/playback_proposal/scene_type_vocabulary.json 的 424 个叶子值取值,scene_group 查表生成,none/other_* 兜底;正式 trigger_anchors 只输出 contracts/anchor_dictionary.json 的 87 个锚点 id。
 - brightness 由程序计算，不在 VLM prompt 中输出(v6 起,2.3 对齐版)。
 - `entities[].name` 要和 [`sounds/trigger_map.json`](../../sounds/trigger_map.json) 的 key 对齐(小写单数),否则音频层查不到素材。
 - 检测器输出统一使用 `Detection` dataclass(归一化坐标)，接口见 `detector.py`。

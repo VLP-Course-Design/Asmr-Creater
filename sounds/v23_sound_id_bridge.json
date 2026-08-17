@@ -1,5 +1,5 @@
 {
-  "_comment": "过渡桥接表:contracts/playback_proposal/ 里 v2.3 提案的 66 个 sound_id,与本仓库现有的 v1.0 素材库(sounds/trigger_map.json,14 个真实 triggers 文件夹)之间语义相近的一部分,先接上真实播放,不等素材线把 66 类全部录完。剩余约 50 个 sound_id 没有对应真实素材,前端应回退到合成音,不应报错。",
+  "_comment": "历史兼容桥接表:正式 v2.3 的 sound_id 与旧 v1.0 素材目录之间的语义映射。当前 66 类触发音与 20 类环境音已补齐；正式同名素材优先，缺失或无法解码时必须报告错误，不得用合成音冒充真实素材。",
   "_schema": "sound_id(v2.3 anchor_sound_mapping_reference 里的值) -> trigger_map.json 里已存在的素材 folder key",
   "map": {
     "bird_chirp": "bird",

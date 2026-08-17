@@ -27,17 +27,25 @@
 
 ```json
 {
+  "schema_version": "2.3",
+  "id": "sample_bedroom",
+  "image": {"path": "img_dataset/Train/42.jpg", "width": 1024, "height": 768},
   "global_vibe": {
     "scene_type": "bedroom",
+    "secondary_scene_types": [],
+    "scene_group": "residential_indoor",
     "mood": "calm",
-    "brightness": 0.28,
     "warmth": "cool",
-    "base_noise": "brown",
-    "time_of_day": "night"
+    "time_of_day": "night",
+    "brightness": 0.28
   },
-  "entities": [
-    {"name": "cat", "state": "sleeping", "x": 0.22, "depth": "near", "conf": 0.91},
-    {"name": "window", "state": "rainy", "x": 0.80, "depth": "far", "conf": 0.75}
+  "trigger_anchors": [
+    {
+      "anchor_id": "relaxed_or_sleeping_cat",
+      "bbox_norm": {"format": "xyxy", "x_min": 0.10, "y_min": 0.55, "x_max": 0.34, "y_max": 0.82},
+      "confidence": 0.91,
+      "source": "manual"
+    }
   ]
 }
 ```
@@ -86,18 +94,18 @@
 .
 ├── docs/                     # 项目文档
 │   ├── MVP_guide.md          # MVP 实现指南(路线图、分工、模块拆解)
-│   ├── json_contract.md      # 🔒 视觉↔音频 契约说明(v1.0,接口先行,已冻结)
-│   ├── playback/             # 音频决策层 v2.x 提案的格式说明与素材规范(见下方说明)
+│   ├── json_contract.md      # 🔒 视觉↔音频 契约说明(v2.3,正式生效)
+│   ├── playback/             # 音频决策层格式说明与素材规范
 │   └── 可能的项目方向.pdf
 ├── contracts/                # 视觉↔音频 中间数据契约(接口本身)
-│   ├── scene_contract.schema.json   # 🔒 JSON Schema 正式定义(v1.0,程序据此校验)
+│   ├── scene_contract.schema.json   # 🔒 JSON Schema 正式定义(v2.3,程序据此校验)
 │   ├── examples/             # 手写样例数据(音频线现在就能开工)
-│   └── playback_proposal/    # 视觉记录 2.3 + 场景/锚点词表(提案阶段,未并入 v1.0)
+│   └── playback_proposal/    # 词表与历史提案镜像
 ├── src/                      # 源码,按层解耦
 │   ├── common/               #   契约加载与校验(两层共用)
 │   ├── vision/               #   图 → JSON(Pillow + VLM + YOLO)
 │   ├── audio/                #   JSON → 声音(pyo DSP + 触发 + 声像 + 混流)
-│   │   └── playback_converter.py  # 视觉记录 2.3 → 播放计划 JSON(v2.x 提案转换器)
+│   │   └── playback_converter.py  # 视觉记录 2.3 → 播放计划 JSON
 │   └── ui/                   #   集成 + Gradio Web 界面
 ├── sounds/                   # 素材库(见「素材库规范」)
 │   ├── ambient/  triggers/   #   底噪备用 / 离散音效
@@ -115,7 +123,7 @@
 └── README.md
 ```
 
-> **新成员从这里入手**:先读 [docs/json_contract.md](docs/json_contract.md)(唯一接口),再看自己那层的 `src/<层>/README.md`。契约已冻结,三条线(视觉/音频/素材)可即刻并行开工。校验样例:`python scripts/validate_examples.py`。
+> **新成员从这里入手**:先读 [docs/json_contract.md](docs/json_contract.md)(唯一接口),再看自己那层的 `src/<层>/README.md`。v2.3 已正式生效,三条线(视觉/音频/素材)可即刻并行开工。校验样例:`python scripts/validate_examples.py`。
 
 > **关于数据集**:`img_dataset/`(约 1.7GB,2369+ 张图)体积过大,已通过 `.gitignore` 排除,不纳入 Git 版本控制。请另行获取并放置到该目录下。
 
@@ -130,20 +138,20 @@ sounds/
 
 素材优先选用 CC0 / 免版税来源(Freesound、Pixabay、BBC Sound Effects 等),并用一张元数据表记录标签、时长、许可协议与来源 URL。
 
-## 播放计划子系统(音频决策层 v2.x 提案)
+## 播放计划子系统(音频决策层 v2.x)
 
-音频组在现有 `entities[]`(v1.0 契约)基础上提出了一版更严格的**播放决策层**设计。相关文件已按项目既有分层拆分到 `docs/playback/`、`contracts/playback_proposal/`、`src/audio/playback_converter.py`、`configs/playback/` 与 `scripts/`,尚未接入 `src/audio` 现有 DSP 管线或真实视觉产出,可先并行评审、独立运行。
+音频组在正式视觉记录 v2.3 基础上定义了更严格的**播放决策层**。相关文件位于 `docs/playback/`、`contracts/playback_proposal/`（词表及历史提案镜像）、`src/audio/playback_converter.py`、`configs/playback/` 与 `scripts/`；转换器已接入 UI，素材库已在本地接入，声音质量试听另行验收。
 
 核心变化:
 
 - **场景闭合词表**:[`scene_type_vocabulary.json`](contracts/playback_proposal/scene_type_vocabulary.json) 把 `global_vibe.scene_type` 从自由字符串收口为 20 个场景大组下的 424 个受控叶子值,禁止模型自创场景标签。
 - **视觉锚点词典替代开放实体**:[`视觉锚点词典与检测边界.md`](docs/playback/视觉锚点词典与检测边界.md) 定义 87 个具体、可检测的视觉证据(如 `visible_bird`、`hands_on_keyboard_typing`),而非宽泛物体类别;每个锚点通过 [`recommended_structured_record_example.json`](contracts/playback_proposal/recommended_structured_record_example.json) 中的 `anchor_sound_mapping_reference` 映射到 66 个受控 `sound_id`,不允许自由造词。
 - **两级播放计划输出**:转换器读取一条视觉记录(schema 2.3),始终产出确定性的[单声道回退计划](docs/playback/单声道回退播放计划格式说明.md)(`2.0-mono`);只有当所有入选锚点的相对深度质量都通过门控时,才额外产出[双耳 HRTF 空间计划](docs/playback/双耳空间播放计划格式说明.md)(`2.0-binaural`)。
-- **素材采集规范**:[`ASMR声音素材库准备与采集规范.md`](docs/playback/ASMR声音素材库准备与采集规范.md) 给出 20 类场景环境音 + 66 类锚点关联声音的采集/格式/响度/授权标准。注意其 66 个 `sound_id` 命名与现有 `sounds/trigger_map.json` 的 17 个标签尚未统一,接入真实素材前需三线对齐。
+- **素材采集规范**:[`ASMR声音素材库准备与采集规范.md`](docs/playback/ASMR声音素材库准备与采集规范.md) 给出 20 类场景环境音 + 66 类锚点关联声音的采集/格式/响度/授权标准。当前素材库已覆盖 20 类环境音与 66 类触发类别；素材格式与主观音质仍需音频线验收。
 
 [`src/audio/playback_converter.py`](src/audio/playback_converter.py) 是可独立运行的转换器,配套 [`scripts/test_playback_converter.py`](scripts/test_playback_converter.py) 与一键 demo 脚本 [`scripts/run_playback_demo.ps1`](scripts/run_playback_demo.ps1),用手写样例记录跑通"视觉记录 → 播放计划 JSON"全流程;当前只生成计划,不读取/合成真实音频字节。详见 [`docs/playback/playback_converter_usage.md`](docs/playback/playback_converter_usage.md)。
 
-[`visual_record.schema.json`](contracts/playback_proposal/visual_record.schema.json) 是从上述规范反推生成的正式 JSON Schema(draft-07),补上了 v2.3 提案原本缺失的机器可校验定义,供视觉线对齐产出格式;已用 `jsonschema` 库自校验通过(含负例测试),尚未接入 `scripts/validate_examples.py`。
+[`scene_contract.schema.json`](contracts/scene_contract.schema.json) 是视觉记录 v2.3 的正式 JSON Schema(draft-07),已替代原 v1.0 契约并接入 `scripts/validate_examples.py`。`contracts/playback_proposal/visual_record.schema.json` 仅作为历史提案镜像保留。
 
 ## 开发路线图
 
