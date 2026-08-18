@@ -1,7 +1,8 @@
 {
-  "library_version": "1.0",
-  "_comment": "由 scripts 从 sounds/ 下的真实文件生成。role 用 playback_converter 的词汇(ambient/texture/trigger),不是 v23_registry 的角色名。path 是给前端直接取用的 URL。",
-  "_seamless_verified": "全部为 false:素材是程序批量下载的,无缝循环只能靠人耳试听确认(采集规范 §11)。试听通过后逐条改 true,并把 decision_settings.json 的 allow_unverified_loops 关掉。",
+  "library_version": "1.1",
+  "_comment": "由 scripts/gen_audio_manifest.py 从 sounds/ 下的真实文件生成。role 用 playback_converter 的词汇(ambient/texture/trigger)。path 是给播放端直接取用的 URL。",
+  "_loudness": "loudness.makeup_db 是把素材抬到统一基准(-24.0 dBFS RMS)所需的增益，播放端应在计划的 gain_db 之外叠加它。rms/peak 为实测值;真峰值不越过 -3.0 dBFS。注:用 RMS 近似 LUFS，项目暂无 K 加权计量依赖。",
+  "_seamless_verified": "全部为 false:素材是程序批量下载的，无缝循环只能靠人耳试听确认(采集规范 §11)。试听通过后逐条改 true，并把 decision_settings.json 的 allow_unverified_loops 关掉。",
   "assets": [
     {
       "asset_id": "trg_air_conditioner_hum_01",
@@ -12,6 +13,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -55.01,
+        "peak_dbfs": -38.62,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -23,6 +30,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -30.38,
+        "peak_dbfs": -16.24,
+        "makeup_db": 6.38,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -34,6 +47,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -18.29,
+        "peak_dbfs": -5.59,
+        "makeup_db": -5.71,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -45,6 +64,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -27.96,
+        "peak_dbfs": -6.8,
+        "makeup_db": 3.8,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -56,6 +81,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -32.99,
+        "peak_dbfs": -10.31,
+        "makeup_db": 7.31,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -67,6 +98,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -38.56,
+        "peak_dbfs": -15.03,
+        "makeup_db": 12.03,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -78,6 +115,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -17.72,
+        "peak_dbfs": -1.76,
+        "makeup_db": -6.28,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -89,6 +132,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -32.54,
+        "peak_dbfs": -15.63,
+        "makeup_db": 8.54,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -100,6 +149,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -31.62,
+        "peak_dbfs": -18.99,
+        "makeup_db": 7.62,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -111,6 +166,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -25.67,
+        "peak_dbfs": -13.61,
+        "makeup_db": 1.67,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -122,6 +183,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -34.66,
+        "peak_dbfs": -13.39,
+        "makeup_db": 10.39,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -133,6 +200,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -26.59,
+        "peak_dbfs": -7.64,
+        "makeup_db": 2.59,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -144,6 +217,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -45.09,
+        "peak_dbfs": -21.89,
+        "makeup_db": 18.89,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -155,6 +234,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -48.27,
+        "peak_dbfs": -21.6,
+        "makeup_db": 18.6,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -166,6 +251,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -48.27,
+        "peak_dbfs": -21.6,
+        "makeup_db": 18.6,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -177,6 +268,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -22.49,
+        "peak_dbfs": -8.16,
+        "makeup_db": -1.51,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -188,6 +285,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -21.43,
+        "peak_dbfs": -4.51,
+        "makeup_db": -2.57,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -199,6 +302,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -24.49,
+        "peak_dbfs": -4.24,
+        "makeup_db": 0.49,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -210,6 +319,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -35.83,
+        "peak_dbfs": -15.16,
+        "makeup_db": 11.83,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -221,6 +336,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -38.53,
+        "peak_dbfs": -12.98,
+        "makeup_db": 9.98,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -232,6 +353,14 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -51.76,
+        "peak_dbfs": -23.33,
+        "makeup_db": 20.33,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -31.43
       }
     },
     {
@@ -243,6 +372,14 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -36.52,
+        "peak_dbfs": -6.29,
+        "makeup_db": 3.29,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -33.23
       }
     },
     {
@@ -254,6 +391,14 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -27.12,
+        "peak_dbfs": 0.0,
+        "makeup_db": -3.0,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -30.12
       }
     },
     {
@@ -265,6 +410,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -41.61,
+        "peak_dbfs": -21.02,
+        "makeup_db": 17.61,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -276,6 +427,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -39.53,
+        "peak_dbfs": -0.07,
+        "makeup_db": -2.93,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -42.46
       }
     },
     {
@@ -287,6 +446,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -34.15,
+        "peak_dbfs": -4.46,
+        "makeup_db": 1.46,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -32.69
       }
     },
     {
@@ -298,6 +465,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -23.35,
+        "peak_dbfs": -8.03,
+        "makeup_db": -0.65,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -309,6 +482,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -19.75,
+        "peak_dbfs": -6.85,
+        "makeup_db": -4.25,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -320,6 +499,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -54.18,
+        "peak_dbfs": -34.18,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -331,6 +516,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -53.27,
+        "peak_dbfs": -34.72,
+        "makeup_db": 29.27,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -342,6 +533,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -61.49,
+        "peak_dbfs": -32.81,
+        "makeup_db": 29.81,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -31.68
       }
     },
     {
@@ -353,6 +552,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -34.17,
+        "peak_dbfs": -3.99,
+        "makeup_db": 0.99,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -33.18
       }
     },
     {
@@ -364,6 +571,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -25.87,
+        "peak_dbfs": -5.69,
+        "makeup_db": 1.87,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -375,6 +588,14 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -35.38,
+        "peak_dbfs": -5.48,
+        "makeup_db": 2.48,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -32.9
       }
     },
     {
@@ -386,6 +607,14 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -31.89,
+        "peak_dbfs": -1.0,
+        "makeup_db": -2.0,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -33.89
       }
     },
     {
@@ -397,6 +626,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -22.22,
+        "peak_dbfs": -2.04,
+        "makeup_db": -1.78,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -408,6 +643,14 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -35.33,
+        "peak_dbfs": -2.56,
+        "makeup_db": -0.44,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -35.77
       }
     },
     {
@@ -419,6 +662,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -32.52,
+        "peak_dbfs": -13.9,
+        "makeup_db": 8.52,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -430,6 +679,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -42.5,
+        "peak_dbfs": -21.3,
+        "makeup_db": 18.3,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -441,6 +696,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -41.05,
+        "peak_dbfs": -22.2,
+        "makeup_db": 17.05,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -452,6 +713,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -49.77,
+        "peak_dbfs": -33.33,
+        "makeup_db": 25.77,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -463,6 +730,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -37.43,
+        "peak_dbfs": -15.17,
+        "makeup_db": 12.17,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -474,6 +747,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -24.18,
+        "peak_dbfs": -0.0,
+        "makeup_db": -3.0,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -485,6 +764,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -21.17,
+        "peak_dbfs": 0.0,
+        "makeup_db": -3.0,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -496,6 +781,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -21.39,
+        "peak_dbfs": -0.99,
+        "makeup_db": -2.61,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -507,6 +798,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -24.39,
+        "peak_dbfs": -0.27,
+        "makeup_db": -2.73,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -518,6 +815,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -18.88,
+        "peak_dbfs": 0.0,
+        "makeup_db": -5.12,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -529,6 +832,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -31.61,
+        "peak_dbfs": -6.99,
+        "makeup_db": 3.99,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -540,6 +849,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -57.21,
+        "peak_dbfs": -38.01,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -551,6 +866,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -49.57,
+        "peak_dbfs": -36.15,
+        "makeup_db": 25.57,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -562,6 +883,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -24.56,
+        "peak_dbfs": -4.48,
+        "makeup_db": 0.56,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -573,6 +900,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -33.07,
+        "peak_dbfs": -17.5,
+        "makeup_db": 9.07,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -584,6 +917,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -22.03,
+        "peak_dbfs": -9.02,
+        "makeup_db": -1.97,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -595,6 +934,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -13.52,
+        "peak_dbfs": -0.01,
+        "makeup_db": -10.48,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -606,6 +951,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -49.1,
+        "peak_dbfs": -22.45,
+        "makeup_db": 19.45,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -617,6 +968,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -31.58,
+        "peak_dbfs": -11.38,
+        "makeup_db": 7.58,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -628,6 +985,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -18.88,
+        "peak_dbfs": -5.83,
+        "makeup_db": -5.12,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -639,6 +1002,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -67.65,
+        "peak_dbfs": -41.21,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -37.65
       }
     },
     {
@@ -650,6 +1021,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -46.27,
+        "peak_dbfs": -29.02,
+        "makeup_db": 22.27,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -661,6 +1038,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -26.35,
+        "peak_dbfs": -8.0,
+        "makeup_db": 2.35,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -672,6 +1055,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -39.54,
+        "peak_dbfs": -19.03,
+        "makeup_db": 15.54,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -683,6 +1072,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -29.69,
+        "peak_dbfs": -7.03,
+        "makeup_db": 4.03,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -694,6 +1089,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -17.27,
+        "peak_dbfs": -0.36,
+        "makeup_db": -6.73,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -705,6 +1106,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -41.87,
+        "peak_dbfs": -26.22,
+        "makeup_db": 17.87,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -716,6 +1123,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -27.8,
+        "peak_dbfs": -3.04,
+        "makeup_db": 0.04,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -727,6 +1140,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -37.49,
+        "peak_dbfs": -13.83,
+        "makeup_db": 10.83,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -738,6 +1157,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -45.98,
+        "peak_dbfs": -25.52,
+        "makeup_db": 21.98,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -749,6 +1174,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -57.14,
+        "peak_dbfs": -42.63,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -760,6 +1191,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -17.14,
+        "peak_dbfs": -4.14,
+        "makeup_db": -6.86,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -771,6 +1208,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -48.1,
+        "peak_dbfs": -33.87,
+        "makeup_db": 24.1,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -782,6 +1225,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -44.68,
+        "peak_dbfs": -0.14,
+        "makeup_db": -2.86,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -47.54
       }
     },
     {
@@ -793,6 +1244,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -27.09,
+        "peak_dbfs": -1.16,
+        "makeup_db": -1.84,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -804,6 +1261,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -33.47,
+        "peak_dbfs": -4.6,
+        "makeup_db": 1.6,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -31.87
       }
     },
     {
@@ -815,6 +1280,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -37.7,
+        "peak_dbfs": -7.74,
+        "makeup_db": 4.74,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -32.96
       }
     },
     {
@@ -826,6 +1299,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -39.5,
+        "peak_dbfs": -20.11,
+        "makeup_db": 15.5,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -837,6 +1316,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -33.99,
+        "peak_dbfs": -13.2,
+        "makeup_db": 9.99,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -848,6 +1333,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -29.4,
+        "peak_dbfs": -13.07,
+        "makeup_db": 5.4,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -859,6 +1350,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -35.7,
+        "peak_dbfs": -11.25,
+        "makeup_db": 8.25,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -870,6 +1367,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -56.25,
+        "peak_dbfs": -37.47,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -881,6 +1384,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -48.1,
+        "peak_dbfs": -33.87,
+        "makeup_db": 24.1,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -892,6 +1401,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -60.51,
+        "peak_dbfs": -42.14,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -30.51
       }
     },
     {
@@ -903,6 +1420,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -56.68,
+        "peak_dbfs": -32.3,
+        "makeup_db": 29.3,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -914,6 +1437,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -31.21,
+        "peak_dbfs": -6.84,
+        "makeup_db": 3.84,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -925,6 +1454,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -38.71,
+        "peak_dbfs": -11.46,
+        "makeup_db": 8.46,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -30.25
       }
     },
     {
@@ -936,6 +1473,14 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -47.01,
+        "peak_dbfs": -15.3,
+        "makeup_db": 12.3,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -34.71
       }
     },
     {
@@ -947,6 +1492,14 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -33.41,
+        "peak_dbfs": 0.0,
+        "makeup_db": -3.0,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -36.41
       }
     },
     {
@@ -958,6 +1511,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -32.19,
+        "peak_dbfs": -6.66,
+        "makeup_db": 3.66,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -969,6 +1528,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -19.63,
+        "peak_dbfs": -1.31,
+        "makeup_db": -4.37,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -980,6 +1545,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -59.37,
+        "peak_dbfs": -34.26,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -991,6 +1562,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -34.18,
+        "peak_dbfs": -12.1,
+        "makeup_db": 9.1,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1002,6 +1579,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -51.31,
+        "peak_dbfs": -22.13,
+        "makeup_db": 19.13,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -32.18
       }
     },
     {
@@ -1013,6 +1598,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -49.92,
+        "peak_dbfs": -13.78,
+        "makeup_db": 10.78,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -39.14
       }
     },
     {
@@ -1024,6 +1617,14 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -33.83,
+        "peak_dbfs": -0.0,
+        "makeup_db": -3.0,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -36.83
       }
     },
     {
@@ -1035,6 +1636,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -38.17,
+        "peak_dbfs": -18.09,
+        "makeup_db": 14.17,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1046,6 +1653,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -38.13,
+        "peak_dbfs": -20.2,
+        "makeup_db": 14.13,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1057,6 +1670,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -25.27,
+        "peak_dbfs": -0.92,
+        "makeup_db": -2.08,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1068,6 +1687,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -17.96,
+        "peak_dbfs": 0.0,
+        "makeup_db": -6.04,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1079,6 +1704,14 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -36.11,
+        "peak_dbfs": -7.57,
+        "makeup_db": 4.57,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -31.54
       }
     },
     {
@@ -1090,6 +1723,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -27.89,
+        "peak_dbfs": -1.13,
+        "makeup_db": -1.87,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1101,6 +1740,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -37.16,
+        "peak_dbfs": -19.53,
+        "makeup_db": 13.16,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1112,6 +1757,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -36.82,
+        "peak_dbfs": -11.42,
+        "makeup_db": 8.42,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1123,6 +1774,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -38.78,
+        "peak_dbfs": -12.1,
+        "makeup_db": 9.1,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1134,6 +1791,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -40.1,
+        "peak_dbfs": -18.76,
+        "makeup_db": 15.76,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1145,6 +1808,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -36.62,
+        "peak_dbfs": -13.69,
+        "makeup_db": 10.69,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1156,6 +1825,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -53.97,
+        "peak_dbfs": -31.59,
+        "makeup_db": 28.59,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1167,6 +1842,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -56.82,
+        "peak_dbfs": -44.2,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1178,6 +1859,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -40.68,
+        "peak_dbfs": -15.6,
+        "makeup_db": 12.6,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1189,6 +1876,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -19.96,
+        "peak_dbfs": -5.58,
+        "makeup_db": -4.04,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1200,6 +1893,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -10.53,
+        "peak_dbfs": -0.9,
+        "makeup_db": -12.0,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1211,6 +1910,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -46.93,
+        "peak_dbfs": -13.19,
+        "makeup_db": 10.19,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -36.74
       }
     },
     {
@@ -1222,6 +1929,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -34.86,
+        "peak_dbfs": -4.78,
+        "makeup_db": 1.78,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -33.08
       }
     },
     {
@@ -1233,6 +1948,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -21.53,
+        "peak_dbfs": -3.6,
+        "makeup_db": -2.47,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1244,6 +1965,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -28.12,
+        "peak_dbfs": -4.54,
+        "makeup_db": 1.54,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1255,6 +1982,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -13.67,
+        "peak_dbfs": -4.87,
+        "makeup_db": -10.33,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1266,6 +1999,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -29.58,
+        "peak_dbfs": -14.04,
+        "makeup_db": 5.58,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1277,6 +2016,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -33.06,
+        "peak_dbfs": -7.59,
+        "makeup_db": 4.59,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1288,6 +2033,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -36.89,
+        "peak_dbfs": -2.86,
+        "makeup_db": -0.14,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -37.03
       }
     },
     {
@@ -1299,6 +2052,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -58.9,
+        "peak_dbfs": -36.17,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1310,6 +2069,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -60.24,
+        "peak_dbfs": -34.48,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -30.24
       }
     },
     {
@@ -1321,6 +2088,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -43.66,
+        "peak_dbfs": -26.53,
+        "makeup_db": 19.66,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1332,6 +2105,14 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -35.65,
+        "peak_dbfs": -1.91,
+        "makeup_db": -1.09,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -36.74
       }
     },
     {
@@ -1343,6 +2124,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -24.19,
+        "peak_dbfs": -6.58,
+        "makeup_db": 0.19,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1354,6 +2141,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -40.72,
+        "peak_dbfs": -15.99,
+        "makeup_db": 12.99,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1365,6 +2158,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -25.63,
+        "peak_dbfs": -0.28,
+        "makeup_db": -2.72,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1376,6 +2175,14 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -34.56,
+        "peak_dbfs": -4.44,
+        "makeup_db": 1.44,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -33.12
       }
     },
     {
@@ -1387,6 +2194,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -45.89,
+        "peak_dbfs": -18.98,
+        "makeup_db": 15.98,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1398,6 +2211,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -39.88,
+        "peak_dbfs": -14.22,
+        "makeup_db": 11.22,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1409,6 +2228,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -35.39,
+        "peak_dbfs": -18.61,
+        "makeup_db": 11.39,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1420,6 +2245,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -50.02,
+        "peak_dbfs": -26.91,
+        "makeup_db": 23.91,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1431,6 +2262,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -23.88,
+        "peak_dbfs": -1.28,
+        "makeup_db": -1.72,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1442,6 +2279,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -18.92,
+        "peak_dbfs": -1.74,
+        "makeup_db": -5.08,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1453,6 +2296,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -35.29,
+        "peak_dbfs": -11.02,
+        "makeup_db": 8.02,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1464,6 +2313,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -48.81,
+        "peak_dbfs": -35.21,
+        "makeup_db": 24.81,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1475,6 +2330,14 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -60.09,
+        "peak_dbfs": -41.12,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -30.09
       }
     },
     {
@@ -1486,6 +2349,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -23.12,
+        "peak_dbfs": -2.35,
+        "makeup_db": -0.88,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1497,6 +2366,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -18.92,
+        "peak_dbfs": -1.74,
+        "makeup_db": -5.08,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1508,6 +2383,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -32.02,
+        "peak_dbfs": -6.84,
+        "makeup_db": 3.84,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1519,6 +2400,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -23.82,
+        "peak_dbfs": -10.72,
+        "makeup_db": -0.18,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1530,6 +2417,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -40.86,
+        "peak_dbfs": -17.36,
+        "makeup_db": 14.36,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1541,6 +2434,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -12.43,
+        "peak_dbfs": 0.0,
+        "makeup_db": -11.57,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1552,6 +2451,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -23.89,
+        "peak_dbfs": -0.86,
+        "makeup_db": -2.14,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1563,6 +2468,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -49.29,
+        "peak_dbfs": -14.66,
+        "makeup_db": 11.66,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -37.63
       }
     },
     {
@@ -1574,6 +2487,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -28.57,
+        "peak_dbfs": -6.68,
+        "makeup_db": 3.68,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1585,6 +2504,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -21.36,
+        "peak_dbfs": -2.05,
+        "makeup_db": -2.64,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1596,6 +2521,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -58.47,
+        "peak_dbfs": -40.02,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1607,6 +2538,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -45.38,
+        "peak_dbfs": -26.76,
+        "makeup_db": 21.38,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1618,6 +2555,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -44.13,
+        "peak_dbfs": -26.42,
+        "makeup_db": 20.13,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1629,6 +2572,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -30.5,
+        "peak_dbfs": -13.96,
+        "makeup_db": 6.5,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1640,6 +2589,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -30.84,
+        "peak_dbfs": -14.75,
+        "makeup_db": 6.84,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1651,6 +2606,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -53.66,
+        "peak_dbfs": -33.17,
+        "makeup_db": 29.66,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1662,6 +2623,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -48.32,
+        "peak_dbfs": -32.65,
+        "makeup_db": 24.32,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1673,6 +2640,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -33.34,
+        "peak_dbfs": -16.48,
+        "makeup_db": 9.34,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1684,6 +2657,14 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -39.54,
+        "peak_dbfs": -12.24,
+        "makeup_db": 9.24,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -30.3
       }
     },
     {
@@ -1695,6 +2676,12 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -16.35,
+        "peak_dbfs": -3.03,
+        "makeup_db": -7.65,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1706,6 +2693,14 @@
         "enabled": false,
         "seamless_verified": false,
         "crossfade_ms": 0
+      },
+      "loudness": {
+        "rms_dbfs": -45.16,
+        "peak_dbfs": -16.33,
+        "makeup_db": 13.33,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -31.83
       }
     },
     {
@@ -1717,6 +2712,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -31.59,
+        "peak_dbfs": -12.78,
+        "makeup_db": 7.59,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1728,6 +2729,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -37.79,
+        "peak_dbfs": -19.18,
+        "makeup_db": 13.79,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1739,6 +2746,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -38.49,
+        "peak_dbfs": -14.86,
+        "makeup_db": 11.86,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1750,6 +2763,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -35.85,
+        "peak_dbfs": -16.75,
+        "makeup_db": 11.85,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1761,6 +2780,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -58.34,
+        "peak_dbfs": -25.32,
+        "makeup_db": 22.32,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -36.02
       }
     },
     {
@@ -1772,6 +2799,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -78.31,
+        "peak_dbfs": -56.46,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -48.31
       }
     },
     {
@@ -1783,6 +2818,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -27.77,
+        "peak_dbfs": -8.42,
+        "makeup_db": 3.77,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1794,6 +2835,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -12.04,
+        "peak_dbfs": -0.28,
+        "makeup_db": -11.96,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1805,6 +2852,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -52.81,
+        "peak_dbfs": -32.21,
+        "makeup_db": 28.81,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1816,6 +2869,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -59.37,
+        "peak_dbfs": -34.26,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1827,6 +2886,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -33.63,
+        "peak_dbfs": -8.2,
+        "makeup_db": 5.2,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1838,6 +2903,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -27.06,
+        "peak_dbfs": -5.25,
+        "makeup_db": 2.25,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1849,6 +2920,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -51.67,
+        "peak_dbfs": -39.22,
+        "makeup_db": 27.67,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1860,6 +2937,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -57.97,
+        "peak_dbfs": -43.36,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1871,6 +2954,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -36.83,
+        "peak_dbfs": -13.64,
+        "makeup_db": 10.64,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1882,6 +2971,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -40.98,
+        "peak_dbfs": -23.59,
+        "makeup_db": 16.98,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1893,6 +2988,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -89.08,
+        "peak_dbfs": -79.43,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -59.08
       }
     },
     {
@@ -1904,6 +3007,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -12.59,
+        "peak_dbfs": 0.0,
+        "makeup_db": -11.41,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1915,6 +3024,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -25.27,
+        "peak_dbfs": -0.92,
+        "makeup_db": -2.08,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1926,6 +3041,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -49.1,
+        "peak_dbfs": -28.84,
+        "makeup_db": 25.1,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1937,6 +3058,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -48.22,
+        "peak_dbfs": -25.76,
+        "makeup_db": 22.76,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1948,6 +3075,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -27.83,
+        "peak_dbfs": -3.94,
+        "makeup_db": 0.94,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1959,6 +3092,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -30.93,
+        "peak_dbfs": -16.23,
+        "makeup_db": 6.93,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1970,6 +3109,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -40.49,
+        "peak_dbfs": -20.24,
+        "makeup_db": 16.49,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -1981,6 +3126,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -34.79,
+        "peak_dbfs": -3.56,
+        "makeup_db": 0.56,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -34.23
       }
     },
     {
@@ -1992,6 +3145,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -50.47,
+        "peak_dbfs": -2.63,
+        "makeup_db": -0.37,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -50.84
       }
     },
     {
@@ -2003,6 +3164,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -61.17,
+        "peak_dbfs": -39.64,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -31.17
       }
     },
     {
@@ -2014,6 +3183,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -40.19,
+        "peak_dbfs": -21.77,
+        "makeup_db": 16.19,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -2025,6 +3200,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -52.42,
+        "peak_dbfs": -36.31,
+        "makeup_db": 28.42,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -2036,6 +3217,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -53.44,
+        "peak_dbfs": -38.66,
+        "makeup_db": 29.44,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -2047,6 +3234,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -56.18,
+        "peak_dbfs": -40.17,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -2058,6 +3251,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -48.89,
+        "peak_dbfs": -33.61,
+        "makeup_db": 24.89,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -2069,6 +3268,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -47.58,
+        "peak_dbfs": -32.28,
+        "makeup_db": 23.58,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -2080,6 +3285,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -53.07,
+        "peak_dbfs": -24.57,
+        "makeup_db": 21.57,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -31.5
       }
     },
     {
@@ -2091,6 +3304,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -17.2,
+        "peak_dbfs": -4.46,
+        "makeup_db": -6.8,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -2102,6 +3321,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -30.12,
+        "peak_dbfs": -12.14,
+        "makeup_db": 6.12,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -2113,6 +3338,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -46.27,
+        "peak_dbfs": -29.02,
+        "makeup_db": 22.27,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -2124,6 +3355,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -41.21,
+        "peak_dbfs": -19.11,
+        "makeup_db": 16.11,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -2135,6 +3372,14 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -65.93,
+        "peak_dbfs": -48.65,
+        "makeup_db": 30.0,
+        "target_rms_dbfs": -24.0,
+        "under_level": true,
+        "post_makeup_rms_dbfs": -35.93
       }
     },
     {
@@ -2146,6 +3391,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -36.89,
+        "peak_dbfs": -22.24,
+        "makeup_db": 12.89,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -2157,6 +3408,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -41.18,
+        "peak_dbfs": -22.99,
+        "makeup_db": 17.18,
+        "target_rms_dbfs": -24.0
       }
     },
     {
@@ -2168,6 +3425,12 @@
         "enabled": true,
         "seamless_verified": false,
         "crossfade_ms": 2500
+      },
+      "loudness": {
+        "rms_dbfs": -29.67,
+        "peak_dbfs": -10.95,
+        "makeup_db": 5.67,
+        "target_rms_dbfs": -24.0
       }
     }
   ]

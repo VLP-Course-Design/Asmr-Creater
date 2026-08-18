@@ -278,8 +278,8 @@
       <div class="grp">
         <div class="grp-t">主音量</div>
         <div class="master">
-          <input type="range" min="0" max="100" value="85" id="masterVol">
-          <span id="masterVal" style="min-width:38px;text-align:right">85%</span>
+          <input type="range" min="0" max="150" value="100" id="masterVol">
+          <span id="masterVal" style="min-width:38px;text-align:right">100%</span>
         </div>
       </div>
 
@@ -445,6 +445,7 @@ const MAX_FOREGROUND_SIMULTANEOUS=1;
 const Engine={
   ctx:null, master:null, tracks:[], buffers:{}, realBuffers:{}, playing:false,
   foregroundLive:0, maxSimultaneous:MAX_FOREGROUND_SIMULTANEOUS,
+  masterPlan:1, masterTrim:1,
   ensure(){
     if(!this.ctx){
       const AC=window.AudioContext||window.webkitAudioContext;
@@ -505,19 +506,22 @@ const Engine={
     const L=plan.layers||{};
     const master=plan.master||{};
     this.maxSimultaneous=master.max_foreground_simultaneous ?? 1;
-    if(this.master) this.master.gain.value=dbToGain(master.gain_db ?? -2);
+    this.masterPlan=dbToGain(master.gain_db ?? -2);
+    this.applyMaster();      // 保留用户已拖动的主音量位置,不被计划覆盖
 
     // ── 环境层:场景决定的环境床,播真实素材 ──
     for(const a of (L.ambient||[])){
-      const url=Assets.assetUrls[a.asset_id];
-      if(!url) continue;                       // Manifest 里解析不到就跳过,不出声也不报错
+      const ent=Assets.assetUrls[a.asset_id];
+      if(!ent) continue;                       // Manifest 里解析不到就跳过,不出声也不报错
       try{
         const src=ctx.createBufferSource();
-        src.buffer=await this.loadRealBuffer(url);
+        src.buffer=await this.loadRealBuffer(ent.url);
         src.loop=true;
         const lp=ctx.createBiquadFilter();
         lp.type="lowpass"; lp.frequency.value=a.lowpass_hz||16000;
-        const vol=ctx.createGain(); const level=dbToGain(a.gain_db);
+        // 计划的 gain_db 是按「素材已整理到统一响度」定的;素材库是原始下载文件,
+        // 所以要叠加 Manifest 里的实测补偿,否则最终信号约 -63 dBFS,基本听不见。
+        const vol=ctx.createGain(); const level=dbToGain(a.gain_db+(ent.makeup_db||0));
         vol.gain.value=level;
         src.connect(lp); lp.connect(vol); vol.connect(this.master);
         src.start();
@@ -548,7 +552,9 @@ const Engine={
     for(const f of (L.foreground||[])){
       const pool=(f.asset_pool||[]).map(id=>Assets.assetUrls[id]).filter(Boolean);
       if(!pool.length) continue;
-      const level=dbToGain(f.gain_db);
+      // 同类各变体的补偿量可能略有差异,取中位数作为该层的基准,避免逐次跳变
+      const mk=[...pool.map(e=>e.makeup_db||0)].sort((a,b)=>a-b)[Math.floor(pool.length/2)];
+      const level=dbToGain(f.gain_db+mk);
       const vol=ctx.createGain(); vol.gain.value=level;
 
       // 声像:计划里若带 spatial(双耳模式)就用它的方位,否则退回锚点框的水平中心。
@@ -567,7 +573,7 @@ const Engine={
       const sc=f.schedule||{};
       const minS=sc.min_interval_s ?? 35, maxS=sc.max_interval_s ?? 90;
       const prob=sc.probability ?? 0.35;
-      const nextUrl=makeShuffler(pool);        // schedule.selection = shuffle_no_repeat
+      const nextUrl=makeShuffler(pool.map(e=>e.url));        // schedule.selection = shuffle_no_repeat
       const track={name:f.sound_id, state:"", kind:(f.role||"前景").toUpperCase(),
         vol, panner, src:null, nodes:[], level, pan:x, role:f.role||"trigger",
         timer:null, live:[], layerId:f.layer_id};
@@ -617,7 +623,13 @@ const Engine={
   },
   async play(){ const ctx=this.ensure(); await ctx.resume(); this.playing=true; },
   async pause(){ if(this.ctx){ await this.ctx.suspend(); } this.playing=false; },
-  setTrackVolume(i,v){ const t=this.tracks[i]; if(t) t.vol.gain.value=v*t.level*2; },
+  /* 推子位置 v∈[0,1] → 相对计划音量的调节:0.5=计划原值,1.0=+12 dB,0=静音。
+     不能直接把 level 当百分比显示 —— 计划增益换算成线性只有 0.01~0.13,
+     推子会贴在底部且拉满也只有 +6 dB,用户无法把声音调上来。*/
+  setTrackVolume(i,v){
+    const t=this.tracks[i]; if(!t) return;
+    t.vol.gain.value = v<=0 ? 0 : t.level*Math.pow(10,(v-0.5)*24/20);
+  },
   setTrackPan(i,x){
     const t=this.tracks[i]; if(!t||!t.panner) return;
     const p=x*2-1;
@@ -625,7 +637,8 @@ const Engine={
     else t.panner.setPosition(p,0,1-Math.abs(p));
     t.pan=x;
   },
-  setMaster(v){ if(this.master) this.master.gain.value=v; }
+  applyMaster(){ if(this.master) this.master.gain.value=this.masterPlan*this.masterTrim; },
+  setMaster(v){ this.masterTrim=v; this.applyMaster(); }
 };
 
 /* ════════════════════════════════════════════════════════════════
@@ -939,7 +952,7 @@ async function buildTracks(plan, view){
 
   tracks.forEach((t,i)=>{
     const color=trackColor(i,tracks.length);
-    const pct=Math.round(t.level*100);
+    const pct=50;   // 50% = 播放计划给定的音量;向上是增益,向下是衰减
 
     // 竖推子
     const f=document.createElement("div");

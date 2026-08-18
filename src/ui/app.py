@@ -112,11 +112,23 @@ _STRENGTH_ORDER = {"strong": 0, "medium": 1, "weak": 2, "cautious": 3}
 
 
 def _get_asset_urls() -> dict:
-    """asset_id → 可直接取用的 URL。播放计划里只有 asset_id,前端靠这张表取文件。"""
+    """asset_id → {url, makeup_db}。
+
+    播放计划里只有 asset_id,播放端靠这张表取文件。makeup_db 是把素材抬到统一
+    响度基准所需的补偿(见 scripts/gen_audio_manifest.py):素材库是批量下载的
+    原始文件、没做响度归一化,而计划里的 gain_db 是按「素材已整理到 -24 LUFS」
+    定的,不补偿的话最终信号只有约 -63 dBFS,基本听不见。
+    """
     global _asset_urls
     if _asset_urls is None:
         _, _, manifest, _ = load_mapping_config(PLAYBACK_CONFIG_DIR)
-        _asset_urls = {a["asset_id"]: a["path"] for a in manifest.get("assets", [])}
+        _asset_urls = {
+            a["asset_id"]: {
+                "url": a["path"],
+                "makeup_db": (a.get("loudness") or {}).get("makeup_db", 0.0),
+            }
+            for a in manifest.get("assets", [])
+        }
     return _asset_urls
 
 
