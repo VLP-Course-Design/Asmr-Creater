@@ -1,17 +1,28 @@
 {
-  "schema_version": "1.0",
-  "image": { "id": "sample_kitchen", "path": "img_dataset/Train/1203.jpg", "width": 1024, "height": 768 },
+  "schema_version": "2.3",
+  "id": "sample_kitchen",
+  "image": { "path": "img_dataset/Train/1203.jpg", "width": 1024, "height": 768 },
   "global_vibe": {
     "scene_type": "kitchen",
+    "secondary_scene_types": [],
+    "scene_group": "residential_indoor",
     "mood": "cozy",
-    "brightness": 0.85,
     "warmth": "warm",
-    "base_noise": "white",
-    "time_of_day": "noon"
+    "time_of_day": "noon",
+    "brightness": 0.85
   },
-  "entities": [
-    { "name": "kettle", "state": "boiling", "x": 0.30, "depth": "near", "conf": 0.5,  "source": "vlm" },
-    { "name": "sink",   "state": "running", "x": 0.60, "depth": "mid",  "conf": 0.5,  "source": "vlm" },
-    { "name": "clock",  "state": "ticking", "x": 0.88, "depth": "far",  "conf": 0.70, "source": "yolo" }
+  "trigger_anchors": [
+    {
+      "anchor_id": "visible_kettle",
+      "bbox_norm": { "format": "xyxy", "x_min": 0.20, "y_min": 0.35, "x_max": 0.40, "y_max": 0.70 },
+      "confidence": 0.50,
+      "source": "manual"
+    },
+    {
+      "anchor_id": "visible_clock",
+      "bbox_norm": { "format": "xyxy", "x_min": 0.80, "y_min": 0.20, "x_max": 0.96, "y_max": 0.42 },
+      "confidence": 0.70,
+      "source": "manual"
+    }
   ]
 }

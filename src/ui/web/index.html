@@ -11,7 +11,7 @@
   功能已跑通(无需后端即可完整体验):
     · 选图  → 加载 samples/*.jpg,缺图自动回退占位提示
     · 上传  → 真实读取文件 + Canvas 分析亮度/冷暖 → 产出合法 Scene Contract
-    · 播放  → Web Audio API 真实合成:白/粉/棕噪音 + 低通(brightness 驱动)
+    · 播放  → Web Audio API 混合真实 WAV 素材与亮度驱动的底噪
               + 每轨 StereoPanner(x 驱动);竖推子真控音量,声场点可拖拽
     · 校验  → 前端轻量契约校验,镜像 contracts/scene_contract.schema.json
   ────────────────────────────────────────────────────────────────
@@ -287,7 +287,7 @@
         <div class="grp-t">音频引擎</div>
         <div class="prose muted" style="margin:0">
           底噪由 Web Audio 实时合成(白 / 粉 / 棕噪音),低通截止频率随画面亮度变化;
-          每个可发声物体是一条独立音轨,经 StereoPanner 按其横坐标定位。
+          前景锚点从素材库加载真实 WAV,每个可发声物体是一条独立音轨,经 StereoPanner 按其横坐标定位。
         </div>
       </div>
 
@@ -379,78 +379,24 @@ function makeShuffler(urls){
 /* ════════════════════════════════════════════════════════════════
    1. 样例场景 —— 与 contracts/examples/ 保持一致
    ════════════════════════════════════════════════════════════════ */
-/* 4 个预设场景。注意:这里的检测框与锚点仍是手写的示意数据(不经过真实推理,
-   见 docs/TEST_REPORT 的遗留项),但格式是标准的视觉记录 v2.3 —— 页面会把它们
-   POST 到 /api/plan,由后端同一套音频决策代码产出播放计划。也就是说声音部分
-   走的是真实链路,只有"看到了什么"是预置的。*/
+/* 4 个预设场景。这里只保存展示信息；样例点击后与用户上传图片走同一条
+   /infer 真实推理链，不再维护手写锚点、检测框或播放计划。 */
 const SCENES = {
   bedroom:{
     label:"夜晚卧室", img:"samples/bedroom.jpg",
-    ph:"未找到 samples/bedroom.jpg —— 放入一张「暗调卧室,窗边下雨、左侧有猫在睡觉」的图即可显示",
-    record:{
-      schema_version:"2.3", id:"sample_bedroom",
-      image:{path:"samples/bedroom.jpg", width:1536, height:1024},
-      global_vibe:{scene_type:"bedroom", secondary_scene_types:[], scene_group:"residential_indoor",
-        mood:"calm", warmth:"cool", time_of_day:"night", brightness:0.28},
-      trigger_anchors:[
-        {anchor_id:"relaxed_or_sleeping_cat",
-         bbox_norm:{format:"xyxy",x_min:0.08,y_min:0.52,x_max:0.34,y_max:0.84},
-         confidence:0.91, source:"manual"},
-        {anchor_id:"rain_dropped_window",
-         bbox_norm:{format:"xyxy",x_min:0.66,y_min:0.14,x_max:0.93,y_max:0.60},
-         confidence:0.75, source:"manual"},
-      ],
-    },
+    ph:"未找到 samples/bedroom.jpg —— 请补充样例图片",
   },
   cafe:{
     label:"午后咖啡馆", img:"samples/cafe.jpg",
-    ph:"未找到 samples/cafe.jpg —— 放入一张「暖光咖啡馆,杯子、笔记本、聊天的人」的图即可显示",
-    record:{
-      schema_version:"2.3", id:"sample_cafe",
-      image:{path:"samples/cafe.jpg", width:1536, height:1024},
-      global_vibe:{scene_type:"cafe", secondary_scene_types:[], scene_group:"food_hospitality",
-        mood:"lively", warmth:"warm", time_of_day:"afternoon", brightness:0.62},
-      trigger_anchors:[
-        {anchor_id:"multiple_cups_or_cup_saucer",
-         bbox_norm:{format:"xyxy",x_min:0.26,y_min:0.48,x_max:0.46,y_max:0.78},
-         confidence:0.88, source:"manual"},
-        {anchor_id:"hands_on_keyboard_typing",
-         bbox_norm:{format:"xyxy",x_min:0.44,y_min:0.40,x_max:0.68,y_max:0.74},
-         confidence:0.83, source:"manual"},
-        {anchor_id:"gathered_crowd",
-         bbox_norm:{format:"xyxy",x_min:0.60,y_min:0.30,x_max:0.92,y_max:0.74},
-         confidence:0.79, source:"manual"},
-      ],
-    },
+    ph:"未找到 samples/cafe.jpg —— 请补充样例图片",
   },
   forest:{
     label:"清晨森林", img:"samples/forest.jpg",
-    ph:"未找到 samples/forest.jpg —— 放入一张「明亮暖调森林,有鸟、有溪流」的图即可显示",
-    record:{
-      schema_version:"2.3", id:"sample_forest",
-      image:{path:"samples/forest.jpg", width:1536, height:1024},
-      global_vibe:{scene_type:"forest", secondary_scene_types:["stream"], scene_group:"forest_vegetation",
-        mood:"cheerful", warmth:"warm", time_of_day:"morning", brightness:0.71},
-      trigger_anchors:[
-        {anchor_id:"visible_bird",
-         bbox_norm:{format:"xyxy",x_min:0.10,y_min:0.18,x_max:0.24,y_max:0.34},
-         confidence:0.64, source:"manual"},
-        {anchor_id:"visible_stream_flow",
-         bbox_norm:{format:"xyxy",x_min:0.30,y_min:0.62,x_max:0.78,y_max:0.95},
-         confidence:0.70, source:"manual"},
-      ],
-    },
+    ph:"未找到 samples/forest.jpg —— 请补充样例图片",
   },
   misty:{
     label:"雾山黎明", img:"samples/misty.jpg",
-    ph:"未找到 samples/misty.jpg —— 放入一张「冷调雾山,无明显可发声物体」的图即可显示",
-    record:{
-      schema_version:"2.3", id:"sample_misty",
-      image:{path:"samples/misty.jpg", width:1536, height:1024},
-      global_vibe:{scene_type:"mountain", secondary_scene_types:[], scene_group:"natural_terrain",
-        mood:"melancholic", warmth:"cool", time_of_day:"dawn", brightness:0.40},
-      trigger_anchors:[],
-    },
+    ph:"未找到 samples/misty.jpg —— 请补充样例图片",
   },
 };
 
@@ -458,9 +404,8 @@ const SCENES = {
    2. 契约轻量校验 —— 镜像 contracts/scene_contract.schema.json
    ════════════════════════════════════════════════════════════════ */
 const ENUMS={
-  // mood/time_of_day 并入视觉记录 v2.3(contracts/playback_proposal/)的受控词表,
-  // 与 v1.0 旧值取并集,新旧两种来源(硬编码样例 vs /infer 真实返回)都能通过校验。
-  mood:["calm","cozy","lively","tense","gloomy","melancholic","eerie","cheerful",
+  // mood/time_of_day 使用视觉记录 v2.3 的受控词表；base_noise 是前端渲染视图字段。
+  mood:["calm","cozy","lively","tense","melancholic","eerie","cheerful",
         "neutral","majestic","mysterious"],
   warmth:["warm","neutral","cool"],
   base_noise:["white","pink","brown"],
@@ -708,18 +653,21 @@ async function localAnalyze(file,objUrl){
   const base_noise = brightness<0.35?"brown" : brightness<0.68?"pink" : "white";
   const time_of_day= brightness<0.25?"night": brightness<0.42?"dusk"
                    : brightness<0.72?"afternoon":"noon";
-  const mood = brightness<0.30?(warmth==="warm"?"cozy":"gloomy")
+  const mood = brightness<0.30?(warmth==="warm"?"cozy":"melancholic")
              : brightness>0.70?"cheerful" : "calm";
   return {
-    schema_version:"1.0",
-    image:{id:file.name,path:file.name,width:im.naturalWidth,height:im.naturalHeight},
-    global_vibe:{scene_type:"user_upload",mood,brightness,warmth,base_noise,time_of_day},
-    entities:[]
+    schema_version:"2.3",
+    id:file.name,
+    image:{path:file.name,width:im.naturalWidth,height:im.naturalHeight},
+    global_vibe:{
+      scene_type:"none", secondary_scene_types:[], scene_group:"non_scene",
+      mood, brightness, warmth, time_of_day,
+    },
+    trigger_anchors:[],
   };
 }
 /* 视觉记录 v2.3(schema_version:"2.3", trigger_anchors[]/bbox_norm)→
-   前端已经在消费的 v1.0 形状(global_vibe.base_noise, entities[].x/depth/bbox)。
-   下游 applyScene/buildProse/box 渲染/Engine 都不需要认识 v2.3,只有这里做一次转换。*/
+   前端渲染和音频引擎使用的内部视图。只有这里做一次转换。 */
 function baseNoiseFromVibe(brightness){
   return brightness<0.35?"brown" : brightness<0.68?"pink" : "white";
 }
@@ -776,24 +724,20 @@ async function inferScene(file,objUrl){
     const r=await fetch(CONFIG.ENDPOINT,{method:"POST",body:fd});
     if(!r.ok) throw await readErr(r);
     const data=await r.json();
-    return {view: await viewFromVisualRecordV23(data.record), plan: data.plan, record: data.record};
+    return {
+      view: await viewFromVisualRecordV23(data.record),
+      plan: data.plan,
+      record: data.record,
+      diagnostics: data.diagnostics||{},
+    };
   }
-  const view=await localAnalyze(file,objUrl);
-  return {view, plan: offlinePlan(view.global_vibe.brightness), record:null};
-}
-
-/* 预设样例:同样把 v2.3 记录交给后端的音频决策层,拿真实播放计划。
-   后端不可用时退回离线底噪,保证页面仍能出声。*/
-async function planForRecord(record){
-  if(CONFIG.BACKEND){
-    try{
-      const r=await fetch("/api/plan",{method:"POST",
-        headers:{"Content-Type":"application/json"}, body:JSON.stringify(record)});
-      if(r.ok){ const d=await r.json(); return d.plan; }
-      console.warn("样例取播放计划失败:", (await r.json().catch(()=>({}))).error || r.status);
-    }catch(e){ console.warn("样例取播放计划异常:", e.message); }
-  }
-  return offlinePlan(record.global_vibe.brightness);
+  const record=await localAnalyze(file,objUrl);
+  return {
+    view: await viewFromVisualRecordV23(record),
+    plan: offlinePlan(record.global_vibe.brightness),
+    record,
+    diagnostics: {vibe_source:"local_brightness_fallback", vibe_error:"后端不可用"},
+  };
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -872,15 +816,29 @@ async function selectSample(key){
   const s=SCENES[key]; current.key=key;
   linksEl.querySelectorAll("a").forEach(a=>a.classList.toggle("act",a.dataset.k===key));
   if(current.objUrl){ URL.revokeObjectURL(current.objUrl); current.objUrl=null; }
-  let src=null, dims=null;
-  try{ const im=await loadImage(s.img); src=s.img; dims={w:im.naturalWidth,h:im.naturalHeight}; }catch(_){}
-  $("#phNote").textContent = src ? "" : s.ph;
-  const [view, plan] = await Promise.all([
-    viewFromVisualRecordV23(s.record),
-    planForRecord(s.record),
-  ]);
-  await applyScene(view, plan, s.record, src, s.label, dims);
-  banner("","");
+  $("#phNote").textContent = "";
+  banner("info",`正在真实分析样例：${s.label}…`);
+  try{
+    const response=await fetch(s.img);
+    if(!response.ok) throw new Error(`样例图片读取失败(${response.status})`);
+    const blob=await response.blob();
+    const filename=s.img.split("/").pop()||`${key}.jpg`;
+    const file=new File([blob],filename,{type:blob.type||"image/jpeg"});
+    const src=s.img;
+    const im=await loadImage(src);
+    const dims={w:im.naturalWidth,h:im.naturalHeight};
+    const {view,plan,record,diagnostics}=await inferScene(file,src);
+    await applyScene(view, plan, record, src, s.label, dims);
+    const amb=(plan&&plan.layers&&plan.layers.ambient||[]).map(a=>a.sound_id).join("、");
+    const fg=(plan&&plan.layers&&plan.layers.foreground||[]).map(f=>f.sound_id).join("、");
+    const vibeNote=diagnostics&&diagnostics.vibe_source==="default_fallback"
+      ? "VLM 不可用，当前使用默认氛围"
+      : "VLM 氛围分析完成";
+    banner("info",`${vibeNote}。播放计划:${plan&&plan.schema_version}；环境床:${amb||"无"};前景音:${fg||"无"}。`);
+  }catch(err){
+    $("#phNote").textContent = s.ph;
+    banner("err",`样例分析失败：${err.message}`);
+  }
 }
 function randomScene(){
   const keys=Object.keys(SCENES).filter(k=>k!==current.key);
@@ -932,7 +890,7 @@ async function applyScene(contract, plan, record, imgSrc, title, imgDims){
     +` &nbsp;|&nbsp; 亮度 <b>${g.brightness}</b> → <b>${CN.noise[g.base_noise]||g.base_noise}</b>`;
 
   // 检测框:统一存成 0~1 归一化,交给 layoutBoxes 按 cover 映射到裁切后的真实位置。
-  // 优先后端返回的 bbox(已归一化);否则用样例手写框(百分比 → 归一化)。
+  // 只使用后端返回的归一化 bbox；样例不再提供手写检测框。
   const fromBbox=contract.entities.filter(e=>Array.isArray(e.bbox)&&e.bbox.length===4)
     .map(e=>({x:e.bbox[0], y:e.bbox[1], w:e.bbox[2]-e.bbox[0], h:e.bbox[3]-e.bbox[1],
               name:`${e.name} ${e.conf.toFixed(2)}`}));
@@ -1102,7 +1060,7 @@ async function handleFile(file){
   const url=URL.createObjectURL(file);
   current.objUrl=url; current.key=null;
   try{
-    const {view, plan, record}=await inferScene(file,url);
+    const {view, plan, record, diagnostics}=await inferScene(file,url);
     $("#phNote").textContent="";
     // 取原始尺寸,供检测框 cover 映射(后端返回的 bbox 也据此定位)
     let dims=null;
@@ -1110,9 +1068,12 @@ async function handleFile(file){
     await applyScene(view, plan, record, url, file.name.replace(/\.[^.]+$/,""), dims);
     const amb=(plan&&plan.layers&&plan.layers.ambient||[]).map(a=>a.sound_id).join("、");
     const fg =(plan&&plan.layers&&plan.layers.foreground||[]).map(f=>f.sound_id).join("、");
+    const vibeNote=diagnostics&&diagnostics.vibe_source==="default_fallback"
+      ? "VLM 不可用，当前使用默认氛围"
+      : "VLM 氛围分析完成";
     banner(CONFIG.BACKEND?"info":"warn",
       CONFIG.BACKEND
-        ? `已由后端推理并生成播放计划(${plan&&plan.schema_version})。环境床:${amb||"无"};前景音:${fg||"无"}。`
+        ? `${vibeNote}并生成播放计划(${plan&&plan.schema_version})。环境床:${amb||"无"};前景音:${fg||"无"}。`
         : `前端本地分析完成:亮度 ${view.global_vibe.brightness}、${view.global_vibe.warmth}调 → ${view.global_vibe.base_noise} 底噪。实体检测与播放计划需接后端(把 CONFIG.BACKEND 设为 true)。`);
   }catch(err){
     banner("err", err.message==="CANVAS_BLOCKED"

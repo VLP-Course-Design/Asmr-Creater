@@ -36,7 +36,8 @@ configs/playback/                               决策、场景映射和占位Ma
   decision_settings.json
   scene_audio_profiles.json
   audio_manifest.json
-contracts/playback_proposal/                    视觉记录规范 2.3(词表 + 锚点映射;提案阶段,未并入已冻结的 v1.0 契约)
+contracts/scene_contract.schema.json             正式视觉记录规范 2.3
+contracts/playback_proposal/                    词表与历史提案镜像
   scene_type_vocabulary.json
   recommended_structured_record_example.json
   examples/
@@ -150,7 +151,7 @@ python .\src\audio\playback_converter.py '.\contracts\playback_proposal\examples
 
 ### `decision_settings.json`
 
-- `visual_spec_path` 指向仓库根目录下的 `contracts/playback_proposal/recommended_structured_record_example.json`,复用87锚点和66声音映射；
+- `visual_spec_path` 指向仓库根目录下的 `contracts/playback_proposal/recommended_structured_record_example.json`，这里只复用 87 锚点与 66 声音映射；视觉记录契约本身以 `contracts/scene_contract.schema.json` 为准；
 - 控制候选分数、最多前景层数、深度门限及允许微动的锚点；
 - 修改阈值应升级 `config_version` 或 `policy_version`。
 

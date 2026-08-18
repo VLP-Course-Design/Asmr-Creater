@@ -1,8 +1,9 @@
-"""把第二人检测结果组装为视觉记录 v2.3，供音频播放计划转换器消费。
+# -*- coding: utf-8 -*-
+"""把第二人检测结果组装为正式视觉记录 v2.3，供音频播放计划转换器消费。
 
 v1.0 Scene Contract（`entities` / `base_noise` / 框面积估 depth）仍由
-`vlm_yolo_fusion.merge_structured_payload` 产出，给现有 UI 使用。
-本模块只负责队友在 main 上新增的 playback 输入格式，不改冻结契约 v1.0。
+`vlm_yolo_fusion.merge_structured_payload` 产出，仅用于历史兼容；本模块负责当前
+主流程的 v2.3 记录。
 
 v2.3 纪律（见 contracts/playback_proposal/）：
 - brightness 由程序计算，不采用 VLM 估计值

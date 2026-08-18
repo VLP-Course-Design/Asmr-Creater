@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 test_vision.py —— 第二人视觉层完整功能测试套件
 
@@ -203,12 +204,12 @@ def test_5_process_batch():
 
 
 def test_6_schema_validation():
-    """Scene Contract schema 校验"""
+    """正式视觉记录 v2.3 JSON Schema 校验"""
     print("=" * 50)
     print("Test 6: Scene Contract schema validation")
     print("=" * 50)
 
-    from vision.vlm_yolo_fusion import merge_structured_payload
+    from vision.visual_record import build_visual_record_v23
     from vision.detector import Detection
     from common.contract import validate_scene
 
@@ -221,18 +222,25 @@ def test_6_schema_validation():
         ]
     }
     vlm = {
-        'image': 'bedroom.jpg', 'path': 'd/bedroom.jpg',
-        'global_vibe': {'scene_type': 'bedroom', 'mood': 'calm', 'brightness': 0.28,
-                        'warmth': 'cool', 'base_noise': 'brown', 'time_of_day': 'night'},
-        'suggested_entities': [
-            {'name': 'cat', 'state': 'sleeping'},
-            {'name': 'window', 'state': 'rainy'},
-        ]
+        'schema_version': '2.3',
+        'id': 'bedroom',
+        'image': {'path': 'd/bedroom.jpg', 'width': 1024, 'height': 768},
+        'global_vibe': {
+            'scene_type': 'bedroom', 'secondary_scene_types': [],
+            'scene_group': 'residential_indoor', 'mood': 'calm',
+            'warmth': 'cool', 'time_of_day': 'night', 'brightness': 0.28,
+        },
+        'trigger_anchors': [
+            {'anchor_id': 'relaxed_or_sleeping_cat', 'confidence': 0.91,
+             'source': 'manual', 'bbox_norm': {'format': 'xyxy',
+             'x_min': 0.22, 'y_min': 0.20, 'x_max': 0.44, 'y_max': 0.85}},
+        ],
     }
-    output = merge_structured_payload(yolo, vlm)
+    output = build_visual_record_v23(yolo, vlm)
     validated = validate_scene(output)
     assert validated is not None
-    print("  Output passed Scene Contract JSON Schema validation")
+    assert output['schema_version'] == '2.3'
+    print("  Output passed formal v2.3 JSON Schema validation")
     print("  PASS\n")
 
 
@@ -432,7 +440,7 @@ def test_11_handover_v23_input():
         normalize_upstream_record,
         process_batch_v23,
     )
-    from common.contract import validate_scene
+    from common.contract import validate_visual_record_v23
     from audio.playback_converter import build_anchor_mapping, load_mapping_config, validate_record
 
     handover = {
@@ -494,10 +502,10 @@ def test_11_handover_v23_input():
     print(f"  v2.3 anchors with bbox: {sorted(ids)}")
 
     v1 = merge_structured_payload(yolo, handover)
-    validate_scene(v1)
     assert v1["schema_version"] == "1.0"
     assert "scene_group" not in v1["global_vibe"]
-    print("  v1.0 still passes Scene Contract (extra 2.3 fields stripped)")
+    validate_visual_record_v23(record)
+    print("  legacy v1.0 adapter retained; formal v2.3 record passes schema")
 
     tmp = tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False, encoding="utf-8")
     tmp.write(json.dumps(handover, ensure_ascii=False) + "\n")

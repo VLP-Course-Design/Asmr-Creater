@@ -44,4 +44,4 @@
 - **动机**: 音频层权威规范已定版(playback/)，消费方以其词表为准；一次性跑齐避免重跑 2369 张
 - **配套**: contracts/playback_proposal/scene_type_vocabulary.json、contracts/anchor_dictionary.json、scripts/normalize_global_vibe.py(旧数据→2.3 形状)
 - **验证**: 30 张两轮 + 20 张定向实测(100% 成功,~10.5s/张)——修掉大组名输出、补同义词(clouds/tree/forests 等)后 scene_type none 0%、77% 精确叶子；锚点实测结论：qwen2.5-vl 背不出 87 锚点 id(短清单无效)，改用「宽泛词+状态→代码映射为锚点(source=vlm_legacy)」方案，召回仍稀疏(定向 20 张仅 1 个，且样本多为人/船等不可映射项)；**结论：VLM 锚点仅尽力而为，正式锚点(带框)归第二人检测管线**；尚未全量，验证通过前不升版本号
-- **遗留**: 87 锚点 bbox/depth/EXIF 检测管线归第二人(docs/VISION_V23_GAP.md)；2.3 契约取舍待团队拍板(ADR-0001 proposed)；已用官方 schema(contracts/playback_proposal/visual_record.schema.json)自检：2161/2369 通过，其余 208 条仅因回填锚点缺 bbox
+- **遗留**: 87 锚点 bbox/depth/EXIF 检测管线归第二人(docs/VISION_V23_GAP.md)；2.3 已获团队批准并迁移为正式 schema(`contracts/scene_contract.schema.json`)；历史对齐结果曾用提案镜像自检：2161/2369 通过，其余 208 条仅因回填锚点缺 bbox

@@ -20,13 +20,13 @@ sounds/
 
 > 空目录不进 Git,每个子目录放了 `.gitkeep` 占位,放入真实素材后可删。
 
-## 当前状态:两套命名并存的过渡期
+## 当前状态:v2.3 素材已补齐，保留兼容桥接
 
-音频层的 v2.3 提案用 66 个 `sound_id`(`cat_purr`/`bird_chirp`)命名,而现有 19 个真实素材是按 v1.0 标签(`cat`/`bird`)组织的。两边**不是同一套词表**,因此:
+正式视觉/音频流程用 66 个 `sound_id`(`cat_purr`/`bird_chirp`)命名；当前素材库已满足 66 类触发音和 20 类环境音的 MVP 变体要求。历史 v1.0 目录仍保留用于兼容，因此:
 
-- [`v23_sound_id_bridge.json`](v23_sound_id_bridge.json) 让 14 个 v2.3 `sound_id` 暂时借用 v1.0 目录里的真实素材,demo 现在就有声音;
+- [`v23_sound_id_bridge.json`](v23_sound_id_bridge.json) 仍为历史兼容映射，正式同名目录优先；
 - 前端播放时**优先**找与 `sound_id` 同名的目录(如 `triggers/bird_chirp/`),里面一旦有真实 wav 就自动改用它,不再走桥接 —— 素材线补齐素材不需要改任何代码;
-- 66 类全部补齐后,桥接表和 v1.0 旧目录即可一并删除。
+- 素材缺失或无法解码时必须报告错误，不得静默用合成音冒充真实素材；桥接表和 v1.0 旧目录待试听验收后再决定清理。
 
 查看当前覆盖率:
 
@@ -43,7 +43,7 @@ python scripts/check_sounds_coverage.py --detail   # 逐条列出变体
 
 ## 素材来源(优先 CC0 / 免版税)
 
-现有 19 个素材全部来自 **Freesound 的 CC0 条目**(见 `metadata.csv` 的 `source_url`),这是最省心的路子。可用渠道与注意事项:
+当前素材元数据记录的条目主要来自 **Freesound 的 CC0 条目**(见 `metadata.csv` 的 `source_url`)，这是最省心的路子。可用渠道与注意事项:
 
 | 渠道 | 注意 |
 |---|---|

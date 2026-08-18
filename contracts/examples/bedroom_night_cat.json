@@ -1,16 +1,28 @@
 {
-  "schema_version": "1.0",
-  "image": { "id": "sample_bedroom", "path": "img_dataset/Train/42.jpg", "width": 1024, "height": 768 },
+  "schema_version": "2.3",
+  "id": "sample_bedroom",
+  "image": { "path": "img_dataset/Train/42.jpg", "width": 1024, "height": 768 },
   "global_vibe": {
     "scene_type": "bedroom",
+    "secondary_scene_types": [],
+    "scene_group": "residential_indoor",
     "mood": "calm",
-    "brightness": 0.28,
     "warmth": "cool",
-    "base_noise": "brown",
-    "time_of_day": "night"
+    "time_of_day": "night",
+    "brightness": 0.28
   },
-  "entities": [
-    { "name": "cat",    "state": "sleeping", "x": 0.22, "depth": "near", "conf": 0.91, "bbox": [0.10, 0.55, 0.34, 0.82], "source": "yolo" },
-    { "name": "window", "state": "rainy",    "x": 0.80, "depth": "far",  "conf": 0.75, "bbox": [0.68, 0.15, 0.93, 0.60], "source": "fused" }
+  "trigger_anchors": [
+    {
+      "anchor_id": "relaxed_or_sleeping_cat",
+      "bbox_norm": { "format": "xyxy", "x_min": 0.10, "y_min": 0.55, "x_max": 0.34, "y_max": 0.82 },
+      "confidence": 0.91,
+      "source": "manual"
+    },
+    {
+      "anchor_id": "rain_dropped_window",
+      "bbox_norm": { "format": "xyxy", "x_min": 0.68, "y_min": 0.15, "x_max": 0.93, "y_max": 0.60 },
+      "confidence": 0.75,
+      "source": "manual"
+    }
   ]
 }
