@@ -549,6 +549,7 @@ const Engine={
 
     // ── 前景层:按计划里的 schedule 定时重触发 ──
     const anchors=(view&&view.record&&view.record.trigger_anchors)||[];
+    let fgIndex=0;
     for(const f of (L.foreground||[])){
       const pool=(f.asset_pool||[]).map(id=>Assets.assetUrls[id]).filter(Boolean);
       if(!pool.length) continue;
@@ -578,12 +579,27 @@ const Engine={
         vol, panner, src:null, nodes:[], level, pan:x, role:f.role||"trigger",
         timer:null, live:[], layerId:f.layer_id};
 
+      // 计划里的 schedule 是给长时间助眠播放设计的(间隔几十秒 + 概率门控),
+      // 直接套用会让"点播放后第一次听见这一层"的中位等待达到 90 秒,
+      // cup_clink 这类低概率层甚至要 20 分钟 —— 用户会以为坏了。
+      // 因此每层在开播后先保证放一次(跳过概率门控),之后完全按计划的节奏走。
+      // 多层之间错开,避免撞上 max_foreground_simultaneous=1 互相挡掉。
+      const introDelay=1.2+fgIndex*2.5;
+      let introDone=false;
+      fgIndex++;
+
       const arm=d=>{ track.timer=setTimeout(fire, d*1000); };
       const fire=async()=>{
         track.timer=null;
-        // 暂停期间不触发,免得攒一堆声音在恢复瞬间一起炸开
-        if(!Engine.playing){ arm(minS); return; }
-        if(Math.random()<prob && Engine.foregroundLive<Engine.maxSimultaneous){
+        // 暂停期间不触发,免得攒一堆声音在恢复瞬间一起炸开;
+        // 首次试听还没放过时保持短间隔重试,这样按下播放就能很快听到
+        if(!Engine.playing){ arm(introDone?minS:0.5); return; }
+        // 名额被占时不消耗"首次试听",稍后再试
+        if(Engine.foregroundLive>=Engine.maxSimultaneous){
+          arm(introDone?(minS+Math.random()*(maxS-minS)):1.5); return;
+        }
+        const isIntro=!introDone; introDone=true;
+        if(isIntro || Math.random()<prob){
           try{
             const s=ctx.createBufferSource();
             s.buffer=await this.loadRealBuffer(nextUrl());
@@ -599,8 +615,7 @@ const Engine={
         }
         arm(minS+Math.random()*(maxS-minS));
       };
-      // 首次不等满一个完整间隔,否则刚进场景要静默几十秒才有动静
-      arm(2+Math.random()*Math.max(2,minS-2));
+      arm(introDelay);
       this.tracks.push(track);
     }
     return this.tracks;
