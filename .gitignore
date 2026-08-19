@@ -54,3 +54,12 @@ sounds/.fs_oauth.json
 sounds/candidates.json
 # 下载的素材工作区(wav 本体不入库)
 sounds/assets/
+
+# 课程交付文件(docs 下):Word 报告/个人贡献、参考 PDF、报告插图。
+# 仓库只跟踪 Markdown 文档;二进制交付物本地保留,不入库。
+docs/**/*.docx
+docs/**/*.pdf
+# Word 打开文档时生成的临时锁文件
+~$*.docx
+# 报告插图(fig 前缀);项目流程图 docs/MVP版本工作流程.png 仍保留跟踪
+docs/fig*.png
